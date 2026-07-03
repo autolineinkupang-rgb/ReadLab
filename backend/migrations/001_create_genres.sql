@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS genres (
+    id SERIAL PRIMARY KEY,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP,
+    slug VARCHAR(50) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL
+);
