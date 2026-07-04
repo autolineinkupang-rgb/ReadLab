@@ -29,7 +29,7 @@ export default function NovelCard({ title, genre, chapters, rating, image, href,
         )}
       </div>
       <div className="mt-2 space-y-0.5">
-        <h3 className="text-sm font-medium text-gray-200 group-hover:text-violet-400 transition-colors line-clamp-2 leading-tight">
+        <h3 className="text-sm font-medium text-gray-200 group-hover:text-[#6dd5ed] transition-colors line-clamp-2 leading-tight">
           {title}
         </h3>
         <div className="flex items-center gap-2 text-xs text-gray-500">

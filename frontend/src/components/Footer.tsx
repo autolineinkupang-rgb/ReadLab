@@ -24,7 +24,7 @@ export default function Footer() {
           ))}
         </div>
         <p className="text-center text-sm text-gray-600">
-          Copyright © 2022 - wtr-lab.com <span className="text-violet-500 ml-2">v1.13.4</span>
+          Copyright © 2022 - wtr-lab.com <span className="text-[#2193b0] ml-2">v1.13.4</span>
         </p>
       </div>
     </footer>

@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { novels, genres as genresApi } from "@/lib/api";
+import { novels } from "@/lib/api";
 
 interface Novel {
   ID: number;
   Title: string;
   AltTitle: string;
   Slug: string;
-  Author: string;
   Status: string;
   Views: number;
   Rating: number;
@@ -31,18 +30,16 @@ const genreList = [
 ];
 
 const mockNovels: Novel[] = [
-  { ID: 1, Title: "Having Dinner with His Brother, the Cold and Aloof Tycoon Becomes Addicted to His Doting Affections", AltTitle: "陪哥哥吃饭，冷欲大佬强宠上瘾", Slug: "having-dinner-with-his-brother", Author: "半条活鱼", Status: "completed", Views: 3142, Rating: 3.5, Chapters: 135, Readers: 17, Chars: "250K", AIPercent: "37%", Description: "Cold and aloof tycoon × Bright and delicate princess.", CoverURL: "", Genres: [{ ID: 22, Slug: "romance", Name: "Romance" }, { ID: 30, Slug: "slice-of-life", Name: "Slice of Life" }, { ID: 35, Slug: "urban-life", Name: "Urban Life" }] },
-  { ID: 2, Title: "Corpse Puppet Phoenix Girl", AltTitle: "尸傀凰女", Slug: "corpse-puppet-phoenix-girl", Author: "佚名", Status: "ongoing", Views: 2105, Rating: 3.8, Chapters: 242, Readers: 22, Chars: "653K", AIPercent: "20.7%", Description: "Meeting you at the most beautiful street corner.", CoverURL: "", Genres: [{ ID: 2, Slug: "adult", Name: "Adult" }, { ID: 4, Slug: "adventure", Name: "Adventure" }, { ID: 12, Slug: "fantasy", Name: "Fantasy" }, { ID: 22, Slug: "romance", Name: "Romance" }] },
-  { ID: 3, Title: "Reborn As the Little Delicate Wife of the Domineering Ceo", AltTitle: "豪门重生，夫人超超超厉害", Slug: "reborn-as-the-little-delicate-wife", Author: "佚名", Status: "completed", Views: 4521, Rating: 4.0, Chapters: 378, Readers: 9, Chars: "638K", AIPercent: "13.2%", Description: "Sweet and fluffy, incredibly romantic.", CoverURL: "", Genres: [{ ID: 22, Slug: "romance", Name: "Romance" }, { ID: 35, Slug: "urban-life", Name: "Urban Life" }] },
-  { ID: 4, Title: "The Corpse Family is Heavy", AltTitle: "尸家重地", Slug: "the-corpse-family-is-heavy", Author: "佚名", Status: "completed", Views: 890, Rating: 3.2, Chapters: 252, Readers: 11, Chars: "469K", AIPercent: "19.8%", Description: "You can't be greedy for cheap deals.", CoverURL: "", Genres: [{ ID: 1, Slug: "action", Name: "Action" }, { ID: 2, Slug: "adult", Name: "Adult" }, { ID: 12, Slug: "fantasy", Name: "Fantasy" }, { ID: 20, Slug: "mystery", Name: "Mystery" }, { ID: 33, Slug: "supernatural", Name: "Supernatural" }] },
-  { ID: 5, Title: "Can You Please Comfort Me?", AltTitle: "可不可以哄哄我", Slug: "can-you-please-comfort-me", Author: "佚名", Status: "completed", Views: 1567, Rating: 3.0, Chapters: 149, Readers: 9, Chars: "235K", AIPercent: "33.6%", Description: "As a child, Shen Shengsheng played house.", CoverURL: "", Genres: [{ ID: 5, Slug: "drama", Name: "Drama" }, { ID: 14, Slug: "josei", Name: "Josei" }, { ID: 22, Slug: "romance", Name: "Romance" }, { ID: 34, Slug: "tragedy", Name: "Tragedy" }, { ID: 35, Slug: "urban-life", Name: "Urban Life" }] },
-  { ID: 6, Title: "First-rank Di Consort", AltTitle: "一品嫡妃", Slug: "first-rank-di-consort", Author: "佚名", Status: "completed", Views: 3456, Rating: 3.6, Chapters: 387, Readers: 6, Chars: "2.99M", AIPercent: "15.5%", Description: "Song Anran, a wealthy and beautiful woman.", CoverURL: "", Genres: [{ ID: 11, Slug: "historical", Name: "Historical" }, { ID: 22, Slug: "romance", Name: "Romance" }] },
-  { ID: 7, Title: "I am the Crown Prince of the Ming Dynasty", AltTitle: "我在大明当太子", Slug: "i-am-the-crown-prince-of-the-ming-dynasty", Author: "佚名", Status: "completed", Views: 78901, Rating: 4.2, Chapters: 1592, Readers: 505, Chars: "2.96M", AIPercent: "3.14%", Description: "College student Zhu Yu transmigrates.", CoverURL: "", Genres: [{ ID: 1, Slug: "action", Name: "Action" }, { ID: 2, Slug: "adult", Name: "Adult" }, { ID: 4, Slug: "adventure", Name: "Adventure" }, { ID: 5, Slug: "drama", Name: "Drama" }, { ID: 12, Slug: "fantasy", Name: "Fantasy" }, { ID: 11, Slug: "historical", Name: "Historical" }, { ID: 19, Slug: "military", Name: "Military" }, { ID: 38, Slug: "xuanhuan", Name: "Xuanhuan" }] },
-  { ID: 8, Title: "Could I Really End Up 'collapsing My Image' Even in the World of Rule Horror", AltTitle: "我还能在规则怪谈里塌房不成？", Slug: "could-i-really-end-up-collapsing-my-image", Author: "佚名", Status: "ongoing", Views: 8120, Rating: 4.1, Chapters: 925, Readers: 15, Chars: "1.75M", AIPercent: "5.4%", Description: "Infinite Flow + Rule-Based Ghost Stories.", CoverURL: "", Genres: [{ ID: 20, Slug: "mystery", Name: "Mystery" }, { ID: 21, Slug: "psychological", Name: "Psychological" }] },
-  { ID: 9, Title: "The Legend of the Mountain and Sea Demon Subduing", AltTitle: "大丰小道士", Slug: "legend-mountain-sea-demon", Author: "佚名", Status: "completed", Views: 4580, Rating: 3.9, Chapters: 1522, Readers: 3, Chars: "2.82M", AIPercent: "3.29%", Description: "In the realm of mountains and seas.", CoverURL: "", Genres: [{ ID: 1, Slug: "action", Name: "Action" }, { ID: 4, Slug: "adventure", Name: "Adventure" }, { ID: 16, Slug: "martial-arts", Name: "Martial Arts" }] },
-  { ID: 10, Title: "Don't Be Too Wild", AltTitle: "别太野", Slug: "dont-be-too-wild", Author: "佚名", Status: "ongoing", Views: 7020, Rating: 3.4, Chapters: 160, Readers: 13, Chars: "309K", AIPercent: "31.3%", Description: "A seemingly innocent but actually rebellious heiress.", CoverURL: "", Genres: [{ ID: 22, Slug: "romance", Name: "Romance" }, { ID: 23, Slug: "school-life", Name: "School Life" }, { ID: 30, Slug: "slice-of-life", Name: "Slice of Life" }] },
-  { ID: 11, Title: "Naruto: In Konoha Village, I Awakened Wood Release at the Start", AltTitle: "火影：木叶村，开局觉醒木遁", Slug: "naruto-konoha-wood-release", Author: "佚名", Status: "ongoing", Views: 123456, Rating: 3.8, Chapters: 1002, Readers: 342, Chars: "1.8M", AIPercent: "8.5%", Description: "Konoha 52nd year. Chiba awakened her memories.", CoverURL: "", Genres: [{ ID: 1, Slug: "action", Name: "Action" }, { ID: 8, Slug: "fan-fiction", Name: "Fan-Fiction" }, { ID: 12, Slug: "fantasy", Name: "Fantasy" }, { ID: 16, Slug: "martial-arts", Name: "Martial Arts" }, { ID: 25, Slug: "seinen", Name: "Seinen" }, { ID: 33, Slug: "supernatural", Name: "Supernatural" }] },
-  { ID: 12, Title: "I Just Started High School, But the System Insists I'm an Emperor in My Twilight Years", AltTitle: "刚上高一，系统非说我是晚年大帝", Slug: "high-school-emperor-system", Author: "佚名", Status: "ongoing", Views: 51120, Rating: 1.9, Chapters: 264, Readers: 88, Chars: "450K", AIPercent: "12%", Description: "Jiang Feng is an ordinary high school student.", CoverURL: "", Genres: [{ ID: 1, Slug: "action", Name: "Action" }, { ID: 3, Slug: "comedy", Name: "Comedy" }, { ID: 12, Slug: "fantasy", Name: "Fantasy" }, { ID: 16, Slug: "martial-arts", Name: "Martial Arts" }, { ID: 23, Slug: "school-life", Name: "School Life" }, { ID: 33, Slug: "supernatural", Name: "Supernatural" }, { ID: 35, Slug: "urban-life", Name: "Urban Life" }] },
+  { ID: 1, Title: "Red Chamber: Saving the Falling Heavens", AltTitle: "红楼之挽天倾", Slug: "red-chamber-saving-falling-heavens", Author: "佚名", Status: "completed", Views: 3142, Rating: 3.5, Chapters: 1782, Readers: 3, Chars: "7.81M", AIPercent: "8.92%", Description: "A young man from a later generation transmigrates into the world of Dream of the Red Chamber.", CoverURL: "", Genres: [{ ID: 1, Slug: "action", Name: "Action" }, { ID: 5, Slug: "drama", Name: "Drama" }, { ID: 8, Slug: "fan-fiction", Name: "Fan-Fiction" }, { ID: 12, Slug: "fantasy", Name: "Fantasy" }] },
+  { ID: 2, Title: "Traveling Simultaneously: Across the Heavens", AltTitle: "同时穿越：纵横诸天", Slug: "traveling-simultaneously-across-heavens", Author: "佚名", Status: "ongoing", Views: 2105, Rating: 3.8, Chapters: 84, Readers: 13, Chars: "389K", AIPercent: "63.1%", Description: "Other popular fantasy novels.", CoverURL: "", Genres: [{ ID: 1, Slug: "action", Name: "Action" }, { ID: 8, Slug: "fan-fiction", Name: "Fan-Fiction" }, { ID: 12, Slug: "fantasy", Name: "Fantasy" }] },
+  { ID: 3, Title: "After He Remarrying a Wealthy Young Man from Beijing's Circle, My Childhood Sweethearts Were Furious", AltTitle: "改嫁京圈太子爷后，竹马们气疯了", Slug: "remarrying-wealthy-beijing", Author: "佚名", Status: "completed", Views: 4521, Rating: 4.0, Chapters: 1051, Readers: 11, Chars: "1.83M", AIPercent: "4.76%", Description: "I transmigrated into a book during the Ghost Festival.", CoverURL: "", Genres: [{ ID: 5, Slug: "drama", Name: "Drama" }, { ID: 22, Slug: "romance", Name: "Romance" }, { ID: 35, Slug: "urban-life", Name: "Urban Life" }] },
+  { ID: 4, Title: "Reborn in 1983: My Wife is a Heiress from Beijing's Elite Circle", AltTitle: "重生1983：我妻京圈大小姐", Slug: "reborn-1983-beijing-elite", Author: "佚名", Status: "ongoing", Views: 712, Rating: 3.2, Chapters: 1758, Readers: 9, Chars: "2.49M", AIPercent: "4.32%", Description: "In the winter of 1983, Ye Jianguo, a future tycoon.", CoverURL: "", Genres: [{ ID: 1, Slug: "action", Name: "Action" }, { ID: 5, Slug: "drama", Name: "Drama" }, { ID: 30, Slug: "slice-of-life", Name: "Slice of Life" }, { ID: 35, Slug: "urban-life", Name: "Urban Life" }] },
+  { ID: 5, Title: "Real Dolls: I Use Dolls to Create Perfect Accidents", AltTitle: "真实人偶，我用人偶制造完美意外", Slug: "real-dolls-perfect-accidents", Author: "佚名", Status: "completed", Views: 580, Rating: 3.0, Chapters: 944, Readers: 59, Chars: "1.81M", AIPercent: "100%", Description: "In a parallel world called Blue Star.", CoverURL: "", Genres: [{ ID: 1, Slug: "action", Name: "Action" }, { ID: 5, Slug: "drama", Name: "Drama" }, { ID: 11, Slug: "horror", Name: "Horror" }, { ID: 20, Slug: "mystery", Name: "Mystery" }, { ID: 33, Slug: "supernatural", Name: "Supernatural" }, { ID: 35, Slug: "urban-life", Name: "Urban Life" }] },
+  { ID: 6, Title: "Attack on Titan: I'm an Ackerman", AltTitle: "什么！我竟然是耶格尔派？", Slug: "attack-on-titan-ackerman", Author: "佚名", Status: "ongoing", Views: 361, Rating: 3.6, Chapters: 93, Readers: 28, Chars: "156K", AIPercent: "71%", Description: "Due to limited abilities, some original settings will be modified.", CoverURL: "", Genres: [{ ID: 1, Slug: "action", Name: "Action" }, { ID: 8, Slug: "fan-fiction", Name: "Fan-Fiction" }, { ID: 12, Slug: "fantasy", Name: "Fantasy" }] },
+  { ID: 7, Title: "The Background is So Invincible That the System Was Upgraded Overnight!", AltTitle: "背景太无敌，吓得系统连夜升级！", Slug: "invincible-background-system-upgraded", Author: "佚名", Status: "ongoing", Views: 588, Rating: 4.1, Chapters: 998, Readers: 45, Chars: "2.34M", AIPercent: "100%", Description: "When I gained an invincible background!", CoverURL: "", Genres: [{ ID: 1, Slug: "action", Name: "Action" }, { ID: 3, Slug: "comedy", Name: "Comedy" }, { ID: 12, Slug: "fantasy", Name: "Fantasy" }] },
+  { ID: 8, Title: "Global Cultivation: The Salted-fish Undergraduate with an Alchemy Furnace", AltTitle: "全民修仙：小师妹是丹道本科生", Slug: "global-cultivation-alchemy-furnace", Author: "佚名", Status: "completed", Views: 8120, Rating: 3.9, Chapters: 470, Readers: 13, Chars: "871K", AIPercent: "21.3%", Description: "Five hundred years ago, Earth entered the era of spiritual revival.", CoverURL: "", Genres: [{ ID: 4, Slug: "adventure", Name: "Adventure" }, { ID: 3, Slug: "comedy", Name: "Comedy" }, { ID: 12, Slug: "fantasy", Name: "Fantasy" }, { ID: 23, Slug: "school-life", Name: "School Life" }, { ID: 35, Slug: "urban-life", Name: "Urban Life" }] },
+  { ID: 9, Title: "Black Rock Shooter's Persona", AltTitle: "综漫：黑岩小姐的人格面具", Slug: "black-rock-shooter-persona", Author: "佚名", Status: "completed", Views: 89, Rating: 3.4, Chapters: 154, Readers: 21, Chars: "344K", AIPercent: "39%", Description: "Anime/Manga Crossover Fanfiction.", CoverURL: "", Genres: [{ ID: 1, Slug: "action", Name: "Action" }, { ID: 8, Slug: "fan-fiction", Name: "Fan-Fiction" }, { ID: 12, Slug: "fantasy", Name: "Fantasy" }] },
+  { ID: 10, Title: "Reversing the Immortal Path", AltTitle: "穿越之逆转仙途", Slug: "reversing-immortal-path", Author: "佚名", Status: "completed", Views: 27, Rating: 3.7, Chapters: 261, Readers: 26, Chars: "626K", AIPercent: "19.2%", Description: "Mu Heng, who had been crippled for ten years.", CoverURL: "", Genres: [{ ID: 12, Slug: "fantasy", Name: "Fantasy" }, { ID: 16, Slug: "martial-arts", Name: "Martial Arts" }] },
 ];
 
 const SORT_OPTIONS = [
@@ -59,43 +56,45 @@ export default function NovelListPage() {
   const [data, setData] = useState<Novel[]>(mockNovels);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(7687);
+  const [totalPages, setTotalPages] = useState(7524);
   const [sort, setSort] = useState("created_at");
   const [order, setOrder] = useState("desc");
   const [status, setStatus] = useState("");
   const [genre, setGenre] = useState("");
   const [showGenreDropdown, setShowGenreDropdown] = useState(false);
 
+  const fetchData = async (p: number = 1) => {
+    setLoading(true);
+    setPage(p);
+    try {
+      const res = await novels.list({ page: p, limit: 20, status: status || undefined, genre: genre || undefined, sort, order });
+      setData(res.data);
+      setTotalPages(res.total_pages);
+    } catch {
+      const filtered = mockNovels.filter((n) => {
+        if (status && n.Status !== status) return false;
+        if (genre && !n.Genres.some((g) => g.Slug === genre)) return false;
+        return true;
+      });
+      const sorted = [...filtered].sort((a, b) => {
+        let cmp = 0;
+        if (sort === "title") cmp = a.Title.localeCompare(b.Title);
+        else if (sort === "views") cmp = a.Views - b.Views;
+        else if (sort === "readers") cmp = a.Readers - b.Readers;
+        else if (sort === "chapters") cmp = a.Chapters - b.Chapters;
+        else cmp = a.ID - b.ID;
+        return order === "desc" ? -cmp : cmp;
+      });
+      setData(sorted);
+      setTotalPages(Math.ceil(filtered.length / 20) || 1);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const res = await novels.list({ page, limit: 20, status: status || undefined, genre: genre || undefined, sort, order });
-        setData(res.data);
-        setTotalPages(res.total_pages);
-      } catch {
-        const filtered = mockNovels.filter((n) => {
-          if (status && n.Status !== status) return false;
-          if (genre && !n.Genres.some((g) => g.Slug === genre)) return false;
-          return true;
-        });
-        const sorted = [...filtered].sort((a, b) => {
-          let cmp = 0;
-          if (sort === "title") cmp = a.Title.localeCompare(b.Title);
-          else if (sort === "views") cmp = a.Views - b.Views;
-          else if (sort === "readers") cmp = a.Readers - b.Readers;
-          else if (sort === "chapters") cmp = a.Chapters - b.Chapters;
-          else cmp = a.ID - b.ID;
-          return order === "desc" ? -cmp : cmp;
-        });
-        setData(sorted);
-        setTotalPages(Math.ceil(filtered.length / 20) || 1);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [page, sort, order, status, genre]);
+    fetchData(1);
+  }, [sort, order, status, genre]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -103,12 +102,11 @@ export default function NovelListPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4 mb-6">
-        {/* Sort */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-400">Order by</span>
           <select
             value={sort}
-            onChange={(e) => { setSort(e.target.value); setPage(1); }}
+            onChange={(e) => { setSort(e.target.value); }}
             className="bg-[#1e1e3a] text-sm text-gray-200 px-3 py-2 rounded-lg border border-[#2a2a4a] outline-none"
           >
             {SORT_OPTIONS.map((o) => (
@@ -117,12 +115,11 @@ export default function NovelListPage() {
           </select>
         </div>
 
-        {/* Order direction */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-400">Order</span>
           <select
             value={order}
-            onChange={(e) => { setOrder(e.target.value); setPage(1); }}
+            onChange={(e) => { setOrder(e.target.value); }}
             className="bg-[#1e1e3a] text-sm text-gray-200 px-3 py-2 rounded-lg border border-[#2a2a4a] outline-none"
           >
             <option value="desc">Descending</option>
@@ -130,17 +127,16 @@ export default function NovelListPage() {
           </select>
         </div>
 
-        {/* Status filter */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-400">Status</span>
           <div className="flex bg-[#1e1e3a] rounded-lg p-0.5 border border-[#2a2a4a]">
             {STATUS_OPTIONS.map((s) => (
               <button
                 key={s}
-                onClick={() => { setStatus(s === "All" ? "" : s.toLowerCase()); setPage(1); }}
+                onClick={() => { setStatus(s === "All" ? "" : s.toLowerCase()); }}
                 className={`px-3 py-1.5 text-xs rounded-md transition-colors ${
                   (s === "All" && !status) || s.toLowerCase() === status
-                    ? "bg-violet-600 text-white"
+                    ? "bg-[#2193b0] text-white"
                     : "text-gray-400 hover:text-white"
                 }`}
               >
@@ -150,21 +146,20 @@ export default function NovelListPage() {
           </div>
         </div>
 
-        {/* Genre filter */}
         <div className="relative">
           <span className="text-sm text-gray-400 mr-2">Genre</span>
           <button
             onClick={() => setShowGenreDropdown(!showGenreDropdown)}
-            className="bg-[#1e1e3a] text-sm text-gray-200 px-3 py-2 rounded-lg border border-[#2a2a4a] outline-none min-w-[120px] text-left"
+            className="bg-[#1e1e3a] text-sm text-gray-200 px-3 py-2 rounded-lg border border-[#2a2a4a] outline-none min-w-[120px] text-left capitalize"
           >
             {genre || "All"}
           </button>
           {showGenreDropdown && (
             <div className="absolute top-full mt-1 left-0 z-50 bg-[#1e1e3a] border border-[#2a2a4a] rounded-xl p-2 max-h-60 overflow-y-auto w-48 shadow-xl">
               <button
-                onClick={() => { setGenre(""); setShowGenreDropdown(false); setPage(1); }}
+                onClick={() => { setGenre(""); setShowGenreDropdown(false); }}
                 className={`block w-full text-left text-sm px-3 py-1.5 rounded ${
-                  !genre ? "text-violet-400" : "text-gray-300 hover:text-white"
+                  !genre ? "text-[#2193b0]" : "text-gray-300 hover:text-white"
                 }`}
               >
                 All
@@ -172,9 +167,9 @@ export default function NovelListPage() {
               {genreList.map((g) => (
                 <button
                   key={g}
-                  onClick={() => { setGenre(g); setShowGenreDropdown(false); setPage(1); }}
+                  onClick={() => { setGenre(g); setShowGenreDropdown(false); }}
                   className={`block w-full text-left text-sm px-3 py-1.5 rounded capitalize ${
-                    genre === g ? "text-violet-400" : "text-gray-300 hover:text-white"
+                    genre === g ? "text-[#2193b0]" : "text-gray-300 hover:text-white"
                   }`}
                 >
                   {g.replace(/-/g, " ")}
@@ -184,67 +179,55 @@ export default function NovelListPage() {
           )}
         </div>
 
-        {loading && <span className="text-sm text-violet-400 ml-2">Loading...</span>}
+        {loading && <span className="text-sm text-[#2193b0] ml-2">Loading...</span>}
       </div>
 
+      {/* Results count */}
+      <p className="text-sm text-gray-500 mb-4">{data.length} novels</p>
+
       {/* Novel Grid */}
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {data.map((novel) => (
           <Link
             key={novel.ID}
             href={`/en/novel/${novel.ID}/${novel.Slug}`}
-            className="flex gap-4 p-4 bg-[#12122a] border border-[#1e1e3a] rounded-xl hover:border-violet-800/40 transition-colors group"
+            className="flex gap-3 p-3 bg-[#12122a] border border-[#1e1e3a] rounded-xl hover:border-[#2193b0]/40 transition-colors group"
           >
-            {/* Cover */}
-            <div className="w-20 sm:w-24 aspect-[3/4] rounded-lg bg-[#1e1e3a] border border-[#2a2a4a] flex-shrink-0 flex items-center justify-center overflow-hidden">
+            <div className="w-16 h-24 sm:w-20 sm:h-28 rounded-lg bg-[#1e1e3a] border border-[#2a2a4a] flex-shrink-0 flex items-center justify-center overflow-hidden">
               {novel.CoverURL ? (
                 <img src={novel.CoverURL} alt="" className="w-full h-full object-cover" />
               ) : (
-                <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
               )}
             </div>
-
-            {/* Info */}
             <div className="min-w-0 flex-1">
-              <h2 className="text-base font-semibold text-white group-hover:text-violet-400 transition-colors line-clamp-2">
+              <h3 className="text-sm font-semibold text-white group-hover:text-[#6dd5ed] transition-colors line-clamp-2 leading-snug">
                 {novel.Title}
-              </h2>
-              {novel.AltTitle && (
-                <p className="text-xs text-gray-500 mt-0.5">{novel.AltTitle}</p>
-              )}
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs text-gray-400">
-                <span className={`px-1.5 py-0.5 rounded ${
+              </h3>
+              <p className="text-[10px] text-gray-500 mt-0.5 truncate">{novel.AltTitle}</p>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1.5 text-[10px] text-gray-400">
+                <span className={`px-1 py-0.5 rounded ${
                   novel.Status === "ongoing" ? "bg-green-900/40 text-green-400" : "bg-blue-900/40 text-blue-400"
                 }`}>
                   {novel.Status}
                 </span>
-                <span>{novel.Views.toLocaleString()} Views</span>
-                <span>{novel.Chapters} Chapters</span>
-                <span>{novel.Readers} Readers</span>
+                <span>{novel.Views.toLocaleString()}v</span>
+                <span>{novel.Chapters}ch</span>
+                {novel.Rating > 0 && <span>★{novel.Rating.toFixed(1)}</span>}
+              </div>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5 text-[10px] text-gray-500">
+                <span>{novel.Readers} readers</span>
                 <span>{novel.Chars}</span>
-                {novel.Rating > 0 && <span>★ {novel.Rating.toFixed(1)}</span>}
-                <span>AI {novel.AIPercent}</span>
+                {novel.AIPercent !== "0%" && <span>AI {novel.AIPercent}</span>}
               </div>
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {novel.Genres.map((g) => (
-                  <button
-                    key={g.ID}
-                    onClick={(e) => { e.preventDefault(); setGenre(g.Slug); setPage(1); }}
-                    className="text-xs px-2 py-0.5 rounded-full bg-violet-900/40 text-violet-300 border border-violet-800/30 hover:bg-violet-800/50 transition-colors"
-                  >
+              <div className="flex flex-wrap gap-1 mt-1">
+                {novel.Genres.slice(0, 3).map((g) => (
+                  <span key={g.ID} className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#2193b0]/10 text-[#6dd5ed]/80 border border-[#2193b0]/20">
                     {g.Name}
-                  </button>
+                  </span>
                 ))}
-              </div>
-              <p className="text-sm text-gray-500 mt-2 line-clamp-2 leading-relaxed">
-                {novel.Description}
-              </p>
-              <div className="mt-2">
-                <span className="text-xs text-violet-400 hover:text-violet-300 transition-colors">
-                  Novel Details →
-                </span>
               </div>
             </div>
           </Link>
@@ -254,7 +237,7 @@ export default function NovelListPage() {
       {/* Pagination */}
       <div className="flex items-center justify-center gap-2 mt-8">
         <button
-          onClick={() => setPage(Math.max(1, page - 1))}
+          onClick={() => fetchData(Math.max(1, page - 1))}
           disabled={page <= 1}
           className="px-3 py-1.5 text-sm rounded-lg bg-[#1e1e3a] text-gray-300 hover:bg-[#2a2a4a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
@@ -262,37 +245,33 @@ export default function NovelListPage() {
         </button>
 
         {page > 2 && (
-          <button onClick={() => setPage(1)} className="px-3 py-1.5 text-sm rounded-lg bg-[#1e1e3a] text-gray-400 hover:text-white transition-colors">
+          <button onClick={() => fetchData(1)} className="px-3 py-1.5 text-sm rounded-lg bg-[#1e1e3a] text-gray-400 hover:text-white transition-colors">
             1
           </button>
         )}
         {page > 3 && <span className="text-gray-600 text-sm">...</span>}
-
         {page > 1 && (
-          <button onClick={() => setPage(page - 1)} className="px-3 py-1.5 text-sm rounded-lg bg-[#1e1e3a] text-gray-400 hover:text-white transition-colors">
+          <button onClick={() => fetchData(page - 1)} className="px-3 py-1.5 text-sm rounded-lg bg-[#1e1e3a] text-gray-400 hover:text-white transition-colors">
             {page - 1}
           </button>
         )}
-
-        <span className="px-3 py-1.5 text-sm rounded-lg bg-violet-600 text-white font-medium">
+        <span className="px-3 py-1.5 text-sm rounded-lg bg-[#2193b0] text-white font-medium">
           {page}
         </span>
-
         {page < totalPages && (
-          <button onClick={() => setPage(page + 1)} className="px-3 py-1.5 text-sm rounded-lg bg-[#1e1e3a] text-gray-400 hover:text-white transition-colors">
+          <button onClick={() => fetchData(page + 1)} className="px-3 py-1.5 text-sm rounded-lg bg-[#1e1e3a] text-gray-400 hover:text-white transition-colors">
             {page + 1}
           </button>
         )}
-
         {page < totalPages - 2 && <span className="text-gray-600 text-sm">...</span>}
         {page < totalPages - 1 && (
-          <button onClick={() => setPage(totalPages)} className="px-3 py-1.5 text-sm rounded-lg bg-[#1e1e3a] text-gray-400 hover:text-white transition-colors">
+          <button onClick={() => fetchData(totalPages)} className="px-3 py-1.5 text-sm rounded-lg bg-[#1e1e3a] text-gray-400 hover:text-white transition-colors">
             {totalPages}
           </button>
         )}
 
         <button
-          onClick={() => setPage(Math.min(totalPages, page + 1))}
+          onClick={() => fetchData(Math.min(totalPages, page + 1))}
           disabled={page >= totalPages}
           className="px-3 py-1.5 text-sm rounded-lg bg-[#1e1e3a] text-gray-300 hover:bg-[#2a2a4a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >

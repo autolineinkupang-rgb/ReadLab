@@ -17,7 +17,7 @@ export default function SectionHeader({ title, href, tabs }: SectionHeaderProps)
               <button
                 key={tab.label}
                 className={`px-3 py-1 text-xs rounded-md transition-colors ${
-                  tab.active ? "bg-violet-600 text-white" : "text-gray-400 hover:text-white"
+                  tab.active ? "bg-[#2193b0] text-white" : "text-gray-400 hover:text-white"
                 }`}
               >
                 {tab.label}
@@ -27,7 +27,7 @@ export default function SectionHeader({ title, href, tabs }: SectionHeaderProps)
         )}
       </div>
       {href && (
-        <Link href={href} className="text-sm text-violet-400 hover:text-violet-300 transition-colors">
+        <Link href={href} className="text-sm text-[#2193b0] hover:text-[#6dd5ed] transition-colors">
           See More →
         </Link>
       )}

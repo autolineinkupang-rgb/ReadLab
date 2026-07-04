@@ -20,10 +20,10 @@ export default function UpdateItem({ title, chapter, chapterHref, novelHref, has
         </div>
       )}
       <div className="min-w-0 flex-1">
-        <Link href={novelHref} className="text-sm text-gray-200 hover:text-violet-400 transition-colors line-clamp-1">
+        <Link href={novelHref} className="text-sm text-gray-200 hover:text-[#6dd5ed] transition-colors line-clamp-1">
           {title}
         </Link>
-        <Link href={chapterHref} className="text-xs text-violet-400 hover:text-violet-300 transition-colors block mt-0.5">
+        <Link href={chapterHref} className="text-xs text-[#2193b0] hover:text-[#6dd5ed] transition-colors block mt-0.5">
           {chapter}
         </Link>
       </div>
