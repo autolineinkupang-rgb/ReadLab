@@ -150,5 +150,42 @@ export const stats = {
 
 // Health
 export const health = {
-  check: () => fetcher<{ status: string }>("/health"),
+	check: () => fetcher<{ status: string }>("/health"),
+};
+
+// Import (protected)
+export const importer = {
+	search: (q: string) => fetcher<{ data: { id: string; title: string; url: string; image: string }[] }>(`/novels/import/search?q=${encodeURIComponent(q)}`),
+	import: (sourceID: string, withChapters?: boolean) =>
+		fetcher<{ data: any }>("/novels/import", {
+			method: "POST",
+			body: JSON.stringify({ source_id: sourceID, with_chapters: withChapters ?? false }),
+		}),
+};
+
+// Admin novels (protected)
+export const adminNovels = {
+	create: (data: any) =>
+		fetcher<{ data: any }>("/novels", {
+			method: "POST",
+			body: JSON.stringify(data),
+		}),
+	update: (id: number | string, data: any) =>
+		fetcher<{ data: any }>(`/novels/${id}`, {
+			method: "PUT",
+			body: JSON.stringify(data),
+		}),
+	delete: (id: number | string) =>
+		fetcher<{ message: string }>(`/novels/${id}`, {
+			method: "DELETE",
+		}),
+};
+
+// Admin requests (protected)
+export const adminRequests = {
+	review: (id: number | string, status: string) =>
+		fetcher<any>(`/requests/${id}`, {
+			method: "PUT",
+			body: JSON.stringify({ status }),
+		}),
 };

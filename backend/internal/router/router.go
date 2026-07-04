@@ -72,10 +72,23 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string) *gin.Engine {
 
 		requestHandler := handler.NewRequestHandler(db)
 		protected.POST("/requests", requestHandler.Create)
+		protected.PUT("/requests/:id", requestHandler.Review)
 
 		libraryHandler := handler.NewLibraryHandler(db)
 		protected.GET("/library", libraryHandler.Get)
+
+		protected.POST("/novels", novelHandler.Create)
+		protected.PUT("/novels/:id", novelHandler.Update)
+		protected.DELETE("/novels/:id", novelHandler.Delete)
+
+		importerHandler := handler.NewImporterHandler(db)
+		protected.POST("/novels/import", importerHandler.Import)
 	}
+
+	api.GET("/novels/import/search", func(c *gin.Context) {
+		impHandler := handler.NewImporterHandler(db)
+		impHandler.Search(c)
+	})
 
 	return r
 }

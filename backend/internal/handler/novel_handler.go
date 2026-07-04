@@ -223,3 +223,186 @@ func (h *NovelHandler) Recommendations(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"data": novels})
 }
+
+type CreateNovelRequest struct {
+	Title       string   `json:"title" binding:"required"`
+	AltTitle    string   `json:"alt_title"`
+	Author      string   `json:"author"`
+	Status      string   `json:"status"`
+	Description string   `json:"description"`
+	CoverURL    string   `json:"cover_url"`
+	GenreIDs    []uint   `json:"genre_ids"`
+}
+
+func (h *NovelHandler) Create(c *gin.Context) {
+	var req CreateNovelRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	slug := generateSlug(req.Title)
+
+	novel := model.Novel{
+		Title:       req.Title,
+		AltTitle:    req.AltTitle,
+		Slug:        slug,
+		Author:      req.Author,
+		AuthorSlug:  generateSlug(req.Author),
+		Status:      req.Status,
+		Description: req.Description,
+		CoverURL:    req.CoverURL,
+	}
+
+	if novel.Status == "" {
+		novel.Status = "ongoing"
+	}
+
+	var genres []model.Genre
+	if len(req.GenreIDs) > 0 {
+		h.DB.Where("id IN ?", req.GenreIDs).Find(&genres)
+	}
+
+	err := h.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&novel).Error; err != nil {
+			return err
+		}
+		if len(genres) > 0 {
+			if err := tx.Model(&novel).Association("Genres").Append(genres); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	h.DB.Preload("Genres").First(&novel, novel.ID)
+	c.JSON(http.StatusCreated, gin.H{"data": novel})
+}
+
+type UpdateNovelRequest struct {
+	Title       string   `json:"title"`
+	AltTitle    string   `json:"alt_title"`
+	Author      string   `json:"author"`
+	Status      string   `json:"status"`
+	Description string   `json:"description"`
+	CoverURL    string   `json:"cover_url"`
+	GenreIDs    []uint   `json:"genre_ids"`
+}
+
+func (h *NovelHandler) Update(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+
+	var novel model.Novel
+	if err := h.DB.Preload("Genres").First(&novel, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "novel not found"})
+		return
+	}
+
+	var req UpdateNovelRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	updates := map[string]interface{}{}
+	if req.Title != "" {
+		updates["title"] = req.Title
+		updates["slug"] = generateSlug(req.Title)
+	}
+	if req.AltTitle != "" {
+		updates["alt_title"] = req.AltTitle
+	}
+	if req.Author != "" {
+		updates["author"] = req.Author
+		updates["author_slug"] = generateSlug(req.Author)
+	}
+	if req.Status != "" {
+		updates["status"] = req.Status
+	}
+	if req.Description != "" {
+		updates["description"] = req.Description
+	}
+	if req.CoverURL != "" {
+		updates["cover_url"] = req.CoverURL
+	}
+
+	err = h.DB.Transaction(func(tx *gorm.DB) error {
+		if len(updates) > 0 {
+			if err := tx.Model(&novel).Updates(updates).Error; err != nil {
+				return err
+			}
+		}
+		if req.GenreIDs != nil {
+			var genres []model.Genre
+			if len(req.GenreIDs) > 0 {
+				tx.Where("id IN ?", req.GenreIDs).Find(&genres)
+			}
+			if err := tx.Model(&novel).Association("Genres").Replace(genres); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	h.DB.Preload("Genres").First(&novel, novel.ID)
+	c.JSON(http.StatusOK, gin.H{"data": novel})
+}
+
+func (h *NovelHandler) Delete(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+
+	var novel model.Novel
+	if err := h.DB.First(&novel, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "novel not found"})
+		return
+	}
+
+	err = h.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&novel).Association("Genres").Clear(); err != nil {
+			return err
+		}
+		if err := tx.Delete(&novel).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "novel deleted"})
+}
+
+func generateSlug(s string) string {
+	slug := strings.ToLower(s)
+	slug = strings.ReplaceAll(slug, " ", "-")
+	replacer := strings.NewReplacer(
+		".", "", ",", "", "!", "", "?", "", "'", "", "\"", "",
+		":", "", ";", "", "(", "", ")", "", "[", "", "]", "",
+		"{", "", "}", "", "/", "-", "&", "and",
+	)
+	slug = replacer.Replace(slug)
+	slug = strings.Trim(slug, "-")
+	if len(slug) > 200 {
+		slug = slug[:200]
+	}
+	slug = strings.TrimSuffix(slug, "-")
+	return slug
+}
