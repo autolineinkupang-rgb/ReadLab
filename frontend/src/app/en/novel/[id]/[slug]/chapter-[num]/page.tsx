@@ -70,12 +70,14 @@ export default function ChapterReaderPage() {
 
     const chList = generateMockChapters(totalChapters, chapterNum);
 
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setChapter(ch);
       setNovel(nv);
       setChapters(chList);
       setLoading(false);
     }, 200);
+
+    return () => clearTimeout(timer);
   }, [id, chapterNum, slug]);
 
   const handleAddToLibrary = useCallback(() => {

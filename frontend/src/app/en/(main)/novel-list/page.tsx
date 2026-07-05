@@ -196,7 +196,7 @@ export default function NovelListPage() {
               </div>
               <div className="flex flex-wrap gap-1 mt-1">
                 {novel.Genres.slice(0, 3).map((g) => (
-                  <span key={g.ID} className="text-[9px] px-1.5 py-0.5 rounded-full bg-accent/10 text-accent-light/80 border border-accent/20">
+                  <span key={g.Slug} className="text-[9px] px-1.5 py-0.5 rounded-full bg-accent/10 text-accent-light/80 border border-accent/20">
                     {g.Name}
                   </span>
                 ))}

@@ -2,16 +2,19 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { navSections as sections } from "@/lib/navigation";
 import { SearchIcon } from "@/components/ui/Icons";
 
 export default function Sidebar() {
   const [search, setSearch] = useState("");
+  const [hydrated, setHydrated] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
-  const isActive = (href: string) => pathname?.startsWith(href) ?? false;
+  useEffect(() => { setHydrated(true); }, []);
+
+  const isActive = (href: string) => hydrated ? (pathname?.startsWith(href) ?? false) : false;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

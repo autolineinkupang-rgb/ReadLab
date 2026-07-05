@@ -144,7 +144,7 @@ export default function NovelDetailPage() {
           <div className="flex flex-wrap gap-1.5 mt-4">
             {novel.Genres.map((g) => (
               <Link
-                key={g.ID}
+                key={g.Slug}
                 href={`/en/novel-list?genre=${g.Slug}`}
                 className="text-xs px-2.5 py-1 rounded-full bg-violet-900/40 text-violet-300 border border-violet-800/30 hover:bg-violet-800/50 transition-colors"
               >

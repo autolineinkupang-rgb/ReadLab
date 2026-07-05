@@ -293,7 +293,7 @@ export default function ChapterReader({ chapter, novel, chapters, loading, error
         <div className="max-w-3xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             {prevHref ? (
-              <Link href={prevHref} className="flex items-center gap-1.5 px-4 py-2 rounded-lg border text-sm font-medium transition-colors hover:bg-card-hover" style={{ borderColor: siteTheme.border, color: siteTheme.text }}>
+              <Link href={prevHref} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${loading ? "opacity-40 pointer-events-none" : "hover:bg-card-hover"}`} style={{ borderColor: siteTheme.border, color: siteTheme.text }}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                 Prev
               </Link>
@@ -301,11 +301,11 @@ export default function ChapterReader({ chapter, novel, chapters, loading, error
               <div className="px-4 py-2 opacity-40" />
             )}
             <div className="text-center">
-              <p className="font-semibold text-sm">Ch. {chapter.number} / {novel.totalChapters}</p>
+              <p className="font-semibold text-sm">Ch. {chapter?.number || "?"} / {novel?.totalChapters || "?"}</p>
               <p className="text-xs" style={{ color: siteTheme.muted }}>{progress}%</p>
             </div>
             {nextHref ? (
-              <Link href={nextHref} className="flex items-center gap-1.5 px-4 py-2 rounded-lg border text-sm font-medium transition-colors hover:bg-card-hover" style={{ borderColor: siteTheme.border, color: siteTheme.text }}>
+              <Link href={nextHref} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${loading ? "opacity-40 pointer-events-none" : "hover:bg-card-hover"}`} style={{ borderColor: siteTheme.border, color: siteTheme.text }}>
                 Next
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
               </Link>
@@ -392,9 +392,9 @@ export default function ChapterReader({ chapter, novel, chapters, loading, error
               <div className="mt-4 h-px w-full opacity-15" style={{ backgroundColor: textColor }} />
             </header>
 
-            <div className={`leading-relaxed space-y-5 ${fontClasses[fontFamily]}`} style={{ fontSize: `${fontSize}px`, lineHeight: `${lineHeight}`, color: textColor, backgroundColor: bgColor, padding: "1rem", borderRadius: "0.5rem" }}>
+            <div key={chapter.number} className={`leading-relaxed space-y-5 ${fontClasses[fontFamily]}`} style={{ fontSize: `${fontSize}px`, lineHeight: `${lineHeight}`, color: textColor, backgroundColor: bgColor, padding: "1rem", borderRadius: "0.5rem" }}>
               {chapter.content.split("\n\n").map((para, i) => (
-                <p key={i} className="text-justify">{para}</p>
+                <p key={`${i}-${para.slice(0, 20)}`} className="text-justify">{para}</p>
               ))}
             </div>
 

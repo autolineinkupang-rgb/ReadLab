@@ -14,11 +14,14 @@ export default function Navbar() {
   const [showSearch, setShowSearch] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showMore, setShowMore] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const adminRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
+
+  useEffect(() => { setHydrated(true); }, []);
 
   useEffect(() => {
     if (showSearch && searchRef.current) searchRef.current.focus();
@@ -59,7 +62,7 @@ export default function Navbar() {
     }
   };
 
-  const isActive = (href: string) => pathname?.startsWith(href) ?? false;
+  const isActive = (href: string) => hydrated ? (pathname?.startsWith(href) ?? false) : false;
 
   const sectionLinks = (links: { href: string; label: string }[]) =>
     links.map((link) => (
