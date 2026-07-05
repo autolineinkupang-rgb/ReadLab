@@ -5,15 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { profile as profileApi } from "@/lib/api";
-
-interface ProfileData {
-  id: number;
-  username: string;
-  display_name: string;
-  avatar_url: string;
-  tickets: number;
-  created_at: string;
-}
+import { ProfileData } from "@/types";
 
 const tabs = ["overview", "library", "votes", "requests"];
 
