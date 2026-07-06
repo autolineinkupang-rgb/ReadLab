@@ -6,13 +6,19 @@ import NovelCard from "@/components/NovelCard";
 import SectionHeader from "@/components/SectionHeader";
 import NovelCardSmall from "@/components/NovelCardSmall";
 import UpdateItem from "@/components/UpdateItem";
-import { updates as updatesApi } from "@/lib/api";
+import { novels, updates as updatesApi, news as newsApi, leaderboard } from "@/lib/api";
 import Card from "@/components/ui/Card";
 import GenreTag from "@/components/ui/GenreTag";
-import { MOCK_NEW_NOVELS, MOCK_RANKING, MOCK_UPDATES, MOCK_RANDOM, MOCK_SPENDERS } from "@/lib/mockData";
+import { Novel } from "@/types";
 
 export default function Home() {
-  const [recentUpdates, setRecentUpdates] = useState(MOCK_UPDATES);
+  const [recentUpdates, setRecentUpdates] = useState<any[]>([]);
+  const [newNovels, setNewNovels] = useState<any[]>([]);
+  const [ranking, setRanking] = useState<any[]>([]);
+  const [recommendations, setRecommendations] = useState<Novel[]>([]);
+  const [randomNovels, setRandomNovels] = useState<Novel[]>([]);
+  const [newsItems, setNewsItems] = useState<any[]>([]);
+  const [topSpenders, setTopSpenders] = useState<any[]>([]);
 
   useEffect(() => {
     updatesApi.recent(6)
@@ -27,6 +33,30 @@ export default function Home() {
           })));
         }
       })
+      .catch(() => {});
+
+    novels.list({ sort: "created_at", order: "desc", limit: 10 })
+      .then((res) => { if (res.data?.length) setNewNovels(res.data); })
+      .catch(() => {});
+
+    novels.list({ sort: "views", order: "desc", limit: 5 })
+      .then((res) => { if (res.data?.length) setRanking(res.data); })
+      .catch(() => {});
+
+    novels.recommendations()
+      .then((res) => { if (res.data?.length) setRecommendations(res.data); })
+      .catch(() => {});
+
+    novels.random(6)
+      .then((res) => { if (res.data?.length) setRandomNovels(res.data); })
+      .catch(() => {});
+
+    newsApi.list({ limit: 3 })
+      .then((res) => { if (res.data?.length) setNewsItems(res.data); })
+      .catch(() => {});
+
+    leaderboard.get("tickets")
+      .then((res) => { if (res.data?.length) setTopSpenders(res.data.slice(0, 3)); })
       .catch(() => {});
   }, []);
 
@@ -49,19 +79,33 @@ export default function Home() {
       <section>
         <SectionHeader title="New Novels" href="/en/novel-list" />
         <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-          {MOCK_NEW_NOVELS.map((novel) => (
-            <NovelCard key={novel.href} {...novel} />
+          {newNovels.map((novel) => (
+            <NovelCard
+              key={novel.ID}
+              title={novel.Title}
+              genre={novel.Genres?.[0]?.Slug || "action"}
+              chapters={novel.Chapters}
+              rating={novel.Rating?.toString()}
+              href={`/en/novel/${novel.ID}/${novel.Slug}`}
+            />
           ))}
         </div>
       </section>
 
-      {/* Novel Ranking + Community/Trending */}
+      {/* Novel Ranking */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-2">
           <SectionHeader title="Novel Ranking" href="/en/ranking/daily" tabs={[{ label: "Daily", active: true }, { label: "Weekly" }, { label: "Monthly" }]} />
           <Card className="space-y-1">
-            {MOCK_RANKING.map((novel) => (
-              <NovelCardSmall key={novel.rank} {...novel} />
+            {ranking.map((novel, i) => (
+              <NovelCardSmall
+                key={novel.ID}
+                rank={i + 1}
+                title={novel.Title}
+                views={novel.Views?.toLocaleString()}
+                rating={novel.Rating?.toFixed(1)}
+                href={`/en/novel/${novel.ID}/${novel.Slug}`}
+              />
             ))}
           </Card>
           <div className="flex gap-3 mt-4">
@@ -84,27 +128,31 @@ export default function Home() {
                 </svg>
               </div>
               <div className="min-w-0 flex-1">
-                <Link href="/en/novel/11/qa-douluo" className="text-base font-semibold text-white hover:text-accent-light transition-colors line-clamp-2">
-                  Question and Answer Douluo: Tang San&apos;s Time Travel Revealed, Tang Hao Breaks Through Defense
+                <Link href={recommendations[0] ? `/en/novel/${recommendations[0].ID}/${recommendations[0].Slug}` : "#"} className="text-base font-semibold text-white hover:text-accent-light transition-colors line-clamp-2">
+                  {recommendations[0]?.Title || "Loading..."}
                 </Link>
-                <div className="flex items-center gap-3 mt-1 text-sm text-gray-400">
-                  <span>★ 1.7</span>
-                  <span>📚 493</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {["action", "adventure", "fan-fiction", "fantasy"].map((tag) => (
-                    <GenreTag key={tag} label={tag} />
-                  ))}
-                </div>
-                <p className="text-sm text-gray-400 mt-2 line-clamp-3 leading-relaxed">
-                  Transmigrating into Douluo Continent, Song Ye becomes a member of the Spirit Hall team. During the Soul Master Competition, a [Douluo Quiz Game] suddenly appears!
-                </p>
-                <Link
-                  href="/en/novel/11/qa-douluo/continue"
-                  className="inline-block mt-3 px-4 py-1.5 bg-accent hover:bg-accent-dark text-white text-sm rounded-lg transition-colors"
-                >
-                  START READING
-                </Link>
+                {recommendations[0] && (
+                  <>
+                    <div className="flex items-center gap-3 mt-1 text-sm text-gray-400">
+                      <span>★ {recommendations[0].Rating?.toFixed(1)}</span>
+                      <span>📚 {recommendations[0].Views}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {recommendations[0].Genres?.slice(0, 4).map((g: any) => (
+                        <GenreTag key={g.Slug} label={g.Slug} />
+                      ))}
+                    </div>
+                    <p className="text-sm text-gray-400 mt-2 line-clamp-3 leading-relaxed">
+                      {recommendations[0].Description}
+                    </p>
+                    <Link
+                      href={`/en/novel/${recommendations[0].ID}/${recommendations[0].Slug}`}
+                      className="inline-block mt-3 px-4 py-1.5 bg-accent hover:bg-accent-dark text-white text-sm rounded-lg transition-colors"
+                    >
+                      START READING
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </Card>
@@ -115,42 +163,18 @@ export default function Home() {
       <section>
         <SectionHeader title="Recommendations" href="/en/recommendation" />
         <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-          {MOCK_NEW_NOVELS.slice(0, 6).map((novel, i) => (
-            <NovelCard key={i} {...novel} compact />
+          {recommendations.slice(0, 6).map((novel) => (
+            <NovelCard
+              key={novel.ID}
+              title={novel.Title}
+              genre={novel.Genres?.[0]?.Slug || "action"}
+              chapters={novel.Chapters}
+              rating={novel.Rating?.toString()}
+              href={`/en/novel/${novel.ID}/${novel.Slug}`}
+              compact
+            />
           ))}
         </div>
-        <Card className="mt-4 p-5">
-          <div className="flex gap-4">
-            <div className="w-20 sm:w-28 aspect-[3/4] rounded-lg bg-card-hover border border-line-light flex-shrink-0 flex items-center justify-center">
-              <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <div className="min-w-0 flex-1">
-              <Link href="/en/novel/featured-rec" className="text-base font-semibold text-white hover:text-accent-light transition-colors line-clamp-2">
-                Douluo Continent: Soul Beasts Extinct, I Created My Own Soul Rings
-              </Link>
-              <div className="flex items-center gap-3 mt-1 text-sm text-gray-400">
-                <span>★ 4.1</span>
-                <span>📚 398</span>
-              </div>
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {["fan-fiction", "fantasy", "romance"].map((tag) => (
-                  <GenreTag key={tag} label={tag} />
-                ))}
-              </div>
-              <p className="text-sm text-gray-400 mt-2 line-clamp-3 leading-relaxed">
-                The sky collapsed on Douluo Continent! Overnight, all the soul beasts in the world were wiped out!
-              </p>
-              <Link
-                href="/en/novel/featured-rec/continue"
-                className="inline-block mt-3 px-4 py-1.5 bg-accent hover:bg-accent-dark text-white text-sm rounded-lg transition-colors"
-              >
-                START READING
-              </Link>
-            </div>
-          </div>
-        </Card>
       </section>
 
       {/* Bug Reports / Patreon */}
@@ -187,19 +211,21 @@ export default function Home() {
           <div>
             <SectionHeader title="Latest News" href="/en/news" />
             <Card className="space-y-3">
-              <Link href="/en/news/428" className="block text-sm text-gray-200 hover:text-accent-light transition-colors">🎉 16th Giveaway Winners 🎉</Link>
-              <Link href="/en/news/427" className="block text-sm text-gray-200 hover:text-accent-light transition-colors">🎉 Our 16th Giveaway is LIVE! 🎉</Link>
-              <Link href="/en/news/426" className="block text-sm text-gray-200 hover:text-accent-light transition-colors">Version 1.13.3 - New Source Management & Bug Fixes!</Link>
+              {newsItems.map((item) => (
+                <Link key={item.ID} href={`/en/news/${item.ID}`} className="block text-sm text-gray-200 hover:text-accent-light transition-colors">
+                  {item.Title}
+                </Link>
+              ))}
             </Card>
           </div>
 
           <div>
-            <SectionHeader title="Daily Top Spenders" href="/en/leaderboard" />
+            <SectionHeader title="Top Spenders" href="/en/leaderboard" />
             <Card className="space-y-3">
-              {MOCK_SPENDERS.map((spender, i) => (
-                <Link key={i} href={spender.href} className="flex items-center justify-between group">
-                  <span className="text-sm text-gray-200 group-hover:text-accent-light transition-colors">{spender.name}</span>
-                  <span className="text-xs text-gray-500">{spender.tickets} Tickets</span>
+              {topSpenders.map((spender, i) => (
+                <Link key={i} href={`/en/profile/${spender.ID}`} className="flex items-center justify-between group">
+                  <span className="text-sm text-gray-200 group-hover:text-accent-light transition-colors">{spender.Username || spender.Name}</span>
+                  <span className="text-xs text-gray-500">{spender.Tickets?.toFixed(2)} Tickets</span>
                 </Link>
               ))}
             </Card>
@@ -211,8 +237,16 @@ export default function Home() {
       <section>
         <SectionHeader title="Random Novels" href="/en/random-novels" />
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {MOCK_RANDOM.map((novel, i) => (
-            <NovelCard key={i} {...novel} compact />
+          {randomNovels.map((novel) => (
+            <NovelCard
+              key={novel.ID}
+              title={novel.Title}
+              genre={novel.Genres?.[0]?.Slug || "action"}
+              chapters={novel.Chapters}
+              rating={novel.Rating?.toString()}
+              href={`/en/novel/${novel.ID}/${novel.Slug}`}
+              compact
+            />
           ))}
         </div>
       </section>

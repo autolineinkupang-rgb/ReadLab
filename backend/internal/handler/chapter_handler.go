@@ -10,6 +10,8 @@ import (
 	"wtr-lab-clone/backend/internal/model"
 )
 
+var ErrInsufficientTickets = errors.New("insufficient tickets")
+
 type ChapterHandler struct {
 	DB *gorm.DB
 }
@@ -55,13 +57,17 @@ func (h *ChapterHandler) Get(c *gin.Context) {
 			return
 		}
 
-		if user.Tickets < float64(chapter.TicketCost) {
-			c.JSON(http.StatusPaymentRequired, gin.H{"error": "insufficient tickets"})
-			return
-		}
-
 		err = h.DB.Transaction(func(tx *gorm.DB) error {
-			if err := tx.Model(&user).Update("tickets", user.Tickets-float64(chapter.TicketCost)).Error; err != nil {
+			var txUser model.User
+			if err := tx.First(&txUser, user.ID).Error; err != nil {
+				return err
+			}
+
+			if txUser.Tickets < float64(chapter.TicketCost) {
+				return ErrInsufficientTickets
+			}
+
+			if err := tx.Model(&txUser).Update("tickets", gorm.Expr("tickets - ?", chapter.TicketCost)).Error; err != nil {
 				return err
 			}
 
@@ -80,6 +86,10 @@ func (h *ChapterHandler) Get(c *gin.Context) {
 			return nil
 		})
 		if err != nil {
+			if errors.Is(err, ErrInsufficientTickets) {
+				c.JSON(http.StatusPaymentRequired, gin.H{"error": "insufficient tickets"})
+				return
+			}
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to process ticket payment"})
 			return
 		}
