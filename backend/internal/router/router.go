@@ -27,6 +27,7 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 	api.GET("/novels/random", novelHandler.Random)
 	api.GET("/novels/:id", novelHandler.Get)
 	api.GET("/novels/:id/chapters", novelHandler.Chapters)
+	api.GET("/novels/:id/chapters/:num", middleware.OptionalAuth(jwtSecret), novelHandler.GetChapterByNum)
 
 	chapterHandler := handler.NewChapterHandler(db)
 	api.GET("/chapters/:id", middleware.OptionalAuth(jwtSecret), chapterHandler.Get)
@@ -71,6 +72,11 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 	userHandler := handler.NewUserHandler(db)
 	api.GET("/profile/:id", userHandler.GetProfile)
 
+	reviewHandler := handler.NewReviewHandler(db)
+	api.GET("/novels/:id/reviews", reviewHandler.List)
+
+	readingHandler := handler.NewReadingHandler(db)
+
 	protected := api.Group("")
 	protected.Use(middleware.AuthRequired(jwtSecret))
 	{
@@ -82,6 +88,10 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 
 		libraryHandler := handler.NewLibraryHandler(db)
 		protected.GET("/library", libraryHandler.Get)
+
+		protected.POST("/novels/:id/reviews", reviewHandler.Create)
+		protected.POST("/novels/:id/chapters/:num/read", readingHandler.TrackRead)
+		protected.GET("/novels/:id/my-progress", readingHandler.Progress)
 	}
 
 	adminGroup := protected.Group("")
@@ -96,9 +106,20 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 
 		importerHandler := handler.NewImporterHandler(db)
 		adminGroup.POST("/novels/import", importerHandler.Import)
+
+		scraperHandler := handler.NewScraperHandler(db)
+		adminGroup.POST("/novels/scrape", scraperHandler.Scrape)
+		adminGroup.POST("/novels/scrape/import", scraperHandler.Import)
+
+		lncrawlHandler := handler.NewLncrawlHandler(db)
+		adminGroup.POST("/novels/lncrawl", lncrawlHandler.Crawl)
 	}
 
-	api.GET("/novels/import/search", func(c *gin.Context) {
+	translateHandler := handler.NewTranslateHandler()
+	api.POST("/translate", translateHandler.Translate)
+
+	importSearchLimiter := middleware.NewRateLimiter(30, 1*time.Minute)
+	api.GET("/novels/import/search", importSearchLimiter.Middleware(), func(c *gin.Context) {
 		impHandler := handler.NewImporterHandler(db)
 		impHandler.Search(c)
 	})
