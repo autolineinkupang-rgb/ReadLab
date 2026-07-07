@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { novels } from "@/lib/api";
+import { novels, reviews, reading } from "@/lib/api";
+import { stripHtml } from "@/lib/utils";
 import { Novel, Chapter } from "@/types";
 import { MOCK_NOVEL_DETAIL } from "@/lib/mockData";
+import { useAuth } from "@/lib/AuthContext";
+import type { ReviewResponse, RatingSummary } from "@/lib/api";
 
 export default function NovelDetailPage() {
   const params = useParams();
@@ -17,6 +20,17 @@ export default function NovelDetailPage() {
   const [totalChapters, setTotalChapters] = useState(0);
   const [activeTab, setActiveTab] = useState<"about" | "toc" | "reviews" | "recommendations">("about");
   const [loading, setLoading] = useState(true);
+  const [reviewsData, setReviewsData] = useState<ReviewResponse[]>([]);
+  const [ratingSummary, setRatingSummary] = useState<RatingSummary | null>(null);
+  const [myReview, setMyReview] = useState<ReviewResponse | null>(null);
+  const [chapterCount, setChapterCount] = useState(0);
+  const [formRating, setFormRating] = useState(0);
+  const [formHoverRating, setFormHoverRating] = useState(0);
+  const [formContent, setFormContent] = useState("");
+  const [formSubmitting, setFormSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!id) return;
@@ -64,6 +78,25 @@ export default function NovelDetailPage() {
     };
     fetchChapters();
   }, [id, chapterPage, novel?.Chapters]);
+
+  useEffect(() => {
+    if (!id) return;
+    setReviewsLoading(true);
+    Promise.all([
+      reviews.list(parseInt(id)),
+      user ? reading.progress(parseInt(id)) : Promise.resolve(null),
+    ])
+      .then(([reviewsRes, progressRes]) => {
+        setReviewsData(reviewsRes.data);
+        setRatingSummary(reviewsRes.rating_summary);
+        if (progressRes) {
+          setChapterCount(progressRes.chapter_count);
+          setMyReview(progressRes.my_review);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setReviewsLoading(false));
+  }, [id, user]);
 
   if (loading || !novel) {
     return (
@@ -189,7 +222,7 @@ export default function NovelDetailPage() {
       {/* Tab Content */}
       {activeTab === "about" && (
         <div className="bg-card border border-line rounded-xl p-6">
-          <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-line">{novel.Description || "No description available."}</p>
+          <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-line">{stripHtml(novel.Description || "No description available.")}</p>
 
           {/* Details */}
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
@@ -276,8 +309,158 @@ export default function NovelDetailPage() {
       )}
 
       {activeTab === "reviews" && (
-        <div className="bg-card border border-line rounded-xl p-6 text-center text-sm text-gray-500">
-          No reviews yet. Be the first to review!
+        <div className="space-y-6">
+          {/* Rating Summary */}
+          {ratingSummary && ratingSummary.count > 0 && (
+            <div className="bg-card border border-line rounded-xl p-6">
+              <div className="flex flex-col sm:flex-row items-center gap-6">
+                <div className="text-center">
+                  <div className="text-5xl font-bold text-yellow-400">{ratingSummary.average.toFixed(1)}</div>
+                  <div className="text-sm text-gray-500 mt-1">{ratingSummary.count} review{ratingSummary.count !== 1 ? "s" : ""}</div>
+                </div>
+                <div className="flex-1 w-full space-y-1.5">
+                  {[5, 4, 3, 2, 1].map((star) => {
+                    const pct = ratingSummary.count > 0
+                      ? ((ratingSummary.distribution[star] || 0) / ratingSummary.count) * 100
+                      : 0;
+                    return (
+                      <div key={star} className="flex items-center gap-2 text-sm">
+                        <span className="text-yellow-400 w-6 text-right">{star}</span>
+                        <svg className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <div className="flex-1 h-2 bg-card-hover rounded-full overflow-hidden">
+                          <div className="h-full bg-yellow-400 rounded-full" style={{ width: `${pct}%` }} />
+                        </div>
+                        <span className="text-gray-500 w-6 text-right">{ratingSummary.distribution[star] || 0}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Write Review Form */}
+          {user ? (
+            myReview ? (
+              <div className="bg-card border border-line rounded-xl p-6">
+                <p className="text-sm text-green-400 mb-2">You have reviewed this novel.</p>
+                <ReviewCard review={myReview} />
+              </div>
+            ) : chapterCount < 5 ? (
+              <div className="bg-card border border-line rounded-xl p-6 text-center">
+                <p className="text-sm text-gray-500">
+                  Read <strong className="text-yellow-400">{chapterCount}/5</strong> chapters to unlock the review feature.
+                  <span className="block mt-1 text-xs text-gray-600">Continue reading to share your thoughts!</span>
+                </p>
+              </div>
+            ) : (
+              <div className="bg-card border border-line rounded-xl p-6">
+                <h3 className="text-sm font-medium text-gray-200 mb-4">Write Your Review</h3>
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (formRating === 0) { setFormError("Please select a rating"); return; }
+                  if (formContent.trim().length < 10) { setFormError("Review must be at least 10 characters"); return; }
+                  setFormSubmitting(true);
+                  setFormError("");
+                  try {
+                    const res = await reviews.create(parseInt(id), formRating, formContent);
+                    setMyReview(res.data);
+                    setReviewsData((prev) => [res.data, ...prev]);
+                    if (ratingSummary) {
+                      const newCount = ratingSummary.count + 1;
+                      const newAvg = ((ratingSummary.average * ratingSummary.count) + formRating) / newCount;
+                      const newDist = { ...ratingSummary.distribution };
+                      newDist[formRating] = (newDist[formRating] || 0) + 1;
+                      setRatingSummary({ average: newAvg, count: newCount, distribution: newDist });
+                    }
+                    setFormRating(0);
+                    setFormContent("");
+                  } catch (err) {
+                    setFormError(err instanceof Error ? err.message : "Failed to submit review");
+                  } finally {
+                    setFormSubmitting(false);
+                  }
+                }}>
+                  {/* Star Rating */}
+                  <div className="flex items-center gap-1 mb-4">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setFormRating(star)}
+                        onMouseEnter={() => setFormHoverRating(star)}
+                        onMouseLeave={() => setFormHoverRating(0)}
+                        className="p-0.5 transition-transform hover:scale-110"
+                      >
+                        <svg
+                          className={`w-7 h-7 ${
+                            (formHoverRating || formRating) >= star
+                              ? "text-yellow-400"
+                              : "text-gray-600"
+                          }`}
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      </button>
+                    ))}
+                    {formRating > 0 && (
+                      <span className="text-sm text-yellow-400 ml-2">
+                        {formRating === 1 ? "Poor" : formRating === 2 ? "Fair" : formRating === 3 ? "Good" : formRating === 4 ? "Very Good" : "Excellent"}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Textarea */}
+                  <textarea
+                    value={formContent}
+                    onChange={(e) => setFormContent(e.target.value)}
+                    placeholder="Share your thoughts about this novel (min. 10 characters)..."
+                    rows={4}
+                    maxLength={2000}
+                    className="w-full bg-card-hover border border-line-light rounded-lg px-4 py-3 text-sm text-gray-200 outline-none focus:border-accent transition-colors resize-none"
+                  />
+                  <p className="text-xs text-gray-600 mt-1 text-right">{formContent.length}/2000</p>
+
+                  {formError && (
+                    <p className="text-xs text-red-400 mt-2">{formError}</p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={formSubmitting}
+                    className="mt-3 px-6 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                  >
+                    {formSubmitting ? "Submitting..." : "Submit Review"}
+                  </button>
+                </form>
+              </div>
+            )
+          ) : (
+            <div className="bg-card border border-line rounded-xl p-6 text-center">
+              <p className="text-sm text-gray-500">
+                <Link href="/en/login" className="text-violet-400 hover:text-violet-300 transition-colors">Login</Link> to leave a review
+              </p>
+            </div>
+          )}
+
+          {/* Reviews List */}
+          <div className="space-y-3">
+            {reviewsLoading ? (
+              <div className="text-center text-sm text-gray-500 py-8">Loading reviews...</div>
+            ) : reviewsData.length === 0 ? (
+              <div className="bg-card border border-line rounded-xl p-6 text-center text-sm text-gray-500">
+                No reviews yet. Be the first to review!
+              </div>
+            ) : (
+              reviewsData.map((review) => (
+                <ReviewCard key={review.id} review={review} />
+              ))
+            )}
+          </div>
         </div>
       )}
 
@@ -288,4 +471,50 @@ export default function NovelDetailPage() {
       )}
     </div>
   );
+}
+
+function ReviewCard({ review }: { review: ReviewResponse }) {
+  return (
+    <div className="bg-card border border-line rounded-xl p-4">
+      <div className="flex items-start gap-3">
+        <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center text-white text-sm font-bold shrink-0">
+          {(review.user.display_name || review.user.username)[0].toUpperCase()}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-medium text-gray-200">{review.user.display_name || review.user.username}</span>
+            <div className="flex items-center gap-0.5">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <svg
+                  key={star}
+                  className={`w-3.5 h-3.5 ${star <= review.rating ? "text-yellow-400" : "text-gray-600"}`}
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              ))}
+            </div>
+          </div>
+          <p className="text-sm text-gray-300 mt-2 leading-relaxed">{review.content}</p>
+          <p className="text-xs text-gray-600 mt-2">{timeAgo(review.created_at)}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function timeAgo(dateStr: string) {
+  const now = Date.now();
+  const date = new Date(dateStr).getTime();
+  const diff = now - date;
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  const months = Math.floor(days / 30);
+  return `${months}mo ago`;
 }
