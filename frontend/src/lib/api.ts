@@ -68,6 +68,8 @@ export const novels = {
 // Chapters
 export const chapters = {
   get: (id: number | string) => fetcher<any>(`/chapters/${id}`),
+  getByNovel: (novelId: number | string, num: number) =>
+    fetcher<any>(`/novels/${novelId}/chapters/${num}`),
 };
 
 // Ranking
@@ -163,6 +165,29 @@ export const importer = {
 		}),
 };
 
+// Lncrawl (protected)
+export const lncrawl = {
+	crawl: (url: string, maxChapters?: number) =>
+		fetcher<{ data: any }>("/novels/lncrawl", {
+			method: "POST",
+			body: JSON.stringify({ url, max_chapters: maxChapters ?? 0 }),
+		}),
+};
+
+// Web Scraper (protected)
+export const scraper = {
+	scrape: (url: string) =>
+		fetcher<{ data: any }>("/novels/scrape", {
+			method: "POST",
+			body: JSON.stringify({ url }),
+		}),
+	import: (url: string, withContent: boolean) =>
+		fetcher<{ data: any }>("/novels/scrape/import", {
+			method: "POST",
+			body: JSON.stringify({ url, with_content: withContent }),
+		}),
+};
+
 // Admin novels (protected)
 export const adminNovels = {
 	create: (data: any) =>
@@ -181,6 +206,15 @@ export const adminNovels = {
 		}),
 };
 
+// Translation
+export const translateApi = {
+	translate: (text: string, target: string, source?: string) =>
+		fetcher<{ data: string }>("/translate", {
+			method: "POST",
+			body: JSON.stringify({ text, target, source }),
+		}),
+};
+
 // Admin requests (protected)
 export const adminRequests = {
 	review: (id: number | string, status: string) =>
@@ -189,3 +223,46 @@ export const adminRequests = {
 			body: JSON.stringify({ status }),
 		}),
 };
+
+// Reviews
+export const reviews = {
+  list: (novelId: number) =>
+    fetcher<{ data: ReviewResponse[]; rating_summary: RatingSummary }>(`/novels/${novelId}/reviews`),
+  create: (novelId: number, rating: number, content: string) =>
+    fetcher<{ data: ReviewResponse }>(`/novels/${novelId}/reviews`, {
+      method: "POST",
+      body: JSON.stringify({ rating, content }),
+    }),
+};
+
+// Reading tracking
+export const reading = {
+  track: (novelId: number, chapterNum: number) =>
+    fetcher<{ message: string }>(`/novels/${novelId}/chapters/${chapterNum}/read`, {
+      method: "POST",
+    }),
+  progress: (novelId: number) =>
+    fetcher<{ chapter_count: number; can_review: boolean; my_review: ReviewResponse | null }>(
+      `/novels/${novelId}/my-progress`
+    ),
+};
+
+// Types for reviews
+export interface ReviewResponse {
+  id: number;
+  rating: number;
+  content: string;
+  created_at: string;
+  user: {
+    id: number;
+    username: string;
+    display_name: string;
+    avatar_url: string;
+  };
+}
+
+export interface RatingSummary {
+  average: number;
+  count: number;
+  distribution: Record<number, number>;
+}
