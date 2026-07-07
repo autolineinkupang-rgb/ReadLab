@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { stripHtml, splitParagraphs } from "@/lib/utils";
+import { translateApi } from "@/lib/api";
+import { useAuth } from "@/lib/AuthContext";
 
 interface ChapterData {
   number: number;
@@ -17,7 +20,9 @@ interface NovelData {
   title: string;
   coverUrl?: string;
   totalChapters: number;
-  category?: string;
+  description?: string;
+  author?: string;
+  sourceUrl?: string;
 }
 
 interface ChapterReaderProps {
@@ -76,8 +81,12 @@ export default function ChapterReader({ chapter, novel, chapters, loading, error
   const [language, setLanguage] = useState("auto");
   const [translationProvider, setTranslationProvider] = useState("google");
   const [showToc, setShowToc] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [translatedParas, setTranslatedParas] = useState<string[] | null>(null);
+  const { user } = useAuth();
   const contentRef = useRef<HTMLDivElement>(null);
   const speechSynthRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const prevLangRef = useRef(language);
 
   const readerBg = readerBgOptions.find((o) => o.key === readerBgKey) || readerBgOptions[0];
   const siteTheme = siteThemes[siteThemeKey];
@@ -85,13 +94,20 @@ export default function ChapterReader({ chapter, novel, chapters, loading, error
   const bgColor = readerBg.bg;
 
   useEffect(() => {
+    if (!chapter) return;
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
     setShowToc(false);
-  }, [chapter?.number]);
+
+    if (user && novel?.id && chapter.number) {
+      import("@/lib/api").then(({ reading }) => {
+        reading.track(novel.id, chapter.number).catch(() => {});
+      });
+    }
+  }, [chapter?.number, user, novel?.id]);
 
   useEffect(() => {
     if (!isSpeaking) return;
-    const utterance = new SpeechSynthesisUtterance(chapter?.content || "");
+    const utterance = new SpeechSynthesisUtterance(stripHtml(chapter?.content || ""));
     utterance.rate = speechSpeed;
     utterance.lang = language === "auto" ? "en-US" : language;
     speechSynthRef.current = utterance;
@@ -101,6 +117,63 @@ export default function ChapterReader({ chapter, novel, chapters, loading, error
       window.speechSynthesis.cancel();
     };
   }, [isSpeaking, chapter?.content, speechSpeed, language]);
+
+  const contentParas = splitParagraphs(stripHtml(chapter?.content || ""));
+  const displayParas = translatedParas || contentParas;
+
+  useEffect(() => {
+    if (language === "auto" || language === prevLangRef.current) return;
+    prevLangRef.current = language;
+    if (!chapter?.content || language === "en-US") {
+      setTranslatedParas(null);
+      return;
+    }
+    const paras = contentParas;
+    if (paras.length === 0) return;
+    setTranslating(true);
+    let cancelled = false;
+    const results: string[] = [];
+    let idx = 0;
+    function translateNext() {
+      if (cancelled || idx >= paras.length) {
+        if (!cancelled) setTranslatedParas(results);
+        setTranslating(false);
+        return;
+      }
+      translateApi.translate(paras[idx], language)
+        .then((res) => { results[idx] = res.data; idx++; translateNext(); })
+        .catch(() => { results[idx] = paras[idx]; idx++; translateNext(); });
+    }
+    translateNext();
+    return () => { cancelled = true; };
+  }, [language, chapter?.content]);
+
+  function handleMoreClick(key: string) {
+    switch (key) {
+      case "raw":
+        if (novel?.sourceUrl) {
+          window.open(novel.sourceUrl, "_blank", "noopener");
+        } else {
+          window.open(novelHref, "_blank", "noopener");
+        }
+        break;
+      case "report":
+        window.location.href = "/en/contact-us";
+        break;
+      case "recrawl":
+      case "retranslate":
+      case "batch":
+        if (!user) {
+          window.location.href = "/en/login";
+        } else {
+          const msg = key === "recrawl"
+            ? "Recrawl feature coming soon."
+            : "Re-translate feature coming soon.";
+          alert(msg);
+        }
+        break;
+    }
+  }
 
   const toggleSpeech = useCallback(() => {
     if (isSpeaking) {
@@ -251,17 +324,25 @@ export default function ChapterReader({ chapter, novel, chapters, loading, error
           <div className="border-t" style={{ borderColor: siteTheme.border, backgroundColor: siteTheme.bg }}>
             <div className="mx-auto max-w-3xl px-4 py-4 space-y-3">
               {[
-                { key: "raw", label: "Raw (Original Source)", icon: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" },
-                { key: "report", label: "Report Issue", icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" },
-                { key: "recrawl", label: "Recrawl (needs login)", icon: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" },
-                { key: "retranslate", label: "Re-translate (needs login)", icon: "M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" },
-                { key: "batch", label: "Batch Re-translate (needs login)", icon: "M4 6h16M4 10h16M4 14h16M4 18h16" },
+                { key: "raw", label: "Raw (Original Source)", icon: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4", needsLogin: false },
+                { key: "report", label: "Report Issue", icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z", needsLogin: false },
+                { key: "recrawl", label: "Recrawl", icon: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15", needsLogin: true },
+                { key: "retranslate", label: "Re-translate", icon: "M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z", needsLogin: true },
+                { key: "batch", label: "Batch Re-translate", icon: "M4 6h16M4 10h16M4 14h16M4 18h16", needsLogin: true },
               ].map((item) => (
-                <button key={item.key} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors hover:bg-card-hover" style={{ color: siteTheme.text }}>
+                <button
+                  key={item.key}
+                  onClick={() => handleMoreClick(item.key)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors hover:bg-card-hover"
+                  style={{ color: siteTheme.text }}
+                >
                   <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                     <path d={item.icon} />
                   </svg>
                   <span>{item.label}</span>
+                  {item.needsLogin && !user && (
+                    <span className="ml-auto text-[10px] px-2 py-0.5 rounded bg-accent/10 text-accent">login</span>
+                  )}
                 </button>
               ))}
             </div>
@@ -380,28 +461,70 @@ export default function ChapterReader({ chapter, novel, chapters, loading, error
 
         {/* Reader content */}
         <main ref={contentRef} className="flex-1 pb-36 transition-colors min-w-0">
-          <article className="max-w-3xl mx-auto px-4 py-8">
-            <header className="mb-6">
-              <Link href={novelHref} className="text-xs font-medium transition-colors hover:text-accent" style={{ color: siteTheme.muted }}>
-                {novel.title}
-              </Link>
-              <h2 className="flex flex-wrap items-baseline gap-x-3 text-2xl font-bold leading-tight mt-1" style={{ color: textColor }}>
-                <span>#{chapter.number}</span>
-                {chapter.title && <span className="font-normal">{chapter.title}</span>}
-              </h2>
-              <div className="mt-4 h-px w-full opacity-15" style={{ backgroundColor: textColor }} />
-            </header>
+          <article className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+            {/* Novel Cover & Info */}
+            {novel.coverUrl && (
+              <div className="flex gap-4 sm:gap-6 mb-6 p-4 rounded-xl" style={{ backgroundColor: siteTheme.card, border: `1px solid ${siteTheme.border}` }}>
+                <img
+                  src={novel.coverUrl}
+                  alt={novel.title}
+                  className="w-20 sm:w-28 rounded-lg object-cover shrink-0 shadow-lg"
+                  style={{ aspectRatio: "3/4" }}
+                />
+                <div className="min-w-0 flex flex-col justify-center">
+                  <Link href={novelHref} className="text-xs uppercase tracking-wider font-semibold transition-colors hover:text-accent" style={{ color: siteTheme.muted }}>
+                    {novel.title}
+                  </Link>
+                  <h2 className="text-xl sm:text-2xl font-bold leading-tight mt-1" style={{ color: textColor }}>
+                    #{chapter.number} {chapter.title}
+                  </h2>
+                  {novel.author && <p className="text-xs mt-1" style={{ color: siteTheme.muted }}>by {novel.author}</p>}
+                  {novel.description && (
+                    <p className="text-xs mt-2 line-clamp-2 leading-relaxed" style={{ color: siteTheme.muted }}>
+                      {stripHtml(novel.description)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
 
-            <div key={chapter.number} className={`leading-relaxed space-y-5 ${fontClasses[fontFamily]}`} style={{ fontSize: `${fontSize}px`, lineHeight: `${lineHeight}`, color: textColor, backgroundColor: bgColor, padding: "1rem", borderRadius: "0.5rem" }}>
-              {chapter.content.split("\n\n").map((para, i) => (
-                <p key={`${i}-${para.slice(0, 20)}`} className="text-justify">{para}</p>
+            {!novel.coverUrl && (
+              <header className="mb-6">
+                <Link href={novelHref} className="text-xs font-medium transition-colors hover:text-accent" style={{ color: siteTheme.muted }}>
+                  {novel.title}
+                </Link>
+                <h2 className="text-xl sm:text-2xl font-bold leading-tight mt-1" style={{ color: textColor }}>
+                  #{chapter.number} {chapter.title}
+                </h2>
+                <div className="mt-4 h-px w-full opacity-15" style={{ backgroundColor: textColor }} />
+              </header>
+            )}
+
+            {translating && (
+              <div className="mb-4 p-3 rounded-lg text-xs flex items-center gap-2" style={{ backgroundColor: siteTheme.card, color: siteTheme.muted, border: `1px solid ${siteTheme.border}` }}>
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                Translating to {language}...
+              </div>
+            )}
+
+            <div key={chapter.number} className={`leading-relaxed ${fontClasses[fontFamily]}`} style={{ fontSize: `${fontSize}px`, lineHeight: `${lineHeight}`, color: textColor, backgroundColor: bgColor, padding: "1.25rem", borderRadius: "0.5rem" }}>
+              {displayParas.map((para, i) => (
+                <p key={i} className="mb-4 last:mb-0 leading-relaxed">
+                  {para}
+                </p>
               ))}
             </div>
 
-            <div className="mt-12 text-center">
+            <div className="mt-12 flex items-center justify-between">
               <Link href={novelHref} className="text-sm transition-colors hover:text-accent" style={{ color: siteTheme.muted }}>
                 ← Back to Table of Contents
               </Link>
+              {nextHref && (
+                <Link href={nextHref} className="flex items-center gap-1.5 px-4 py-2 rounded-lg border text-sm font-medium transition-colors hover:bg-card-hover" style={{ borderColor: siteTheme.border, color: siteTheme.text }}>
+                  Next
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                </Link>
+              )}
             </div>
           </article>
         </main>
@@ -454,7 +577,7 @@ export default function ChapterReader({ chapter, novel, chapters, loading, error
             </div>
             <div className="p-2" style={{ backgroundColor: siteTheme.card }}>
               <p className="text-[10px] font-medium truncate" style={{ color: siteTheme.text }}>{novel.title}</p>
-              {novel.category && <p className="text-[9px]" style={{ color: siteTheme.muted }}>{novel.category}</p>}
+              {novel.author && <p className="text-[9px]" style={{ color: siteTheme.muted }}>{novel.author}</p>}
             </div>
           </div>
         )}
