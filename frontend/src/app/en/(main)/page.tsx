@@ -7,6 +7,7 @@ import SectionHeader from "@/components/SectionHeader";
 import NovelCardSmall from "@/components/NovelCardSmall";
 import UpdateItem from "@/components/UpdateItem";
 import { novels, updates as updatesApi, news as newsApi, leaderboard } from "@/lib/api";
+import { stripHtml } from "@/lib/utils";
 import Card from "@/components/ui/Card";
 import GenreTag from "@/components/ui/GenreTag";
 import { Novel } from "@/types";
@@ -143,7 +144,7 @@ export default function Home() {
                       ))}
                     </div>
                     <p className="text-sm text-gray-400 mt-2 line-clamp-3 leading-relaxed">
-                      {recommendations[0].Description}
+                      {stripHtml(recommendations[0].Description)}
                     </p>
                     <Link
                       href={`/en/novel/${recommendations[0].ID}/${recommendations[0].Slug}`}

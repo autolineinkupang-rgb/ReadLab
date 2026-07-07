@@ -1,0 +1,97 @@
+- generic [active] [ref=f5e1]:
+  - complementary [ref=f5e2]:
+    - link "WTR-LAB" [ref=f5e4] [cursor=pointer]:
+      - /url: /en
+    - generic [ref=f5e6]:
+      - textbox "Search novels..." [ref=f5e7]
+      - button [ref=f5e8]:
+        - img [ref=f5e9]
+    - navigation [ref=f5e11]:
+      - generic [ref=f5e12]:
+        - paragraph [ref=f5e13]: Browse
+        - link "Finder" [ref=f5e14] [cursor=pointer]:
+          - /url: /en/novel-finder
+        - link "Novels" [ref=f5e15] [cursor=pointer]:
+          - /url: /en/novel-list
+        - link "Ranking" [ref=f5e16] [cursor=pointer]:
+          - /url: /en/ranking/daily
+        - link "Leaderboard" [ref=f5e17] [cursor=pointer]:
+          - /url: /en/leaderboard
+        - link "Library" [ref=f5e18] [cursor=pointer]:
+          - /url: /en/library
+      - generic [ref=f5e19]:
+        - paragraph [ref=f5e20]: Discover
+        - link "Trending" [ref=f5e21] [cursor=pointer]:
+          - /url: /en/trending
+        - link "Recommendations" [ref=f5e22] [cursor=pointer]:
+          - /url: /en/recommendation
+      - generic [ref=f5e23]:
+        - paragraph [ref=f5e24]: Community
+        - link "News" [ref=f5e25] [cursor=pointer]:
+          - /url: /en/news
+        - link "Stats" [ref=f5e26] [cursor=pointer]:
+          - /url: /en/public-stats
+        - link "Request Series" [ref=f5e27] [cursor=pointer]:
+          - /url: /en/profile/request-serie
+        - link "Vote Series" [ref=f5e28] [cursor=pointer]:
+          - /url: /en/profile/vote-serie
+      - generic [ref=f5e29]:
+        - paragraph [ref=f5e30]: Admin
+        - link "Import" [ref=f5e31] [cursor=pointer]:
+          - /url: /en/admin/import
+        - link "Requests" [ref=f5e32] [cursor=pointer]:
+          - /url: /en/admin/requests
+        - link "Manage" [ref=f5e33] [cursor=pointer]:
+          - /url: /en/admin/novels
+    - link "Login" [ref=f5e35] [cursor=pointer]:
+      - /url: /en/login
+  - generic [ref=f5e36]:
+    - main [ref=f5e37]:
+      - generic [ref=f5e39]:
+        - heading "Welcome Back" [level=1] [ref=f5e40]
+        - generic [ref=f5e41]:
+          - button "Login" [ref=f5e42]
+          - button "Register" [ref=f5e43]
+        - generic [ref=f5e44]:
+          - generic [ref=f5e45]:
+            - generic [ref=f5e46]: Email
+            - textbox "your@email.com" [ref=f5e47]
+          - generic [ref=f5e48]:
+            - generic [ref=f5e49]: Password
+            - textbox "••••••••" [ref=f5e50]
+          - button "Login" [ref=f5e51]
+        - paragraph [ref=f5e52]: Don't have an account? Switch to Register above.
+    - contentinfo [ref=f5e53]:
+      - generic [ref=f5e54]:
+        - generic [ref=f5e55]:
+          - link "Intro" [ref=f5e56] [cursor=pointer]:
+            - /url: /en
+          - link "About Us" [ref=f5e57] [cursor=pointer]:
+            - /url: /en/about-us
+          - link "Contact Us" [ref=f5e58] [cursor=pointer]:
+            - /url: /en/contact-us
+          - link "Trending" [ref=f5e59] [cursor=pointer]:
+            - /url: /en/trending
+          - link "Recommendations" [ref=f5e60] [cursor=pointer]:
+            - /url: /en/recommendation
+          - link "News" [ref=f5e61] [cursor=pointer]:
+            - /url: /en/news
+          - link "Changelog" [ref=f5e62] [cursor=pointer]:
+            - /url: /en/news?type=changelog
+          - link "DMCA" [ref=f5e63] [cursor=pointer]:
+            - /url: /en/dmca
+          - link "Cookie Policy" [ref=f5e64] [cursor=pointer]:
+            - /url: /en/cookie-policy
+          - link "Privacy Policy" [ref=f5e65] [cursor=pointer]:
+            - /url: /en/privacy-policy
+          - link "Terms of Use" [ref=f5e66] [cursor=pointer]:
+            - /url: /en/terms-of-use
+          - link "Stats" [ref=f5e67] [cursor=pointer]:
+            - /url: /en/public-stats
+          - link "Request Series" [ref=f5e68] [cursor=pointer]:
+            - /url: /en/profile/request-serie
+          - link "Vote Series" [ref=f5e69] [cursor=pointer]:
+            - /url: /en/profile/vote-serie
+        - paragraph [ref=f5e70]: Copyright © 2022 - wtr-lab.com v1.13.4
+  - button "Open Next.js Dev Tools" [ref=f5e76] [cursor=pointer]:
+    - img [ref=f5e77]

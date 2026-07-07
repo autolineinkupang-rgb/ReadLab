@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { news } from "@/lib/api";
-import { formatDate } from "@/lib/utils";
+import { formatDate, stripHtml } from "@/lib/utils";
 
 interface NewsDetail {
   ID: number;
@@ -66,7 +66,7 @@ export default function NewsDetailPage() {
           <span className="text-xs text-gray-600">{formatDate(detail.CreatedAt)}</span>
         </div>
         <h1 className="text-2xl font-bold text-white mb-6">{detail.Title}</h1>
-        <div className="text-sm text-gray-300 leading-relaxed whitespace-pre-line">{detail.Content}</div>
+        <div className="text-sm text-gray-300 leading-relaxed whitespace-pre-line">{stripHtml(detail.Content)}</div>
         <div className="mt-8 pt-6 border-t border-line">
           <Link href="/en/news" className="text-sm text-violet-400 hover:text-violet-300 transition-colors">← Back to News</Link>
         </div>

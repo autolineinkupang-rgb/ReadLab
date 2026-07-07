@@ -1,0 +1,216 @@
+- generic [active] [ref=f21e1]:
+  - complementary [ref=f21e2]:
+    - link "WTR-LAB" [ref=f21e4] [cursor=pointer]:
+      - /url: /en
+    - generic [ref=f21e6]:
+      - textbox "Search novels..." [ref=f21e7]
+      - button [ref=f21e8]:
+        - img [ref=f21e9]
+    - navigation [ref=f21e11]:
+      - generic [ref=f21e12]:
+        - paragraph [ref=f21e13]: Browse
+        - link "Finder" [ref=f21e14] [cursor=pointer]:
+          - /url: /en/novel-finder
+        - link "Novels" [ref=f21e15] [cursor=pointer]:
+          - /url: /en/novel-list
+        - link "Ranking" [ref=f21e16] [cursor=pointer]:
+          - /url: /en/ranking/daily
+        - link "Leaderboard" [ref=f21e17] [cursor=pointer]:
+          - /url: /en/leaderboard
+        - link "Library" [ref=f21e18] [cursor=pointer]:
+          - /url: /en/library
+      - generic [ref=f21e19]:
+        - paragraph [ref=f21e20]: Discover
+        - link "Trending" [ref=f21e21] [cursor=pointer]:
+          - /url: /en/trending
+        - link "Recommendations" [ref=f21e22] [cursor=pointer]:
+          - /url: /en/recommendation
+      - generic [ref=f21e23]:
+        - paragraph [ref=f21e24]: Community
+        - link "News" [ref=f21e25] [cursor=pointer]:
+          - /url: /en/news
+        - link "Stats" [ref=f21e26] [cursor=pointer]:
+          - /url: /en/public-stats
+        - link "Request Series" [ref=f21e27] [cursor=pointer]:
+          - /url: /en/profile/request-serie
+        - link "Vote Series" [ref=f21e28] [cursor=pointer]:
+          - /url: /en/profile/vote-serie
+      - generic [ref=f21e29]:
+        - paragraph [ref=f21e30]: Admin
+        - link "Import" [ref=f21e31] [cursor=pointer]:
+          - /url: /en/admin/import
+        - link "Requests" [ref=f21e32] [cursor=pointer]:
+          - /url: /en/admin/requests
+        - link "Manage" [ref=f21e33] [cursor=pointer]:
+          - /url: /en/admin/novels
+    - link "Login" [ref=f21e35] [cursor=pointer]:
+      - /url: /en/login
+  - generic [ref=f21e36]:
+    - main [ref=f21e37]:
+      - generic [ref=f21e38]:
+        - heading "Recommendations" [level=1] [ref=f21e39]
+        - generic [ref=f21e40]:
+          - 'link "1.7 Question and Answer Douluo: Tang San''s Time Travel Revealed action • 372 Ch" [ref=f21e41] [cursor=pointer]':
+            - /url: /en/novel/2/qa-douluo
+            - generic [ref=f21e42]:
+              - img [ref=f21e44]
+              - generic [ref=f21e46]:
+                - img [ref=f21e47]
+                - text: "1.7"
+            - generic [ref=f21e49]:
+              - 'heading "Question and Answer Douluo: Tang San''s Time Travel Revealed" [level=3] [ref=f21e50]'
+              - generic [ref=f21e51]:
+                - generic [ref=f21e52]: action
+                - generic [ref=f21e53]: •
+                - generic [ref=f21e54]: 372 Ch
+          - 'link "2 Douluo Continent: Taking Tang San As a Disciple action • 284 Ch" [ref=f21e55] [cursor=pointer]':
+            - /url: /en/novel/3/douluo-disciple
+            - generic [ref=f21e56]:
+              - img [ref=f21e58]
+              - generic [ref=f21e60]:
+                - img [ref=f21e61]
+                - text: "2"
+            - generic [ref=f21e63]:
+              - 'heading "Douluo Continent: Taking Tang San As a Disciple" [level=3] [ref=f21e64]'
+              - generic [ref=f21e65]:
+                - generic [ref=f21e66]: action
+                - generic [ref=f21e67]: •
+                - generic [ref=f21e68]: 284 Ch
+          - link "1.9 I Just Started High School, But the System Insists I'm an Emperor fantasy • 264 Ch" [ref=f21e69] [cursor=pointer]:
+            - /url: /en/novel/4/high-school-emperor
+            - generic [ref=f21e70]:
+              - img [ref=f21e72]
+              - generic [ref=f21e74]:
+                - img [ref=f21e75]
+                - text: "1.9"
+            - generic [ref=f21e77]:
+              - heading "I Just Started High School, But the System Insists I'm an Emperor" [level=3] [ref=f21e78]
+              - generic [ref=f21e79]:
+                - generic [ref=f21e80]: fantasy
+                - generic [ref=f21e81]: •
+                - generic [ref=f21e82]: 264 Ch
+          - 'link "3.2 All Heavens: My Dantian is a Universe in Its Own action • 412 Ch" [ref=f21e83] [cursor=pointer]':
+            - /url: /en/novel/5/dantian-universe
+            - generic [ref=f21e84]:
+              - img [ref=f21e86]
+              - generic [ref=f21e88]:
+                - img [ref=f21e89]
+                - text: "3.2"
+            - generic [ref=f21e91]:
+              - 'heading "All Heavens: My Dantian is a Universe in Its Own" [level=3] [ref=f21e92]'
+              - generic [ref=f21e93]:
+                - generic [ref=f21e94]: action
+                - generic [ref=f21e95]: •
+                - generic [ref=f21e96]: 412 Ch
+          - link "2.8 Pretending to Be the Villain, All I Want is to Die at Naruto's Hands action • 98 Ch" [ref=f21e97] [cursor=pointer]:
+            - /url: /en/novel/6/pretending-villain
+            - generic [ref=f21e98]:
+              - img [ref=f21e100]
+              - generic [ref=f21e102]:
+                - img [ref=f21e103]
+                - text: "2.8"
+            - generic [ref=f21e105]:
+              - heading "Pretending to Be the Villain, All I Want is to Die at Naruto's Hands" [level=3] [ref=f21e106]
+              - generic [ref=f21e107]:
+                - generic [ref=f21e108]: action
+                - generic [ref=f21e109]: •
+                - generic [ref=f21e110]: 98 Ch
+          - link "3.5 On the Day the Empress Sentenced Me to Death, the System Granted Me Emperor Level Cultivation fantasy • 203 Ch" [ref=f21e111] [cursor=pointer]:
+            - /url: /en/novel/7/empress-sentenced
+            - generic [ref=f21e112]:
+              - img [ref=f21e114]
+              - generic [ref=f21e116]:
+                - img [ref=f21e117]
+                - text: "3.5"
+            - generic [ref=f21e119]:
+              - heading "On the Day the Empress Sentenced Me to Death, the System Granted Me Emperor Level Cultivation" [level=3] [ref=f21e120]
+              - generic [ref=f21e121]:
+                - generic [ref=f21e122]: fantasy
+                - generic [ref=f21e123]: •
+                - generic [ref=f21e124]: 203 Ch
+          - 'link "4.1 Naruto talent entry: Starting with otsusuki bloodline action • 156 Ch" [ref=f21e125] [cursor=pointer]':
+            - /url: /en/novel/8/otsusuki-bloodline
+            - generic [ref=f21e126]:
+              - img [ref=f21e128]
+              - generic [ref=f21e130]:
+                - img [ref=f21e131]
+                - text: "4.1"
+            - generic [ref=f21e133]:
+              - 'heading "Naruto talent entry: Starting with otsusuki bloodline" [level=3] [ref=f21e134]'
+              - generic [ref=f21e135]:
+                - generic [ref=f21e136]: action
+                - generic [ref=f21e137]: •
+                - generic [ref=f21e138]: 156 Ch
+          - link "3.9 Start Learning Magic at Hogwarts fantasy • 234 Ch" [ref=f21e139] [cursor=pointer]:
+            - /url: /en/novel/9/magic-hogwarts
+            - generic [ref=f21e140]:
+              - img [ref=f21e142]
+              - generic [ref=f21e144]:
+                - img [ref=f21e145]
+                - text: "3.9"
+            - generic [ref=f21e147]:
+              - heading "Start Learning Magic at Hogwarts" [level=3] [ref=f21e148]
+              - generic [ref=f21e149]:
+                - generic [ref=f21e150]: fantasy
+                - generic [ref=f21e151]: •
+                - generic [ref=f21e152]: 234 Ch
+          - 'link "2.9 Douluo Continent: A Sharp Commentary on the Goddesses action • 198 Ch" [ref=f21e153] [cursor=pointer]':
+            - /url: /en/novel/10/douluo-commentary
+            - generic [ref=f21e154]:
+              - img [ref=f21e156]
+              - generic [ref=f21e158]:
+                - img [ref=f21e159]
+                - text: "2.9"
+            - generic [ref=f21e161]:
+              - 'heading "Douluo Continent: A Sharp Commentary on the Goddesses" [level=3] [ref=f21e162]'
+              - generic [ref=f21e163]:
+                - generic [ref=f21e164]: action
+                - generic [ref=f21e165]: •
+                - generic [ref=f21e166]: 198 Ch
+        - generic [ref=f21e167]:
+          - heading "Editor's Pick" [level=2] [ref=f21e168]
+          - generic [ref=f21e169]:
+            - img [ref=f21e171]
+            - generic [ref=f21e173]:
+              - 'link "Naruto: In Konoha Village, I Awakened Wood Release at the Start" [ref=f21e174] [cursor=pointer]':
+                - /url: /en/novel/1/naruto-konoha-wood
+              - generic [ref=f21e175]:
+                - generic [ref=f21e176]: ★ 3.8
+                - generic [ref=f21e177]: 📚 1002
+              - paragraph [ref=f21e178]: Konoha 52nd year. Chiba awakened her memories of her past life. As one of the descendants of the Senju clan.
+              - link "START READING" [ref=f21e179] [cursor=pointer]:
+                - /url: /en/novel/1/naruto-konoha-wood/continue
+    - contentinfo [ref=f21e180]:
+      - generic [ref=f21e181]:
+        - generic [ref=f21e182]:
+          - link "Intro" [ref=f21e183] [cursor=pointer]:
+            - /url: /en
+          - link "About Us" [ref=f21e184] [cursor=pointer]:
+            - /url: /en/about-us
+          - link "Contact Us" [ref=f21e185] [cursor=pointer]:
+            - /url: /en/contact-us
+          - link "Trending" [ref=f21e186] [cursor=pointer]:
+            - /url: /en/trending
+          - link "Recommendations" [ref=f21e187] [cursor=pointer]:
+            - /url: /en/recommendation
+          - link "News" [ref=f21e188] [cursor=pointer]:
+            - /url: /en/news
+          - link "Changelog" [ref=f21e189] [cursor=pointer]:
+            - /url: /en/news?type=changelog
+          - link "DMCA" [ref=f21e190] [cursor=pointer]:
+            - /url: /en/dmca
+          - link "Cookie Policy" [ref=f21e191] [cursor=pointer]:
+            - /url: /en/cookie-policy
+          - link "Privacy Policy" [ref=f21e192] [cursor=pointer]:
+            - /url: /en/privacy-policy
+          - link "Terms of Use" [ref=f21e193] [cursor=pointer]:
+            - /url: /en/terms-of-use
+          - link "Stats" [ref=f21e194] [cursor=pointer]:
+            - /url: /en/public-stats
+          - link "Request Series" [ref=f21e195] [cursor=pointer]:
+            - /url: /en/profile/request-serie
+          - link "Vote Series" [ref=f21e196] [cursor=pointer]:
+            - /url: /en/profile/vote-serie
+        - paragraph [ref=f21e197]: Copyright © 2022 - wtr-lab.com v1.13.4
+  - button "Open Next.js Dev Tools" [ref=f21e203] [cursor=pointer]:
+    - img [ref=f21e204]

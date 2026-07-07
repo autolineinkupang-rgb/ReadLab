@@ -30,3 +30,31 @@ export function formatViews(views: number): string {
   if (views >= 1000) return (views / 1000).toFixed(1) + "K";
   return String(views);
 }
+
+export function stripHtml(html: string | null | undefined): string {
+  if (!html) return "";
+  let text = html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<\/div>/gi, "\n\n")
+    .replace(/<\/h[1-6]>/gi, "\n\n")
+    .replace(/<\/li>/gi, "\n")
+    .replace(/<\/tr>/gi, "\n")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, "\"")
+    .replace(/&#39;/g, "'");
+  text = text
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n[ \t]+/g, "\n")
+    .trim();
+  return text;
+}
+
+export function splitParagraphs(text: string): string[] {
+  return text.split(/\n\n+/).filter(p => p.trim().length > 0);
+}

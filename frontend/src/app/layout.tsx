@@ -8,6 +8,26 @@ export const metadata: Metadata = {
     title: "WTR-LAB - Read Light Novels in English Machine Translation",
     description: "Read English MTL (Machine Translation) Novels on WTR-LAB.com. All light novels here are translated from raw.",
     type: "website",
+    url: "https://wtr-lab.com",
+    siteName: "WTR-LAB",
+    images: [
+      {
+        url: "/assets/favicon/apple-touch-icon.png",
+        width: 180,
+        height: 180,
+        alt: "WTR-LAB",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "WTR-LAB - Read Light Novels in English Machine Translation",
+    description: "Read English MTL (Machine Translation) Novels on WTR-LAB.com. All light novels here are translated from raw.",
+    images: ["/assets/favicon/apple-touch-icon.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 

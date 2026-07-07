@@ -1,0 +1,21 @@
+{
+  "name": "WTR-LAB",
+  "short_name": "WTR-LAB",
+  "description": "Read Light Novels in English Machine Translation",
+  "start_url": "/en",
+  "display": "standalone",
+  "background_color": "#0a0a1a",
+  "theme_color": "#1a1a3e",
+  "icons": [
+    {
+      "src": "/assets/favicon/favicon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/favicon/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,536 @@
+- generic [ref=f16e2]:
+  - generic [ref=f16e4]:
+    - heading "Read Light Novels in English Translation" [level=1] [ref=f16e5]
+    - paragraph [ref=f16e6]: WTR-LAB is a free reading platform for machine-translated light novels from raw sources. Track your progress, build your library, and discover thousands of series.
+    - generic [ref=f16e7]:
+      - link "Browse Novels" [ref=f16e8] [cursor=pointer]:
+        - /url: /en/novel-list
+      - link "Sign Up Free" [ref=f16e9] [cursor=pointer]:
+        - /url: /en/login
+    - generic [ref=f16e10]:
+      - generic [ref=f16e11]:
+        - paragraph [ref=f16e12]: 5,000+
+        - paragraph [ref=f16e13]: Novels
+      - generic [ref=f16e14]:
+        - paragraph [ref=f16e15]: 200,000+
+        - paragraph [ref=f16e16]: Chapters
+      - generic [ref=f16e17]:
+        - paragraph [ref=f16e18]: 50,000+
+        - paragraph [ref=f16e19]: Readers
+      - generic [ref=f16e20]:
+        - paragraph [ref=f16e21]: Free
+        - paragraph [ref=f16e22]: to Read
+  - generic [ref=f16e23]:
+    - heading "Why Read on WTR-LAB?" [level=2] [ref=f16e24]
+    - generic [ref=f16e25]:
+      - generic [ref=f16e26]:
+        - img [ref=f16e28]
+        - heading "Extensive Library" [level=3] [ref=f16e30]
+        - paragraph [ref=f16e31]: Thousands of light novels across fantasy, romance, action, and more genres — updated daily.
+      - generic [ref=f16e32]:
+        - img [ref=f16e34]
+        - heading "Track Progress" [level=3] [ref=f16e36]
+        - paragraph [ref=f16e37]: Create an account to save your reading history, build a personal library, and never lose your place.
+      - generic [ref=f16e38]:
+        - img [ref=f16e40]
+        - heading "Smart Translation" [level=3] [ref=f16e42]
+        - paragraph [ref=f16e43]: Multiple translation modes — Web, Web+, and AI-powered translation with customizable display settings.
+  - generic [ref=f16e45]:
+    - heading "16th Giveaway Winners" [level=3] [ref=f16e46]
+    - paragraph [ref=f16e47]: Check if you are one of the lucky winners!
+    - link "Check Results" [ref=f16e48] [cursor=pointer]:
+      - /url: /en/news/428
+  - generic [ref=f16e49]:
+    - heading "How It Works" [level=2] [ref=f16e50]
+    - generic [ref=f16e51]:
+      - generic [ref=f16e52]:
+        - generic [ref=f16e54]: "01"
+        - heading "Browse" [level=3] [ref=f16e55]
+        - paragraph [ref=f16e56]: Explore our library of thousands of light novels using advanced filters, genres, and search.
+      - generic [ref=f16e57]:
+        - generic [ref=f16e59]: "02"
+        - heading "Read" [level=3] [ref=f16e60]
+        - paragraph [ref=f16e61]: Enjoy chapters with customizable fonts, themes, line spacing, and multiple translation modes.
+      - generic [ref=f16e62]:
+        - generic [ref=f16e64]: "03"
+        - heading "Track" [level=3] [ref=f16e65]
+        - paragraph [ref=f16e66]: Sign up to save your library, track reading progress, vote for series, and request new novels.
+  - generic [ref=f16e68]: Login to keep track of where you left off in the novel.
+  - generic [ref=f16e69]:
+    - generic [ref=f16e70]:
+      - heading "New Novels" [level=2] [ref=f16e72]
+      - link "See More →" [ref=f16e73] [cursor=pointer]:
+        - /url: /en/novel-list
+    - generic [ref=f16e74]:
+      - 'link "Red Chamber: Saving the Falling Heavens action • 1782 Ch" [ref=f16e75] [cursor=pointer]':
+        - /url: /en/novel/1
+        - img [ref=f16e78]
+        - generic [ref=f16e80]:
+          - 'heading "Red Chamber: Saving the Falling Heavens" [level=3] [ref=f16e81]'
+          - generic [ref=f16e82]:
+            - generic [ref=f16e83]: action
+            - generic [ref=f16e84]: •
+            - generic [ref=f16e85]: 1782 Ch
+      - 'link "Traveling Simultaneously: Across the Heavens action • 84 Ch" [ref=f16e86] [cursor=pointer]':
+        - /url: /en/novel/2
+        - img [ref=f16e89]
+        - generic [ref=f16e91]:
+          - 'heading "Traveling Simultaneously: Across the Heavens" [level=3] [ref=f16e92]'
+          - generic [ref=f16e93]:
+            - generic [ref=f16e94]: action
+            - generic [ref=f16e95]: •
+            - generic [ref=f16e96]: 84 Ch
+      - link "After He Remarrying a Wealthy Young Man from Beijing's Circle, My Childhood Sweethearts Were Furious drama • 1051 Ch" [ref=f16e97] [cursor=pointer]:
+        - /url: /en/novel/3
+        - img [ref=f16e100]
+        - generic [ref=f16e102]:
+          - heading "After He Remarrying a Wealthy Young Man from Beijing's Circle, My Childhood Sweethearts Were Furious" [level=3] [ref=f16e103]
+          - generic [ref=f16e104]:
+            - generic [ref=f16e105]: drama
+            - generic [ref=f16e106]: •
+            - generic [ref=f16e107]: 1051 Ch
+      - 'link "Reborn in 1983: My Wife is a Heiress from Beijing''s Elite Circle action • 1758 Ch" [ref=f16e108] [cursor=pointer]':
+        - /url: /en/novel/4
+        - img [ref=f16e111]
+        - generic [ref=f16e113]:
+          - 'heading "Reborn in 1983: My Wife is a Heiress from Beijing''s Elite Circle" [level=3] [ref=f16e114]'
+          - generic [ref=f16e115]:
+            - generic [ref=f16e116]: action
+            - generic [ref=f16e117]: •
+            - generic [ref=f16e118]: 1758 Ch
+      - 'link "Real Dolls: I Use Dolls to Create Perfect Accidents action • 944 Ch" [ref=f16e119] [cursor=pointer]':
+        - /url: /en/novel/5
+        - img [ref=f16e122]
+        - generic [ref=f16e124]:
+          - 'heading "Real Dolls: I Use Dolls to Create Perfect Accidents" [level=3] [ref=f16e125]'
+          - generic [ref=f16e126]:
+            - generic [ref=f16e127]: action
+            - generic [ref=f16e128]: •
+            - generic [ref=f16e129]: 944 Ch
+      - 'link "Attack on Titan: I''m an Ackerman action • 93 Ch" [ref=f16e130] [cursor=pointer]':
+        - /url: /en/novel/6
+        - img [ref=f16e133]
+        - generic [ref=f16e135]:
+          - 'heading "Attack on Titan: I''m an Ackerman" [level=3] [ref=f16e136]'
+          - generic [ref=f16e137]:
+            - generic [ref=f16e138]: action
+            - generic [ref=f16e139]: •
+            - generic [ref=f16e140]: 93 Ch
+      - link "The Background is So Invincible That the System Was Upgraded Overnight! action • 998 Ch" [ref=f16e141] [cursor=pointer]:
+        - /url: /en/novel/7
+        - img [ref=f16e144]
+        - generic [ref=f16e146]:
+          - heading "The Background is So Invincible That the System Was Upgraded Overnight!" [level=3] [ref=f16e147]
+          - generic [ref=f16e148]:
+            - generic [ref=f16e149]: action
+            - generic [ref=f16e150]: •
+            - generic [ref=f16e151]: 998 Ch
+      - 'link "Global Cultivation: The Salted-fish Undergraduate with an Alchemy Furnace action • 470 Ch" [ref=f16e152] [cursor=pointer]':
+        - /url: /en/novel/8
+        - img [ref=f16e155]
+        - generic [ref=f16e157]:
+          - 'heading "Global Cultivation: The Salted-fish Undergraduate with an Alchemy Furnace" [level=3] [ref=f16e158]'
+          - generic [ref=f16e159]:
+            - generic [ref=f16e160]: action
+            - generic [ref=f16e161]: •
+            - generic [ref=f16e162]: 470 Ch
+      - link "Black Rock Shooter's Persona action • 154 Ch" [ref=f16e163] [cursor=pointer]:
+        - /url: /en/novel/9
+        - img [ref=f16e166]
+        - generic [ref=f16e168]:
+          - heading "Black Rock Shooter's Persona" [level=3] [ref=f16e169]
+          - generic [ref=f16e170]:
+            - generic [ref=f16e171]: action
+            - generic [ref=f16e172]: •
+            - generic [ref=f16e173]: 154 Ch
+      - link "Reversing the Immortal Path action • 261 Ch" [ref=f16e174] [cursor=pointer]:
+        - /url: /en/novel/10
+        - img [ref=f16e177]
+        - generic [ref=f16e179]:
+          - heading "Reversing the Immortal Path" [level=3] [ref=f16e180]
+          - generic [ref=f16e181]:
+            - generic [ref=f16e182]: action
+            - generic [ref=f16e183]: •
+            - generic [ref=f16e184]: 261 Ch
+  - generic [ref=f16e185]:
+    - generic [ref=f16e186]:
+      - generic [ref=f16e187]:
+        - generic [ref=f16e188]:
+          - heading "Novel Ranking" [level=2] [ref=f16e189]
+          - generic [ref=f16e190]:
+            - button "Daily" [ref=f16e191]
+            - button "Weekly" [ref=f16e192]
+            - button "Monthly" [ref=f16e193]
+        - link "See More →" [ref=f16e194] [cursor=pointer]:
+          - /url: /en/ranking/daily
+      - generic [ref=f16e195]:
+        - 'link "#1 Douluo Continent: Soul Beasts Extinct, I Created My Own Soul Rings 44,711 Views ★4.1" [ref=f16e196] [cursor=pointer]':
+          - /url: /en/novel/11
+          - generic [ref=f16e197]: "#1"
+          - generic [ref=f16e198]:
+            - paragraph [ref=f16e199]: "Douluo Continent: Soul Beasts Extinct, I Created My Own Soul Rings"
+            - generic [ref=f16e200]:
+              - generic [ref=f16e201]: 44,711 Views
+              - generic [ref=f16e202]: ★4.1
+        - link "#2 I Was Livestreaming in Douluo Continent, and My Audience Was Bibi Dong! 41,392 Views ★2.0" [ref=f16e203] [cursor=pointer]:
+          - /url: /en/novel/12
+          - generic [ref=f16e204]: "#2"
+          - generic [ref=f16e205]:
+            - paragraph [ref=f16e206]: I Was Livestreaming in Douluo Continent, and My Audience Was Bibi Dong!
+            - generic [ref=f16e207]:
+              - generic [ref=f16e208]: 41,392 Views
+              - generic [ref=f16e209]: ★2.0
+        - 'link "#3 Douluo Continent: The Plague God Descends, Tang San Gets Tricked 35,947 Views ★3.9" [ref=f16e210] [cursor=pointer]':
+          - /url: /en/novel/13
+          - generic [ref=f16e211]: "#3"
+          - generic [ref=f16e212]:
+            - paragraph [ref=f16e213]: "Douluo Continent: The Plague God Descends, Tang San Gets Tricked"
+            - generic [ref=f16e214]:
+              - generic [ref=f16e215]: 35,947 Views
+              - generic [ref=f16e216]: ★3.9
+        - 'link "#4 Douluo Continent: Blue Silver Emperor, Hextech Five-choose-three! 31,439 Views ★3.2" [ref=f16e217] [cursor=pointer]':
+          - /url: /en/novel/14
+          - generic [ref=f16e218]: "#4"
+          - generic [ref=f16e219]:
+            - paragraph [ref=f16e220]: "Douluo Continent: Blue Silver Emperor, Hextech Five-choose-three!"
+            - generic [ref=f16e221]:
+              - generic [ref=f16e222]: 31,439 Views
+              - generic [ref=f16e223]: ★3.2
+        - 'link "#5 Douluo Continent: Martial Soul - Golden Lion Mastiff, All Soul Skills Amplified 26,617 Views ★3.6" [ref=f16e224] [cursor=pointer]':
+          - /url: /en/novel/15
+          - generic [ref=f16e225]: "#5"
+          - generic [ref=f16e226]:
+            - paragraph [ref=f16e227]: "Douluo Continent: Martial Soul - Golden Lion Mastiff, All Soul Skills Amplified"
+            - generic [ref=f16e228]:
+              - generic [ref=f16e229]: 26,617 Views
+              - generic [ref=f16e230]: ★3.6
+      - generic [ref=f16e231]:
+        - link "Vote Novels" [ref=f16e232] [cursor=pointer]:
+          - /url: /en/profile/vote-serie
+        - link "Request Novels" [ref=f16e233] [cursor=pointer]:
+          - /url: /en/profile/request-serie
+    - generic [ref=f16e234]:
+      - generic [ref=f16e236]:
+        - heading "Community" [level=2] [ref=f16e237]
+        - generic [ref=f16e238]:
+          - button "Community Folders" [ref=f16e239]
+          - button "Trending" [ref=f16e240]
+      - generic [ref=f16e242]:
+        - img [ref=f16e244]
+        - generic [ref=f16e246]:
+          - 'link "Question and Answer Douluo: Tang San''s Time Travel Revealed, Tang Hao Breaks Through Defense" [ref=f16e247] [cursor=pointer]':
+            - /url: /en/novel/featured
+          - generic [ref=f16e248]:
+            - generic [ref=f16e249]: "1.7"
+            - generic [ref=f16e250]: 493 Ch
+          - generic [ref=f16e251]:
+            - generic [ref=f16e252]: action
+            - generic [ref=f16e253]: adventure
+            - generic [ref=f16e254]: fan-fiction
+            - generic [ref=f16e255]: fantasy
+          - paragraph [ref=f16e256]: Transmigrating into Douluo Continent, Song Ye becomes a member of the Spirit Hall team...
+          - link "START READING" [ref=f16e257] [cursor=pointer]:
+            - /url: /en/novel/featured/continue
+  - generic [ref=f16e258]:
+    - generic [ref=f16e259]:
+      - heading "Recommendations" [level=2] [ref=f16e261]
+      - link "See More →" [ref=f16e262] [cursor=pointer]:
+        - /url: /en/recommendation
+    - generic [ref=f16e263]:
+      - 'link "Red Chamber: Saving the Falling Heavens action • 1782 Ch" [ref=f16e264] [cursor=pointer]':
+        - /url: /en/novel/1
+        - img [ref=f16e267]
+        - generic [ref=f16e269]:
+          - 'heading "Red Chamber: Saving the Falling Heavens" [level=3] [ref=f16e270]'
+          - generic [ref=f16e271]:
+            - generic [ref=f16e272]: action
+            - generic [ref=f16e273]: •
+            - generic [ref=f16e274]: 1782 Ch
+      - 'link "Traveling Simultaneously: Across the Heavens action • 84 Ch" [ref=f16e275] [cursor=pointer]':
+        - /url: /en/novel/2
+        - img [ref=f16e278]
+        - generic [ref=f16e280]:
+          - 'heading "Traveling Simultaneously: Across the Heavens" [level=3] [ref=f16e281]'
+          - generic [ref=f16e282]:
+            - generic [ref=f16e283]: action
+            - generic [ref=f16e284]: •
+            - generic [ref=f16e285]: 84 Ch
+      - link "After He Remarrying a Wealthy Young Man from Beijing's Circle, My Childhood Sweethearts Were Furious drama • 1051 Ch" [ref=f16e286] [cursor=pointer]:
+        - /url: /en/novel/3
+        - img [ref=f16e289]
+        - generic [ref=f16e291]:
+          - heading "After He Remarrying a Wealthy Young Man from Beijing's Circle, My Childhood Sweethearts Were Furious" [level=3] [ref=f16e292]
+          - generic [ref=f16e293]:
+            - generic [ref=f16e294]: drama
+            - generic [ref=f16e295]: •
+            - generic [ref=f16e296]: 1051 Ch
+      - 'link "Reborn in 1983: My Wife is a Heiress from Beijing''s Elite Circle action • 1758 Ch" [ref=f16e297] [cursor=pointer]':
+        - /url: /en/novel/4
+        - img [ref=f16e300]
+        - generic [ref=f16e302]:
+          - 'heading "Reborn in 1983: My Wife is a Heiress from Beijing''s Elite Circle" [level=3] [ref=f16e303]'
+          - generic [ref=f16e304]:
+            - generic [ref=f16e305]: action
+            - generic [ref=f16e306]: •
+            - generic [ref=f16e307]: 1758 Ch
+      - 'link "Real Dolls: I Use Dolls to Create Perfect Accidents action • 944 Ch" [ref=f16e308] [cursor=pointer]':
+        - /url: /en/novel/5
+        - img [ref=f16e311]
+        - generic [ref=f16e313]:
+          - 'heading "Real Dolls: I Use Dolls to Create Perfect Accidents" [level=3] [ref=f16e314]'
+          - generic [ref=f16e315]:
+            - generic [ref=f16e316]: action
+            - generic [ref=f16e317]: •
+            - generic [ref=f16e318]: 944 Ch
+      - 'link "Attack on Titan: I''m an Ackerman action • 93 Ch" [ref=f16e319] [cursor=pointer]':
+        - /url: /en/novel/6
+        - img [ref=f16e322]
+        - generic [ref=f16e324]:
+          - 'heading "Attack on Titan: I''m an Ackerman" [level=3] [ref=f16e325]'
+          - generic [ref=f16e326]:
+            - generic [ref=f16e327]: action
+            - generic [ref=f16e328]: •
+            - generic [ref=f16e329]: 93 Ch
+    - generic [ref=f16e331]:
+      - img [ref=f16e333]
+      - generic [ref=f16e335]:
+        - 'link "Douluo Continent: Soul Beasts Extinct, I Created My Own Soul Rings" [ref=f16e336] [cursor=pointer]':
+          - /url: /en/novel/featured-rec
+        - generic [ref=f16e337]:
+          - generic [ref=f16e338]: "4.1"
+          - generic [ref=f16e339]: 398 Ch
+        - generic [ref=f16e340]:
+          - generic [ref=f16e341]: fan-fiction
+          - generic [ref=f16e342]: fantasy
+          - generic [ref=f16e343]: romance
+        - paragraph [ref=f16e344]: The sky collapsed on Douluo Continent! Overnight, all the soul beasts in the world were wiped out!
+        - link "START READING" [ref=f16e345] [cursor=pointer]:
+          - /url: /en/novel/featured-rec/continue
+  - generic [ref=f16e346]:
+    - link "For bug reports please use our discord." [ref=f16e347] [cursor=pointer]:
+      - /url: https://discord.gg/wtrlab
+      - img [ref=f16e348]
+      - text: For bug reports please use our discord.
+    - link "Do you like this site? Support us." [ref=f16e350] [cursor=pointer]:
+      - /url: https://patreon.com/wtrlab
+      - img [ref=f16e351]
+      - text: Do you like this site? Support us.
+  - generic [ref=f16e353]:
+    - generic [ref=f16e354]:
+      - heading "Recent Updates" [level=2] [ref=f16e357]
+      - generic [ref=f16e358]:
+        - generic [ref=f16e359]:
+          - img [ref=f16e361]
+          - generic [ref=f16e363]:
+            - 'link "Online Game for Everyone: Why Did I Become a Beggar NPC?" [ref=f16e364] [cursor=pointer]':
+              - /url: /en/novel/16
+            - 'link "#649 Chapter 649: An Unchangeable Situation!" [ref=f16e365] [cursor=pointer]':
+              - /url: /en/novel/16/chapter-649
+        - generic [ref=f16e366]:
+          - img [ref=f16e368]
+          - generic [ref=f16e370]:
+            - link "After Being Diagnosed with a Terminal Illness, the Fake Heiress Teams Up with a Rugged-looking Man to Prolong Her Life" [ref=f16e371] [cursor=pointer]:
+              - /url: /en/novel/17
+            - 'link "#172 Chapter 172: Don''t worry, I''m not in a relationship." [ref=f16e372] [cursor=pointer]':
+              - /url: /en/novel/17/chapter-172
+        - generic [ref=f16e373]:
+          - img [ref=f16e375]
+          - generic [ref=f16e377]:
+            - 'link "Crossover Anime/manga Invasion Single-player Game: I Rely on the Ability to Copy Love and Kill" [ref=f16e378] [cursor=pointer]':
+              - /url: /en/novel/18
+            - 'link "#74 Chapter 74: Marrying a Person" [ref=f16e379] [cursor=pointer]':
+              - /url: /en/novel/18/chapter-74
+        - generic [ref=f16e380]:
+          - img [ref=f16e382]
+          - generic [ref=f16e384]:
+            - 'link "Star Lord: My Summoning Pool is a Rice Pool" [ref=f16e385] [cursor=pointer]':
+              - /url: /en/novel/19
+            - 'link "#301 Chapter 301: Deep Sea Black Market" [ref=f16e386] [cursor=pointer]':
+              - /url: /en/novel/19/chapter-301
+        - generic [ref=f16e387]:
+          - img [ref=f16e389]
+          - generic [ref=f16e391]:
+            - link "I've Become a God, and You're Telling Me This Isn't a Game?" [ref=f16e392] [cursor=pointer]:
+              - /url: /en/novel/20
+            - 'link "#228 Chapter 228: The Supreme Leader" [ref=f16e393] [cursor=pointer]':
+              - /url: /en/novel/20/chapter-228
+        - generic [ref=f16e394]:
+          - img [ref=f16e396]
+          - generic [ref=f16e398]:
+            - link "Spirit Wizard" [ref=f16e399] [cursor=pointer]:
+              - /url: /en/novel/21
+            - 'link "#254 Chapter 254: Discovering a Strange Place" [ref=f16e400] [cursor=pointer]':
+              - /url: /en/novel/21/chapter-254
+        - button "Load More" [ref=f16e401]
+    - generic [ref=f16e402]:
+      - generic [ref=f16e403]:
+        - generic [ref=f16e404]:
+          - heading "Latest News" [level=2] [ref=f16e406]
+          - link "See More →" [ref=f16e407] [cursor=pointer]:
+            - /url: /en/news
+        - generic [ref=f16e408]:
+          - link "🎉 16th Giveaway Winners 🎉" [ref=f16e409] [cursor=pointer]:
+            - /url: /en/news/428
+          - link "🎉 Our 16th Giveaway is LIVE! 🎉" [ref=f16e410] [cursor=pointer]:
+            - /url: /en/news/427
+          - link "Version 1.13.3 - New Source Management & Bug Fixes!" [ref=f16e411] [cursor=pointer]:
+            - /url: /en/news/426
+      - generic [ref=f16e412]:
+        - generic [ref=f16e413]:
+          - heading "Daily Top Spenders" [level=2] [ref=f16e415]
+          - link "See More →" [ref=f16e416] [cursor=pointer]:
+            - /url: /en/leaderboard
+        - generic [ref=f16e417]:
+          - link "CadenF 805.63 Tickets" [ref=f16e418] [cursor=pointer]:
+            - /url: /en/profile/1
+            - generic [ref=f16e419]: CadenF
+            - generic [ref=f16e420]: 805.63 Tickets
+          - link "Ashley917 675.7 Tickets" [ref=f16e421] [cursor=pointer]:
+            - /url: /en/profile/2
+            - generic [ref=f16e422]: Ashley917
+            - generic [ref=f16e423]: 675.7 Tickets
+          - link "zerokings 87.83 Tickets" [ref=f16e424] [cursor=pointer]:
+            - /url: /en/profile/3
+            - generic [ref=f16e425]: zerokings
+            - generic [ref=f16e426]: 87.83 Tickets
+  - generic [ref=f16e427]:
+    - generic [ref=f16e428]:
+      - heading "Random Novels" [level=2] [ref=f16e430]
+      - link "See More →" [ref=f16e431] [cursor=pointer]:
+        - /url: /en/random-novels
+    - generic [ref=f16e432]:
+      - link "3.1 Binding the Shanhaijing Pearl at the Beginning, I Became the Global Treasure Hunt King action • 122 Ch" [ref=f16e433] [cursor=pointer]:
+        - /url: /en/novel/25
+        - generic [ref=f16e434]:
+          - img [ref=f16e436]
+          - generic [ref=f16e438]:
+            - img [ref=f16e439]
+            - text: "3.1"
+        - generic [ref=f16e441]:
+          - heading "Binding the Shanhaijing Pearl at the Beginning, I Became the Global Treasure Hunt King" [level=3] [ref=f16e442]
+          - generic [ref=f16e443]:
+            - generic [ref=f16e444]: action
+            - generic [ref=f16e445]: •
+            - generic [ref=f16e446]: 122 Ch
+      - 'link "2.2 Peninsula: Kpop Hit Maker drama • 191 Ch" [ref=f16e447] [cursor=pointer]':
+        - /url: /en/novel/26
+        - generic [ref=f16e448]:
+          - img [ref=f16e450]
+          - generic [ref=f16e452]:
+            - img [ref=f16e453]
+            - text: "2.2"
+        - generic [ref=f16e455]:
+          - 'heading "Peninsula: Kpop Hit Maker" [level=3] [ref=f16e456]'
+          - generic [ref=f16e457]:
+            - generic [ref=f16e458]: drama
+            - generic [ref=f16e459]: •
+            - generic [ref=f16e460]: 191 Ch
+      - 'link "2.5 Wuxia Crossover: Sweeping the Heavens action • 501 Ch" [ref=f16e461] [cursor=pointer]':
+        - /url: /en/novel/27
+        - generic [ref=f16e462]:
+          - img [ref=f16e464]
+          - generic [ref=f16e466]:
+            - img [ref=f16e467]
+            - text: "2.5"
+        - generic [ref=f16e469]:
+          - 'heading "Wuxia Crossover: Sweeping the Heavens" [level=3] [ref=f16e470]'
+          - generic [ref=f16e471]:
+            - generic [ref=f16e472]: action
+            - generic [ref=f16e473]: •
+            - generic [ref=f16e474]: 501 Ch
+      - link "2.5 Invincible Heavenly Emperor action • 3871 Ch" [ref=f16e475] [cursor=pointer]:
+        - /url: /en/novel/28
+        - generic [ref=f16e476]:
+          - img [ref=f16e478]
+          - generic [ref=f16e480]:
+            - img [ref=f16e481]
+            - text: "2.5"
+        - generic [ref=f16e483]:
+          - heading "Invincible Heavenly Emperor" [level=3] [ref=f16e484]
+          - generic [ref=f16e485]:
+            - generic [ref=f16e486]: action
+            - generic [ref=f16e487]: •
+            - generic [ref=f16e488]: 3871 Ch
+      - 'link "2.5 Naruto: I Was Spoiled by the Heavenly Curtain to Unify the Ninja World action • 96 Ch" [ref=f16e489] [cursor=pointer]':
+        - /url: /en/novel/29
+        - generic [ref=f16e490]:
+          - img [ref=f16e492]
+          - generic [ref=f16e494]:
+            - img [ref=f16e495]
+            - text: "2.5"
+        - generic [ref=f16e497]:
+          - 'heading "Naruto: I Was Spoiled by the Heavenly Curtain to Unify the Ninja World" [level=3] [ref=f16e498]'
+          - generic [ref=f16e499]:
+            - generic [ref=f16e500]: action
+            - generic [ref=f16e501]: •
+            - generic [ref=f16e502]: 96 Ch
+      - link "2.5 The Marvel World of Heroes action • 469 Ch" [ref=f16e503] [cursor=pointer]:
+        - /url: /en/novel/30
+        - generic [ref=f16e504]:
+          - img [ref=f16e506]
+          - generic [ref=f16e508]:
+            - img [ref=f16e509]
+            - text: "2.5"
+        - generic [ref=f16e511]:
+          - heading "The Marvel World of Heroes" [level=3] [ref=f16e512]
+          - generic [ref=f16e513]:
+            - generic [ref=f16e514]: action
+            - generic [ref=f16e515]: •
+            - generic [ref=f16e516]: 469 Ch
+      - link "3.3 Start with Uchiha to escape and sail action • 434 Ch" [ref=f16e517] [cursor=pointer]:
+        - /url: /en/novel/31
+        - generic [ref=f16e518]:
+          - img [ref=f16e520]
+          - generic [ref=f16e522]:
+            - img [ref=f16e523]
+            - text: "3.3"
+        - generic [ref=f16e525]:
+          - heading "Start with Uchiha to escape and sail" [level=3] [ref=f16e526]
+          - generic [ref=f16e527]:
+            - generic [ref=f16e528]: action
+            - generic [ref=f16e529]: •
+            - generic [ref=f16e530]: 434 Ch
+      - link "3.4 There are No Ancestors. They are All Made Up by Me. action • 328 Ch" [ref=f16e531] [cursor=pointer]:
+        - /url: /en/novel/32
+        - generic [ref=f16e532]:
+          - img [ref=f16e534]
+          - generic [ref=f16e536]:
+            - img [ref=f16e537]
+            - text: "3.4"
+        - generic [ref=f16e539]:
+          - heading "There are No Ancestors. They are All Made Up by Me." [level=3] [ref=f16e540]
+          - generic [ref=f16e541]:
+            - generic [ref=f16e542]: action
+            - generic [ref=f16e543]: •
+            - generic [ref=f16e544]: 328 Ch
+      - link "1.0 Overthrow the Han Dynasty action • 289 Ch" [ref=f16e545] [cursor=pointer]:
+        - /url: /en/novel/33
+        - generic [ref=f16e546]:
+          - img [ref=f16e548]
+          - generic [ref=f16e550]:
+            - img [ref=f16e551]
+            - text: "1.0"
+        - generic [ref=f16e553]:
+          - heading "Overthrow the Han Dynasty" [level=3] [ref=f16e554]
+          - generic [ref=f16e555]:
+            - generic [ref=f16e556]: action
+            - generic [ref=f16e557]: •
+            - generic [ref=f16e558]: 289 Ch
+      - link "4.1 A Crossover Anime/manga Business, Starting with the Ten Holy Blades Saving Himeko action • 158 Ch" [ref=f16e559] [cursor=pointer]:
+        - /url: /en/novel/34
+        - generic [ref=f16e560]:
+          - img [ref=f16e562]
+          - generic [ref=f16e564]:
+            - img [ref=f16e565]
+            - text: "4.1"
+        - generic [ref=f16e567]:
+          - heading "A Crossover Anime/manga Business, Starting with the Ten Holy Blades Saving Himeko" [level=3] [ref=f16e568]
+          - generic [ref=f16e569]:
+            - generic [ref=f16e570]: action
+            - generic [ref=f16e571]: •
+            - generic [ref=f16e572]: 158 Ch
+  - generic [ref=f16e574]:
+    - heading "Ready to Start Reading?" [level=2] [ref=f16e575]
+    - paragraph [ref=f16e576]: Join thousands of readers and discover your next favorite novel.
+    - link "Explore Novels" [ref=f16e577] [cursor=pointer]:
+      - /url: /en/novel-list

@@ -5,10 +5,12 @@ import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { navSections as sections } from "@/lib/navigation";
 import { SearchIcon } from "@/components/ui/Icons";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function Sidebar() {
   const [search, setSearch] = useState("");
   const [hydrated, setHydrated] = useState(false);
+  const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -76,12 +78,37 @@ export default function Sidebar() {
       </nav>
 
       <div className="px-4 pb-6 pt-4 border-t border-line">
-        <Link
-          href="/en/login"
-          className="block text-center text-sm px-4 py-2.5 rounded-lg bg-accent hover:bg-accent-dark text-white transition-colors"
-        >
-          Login
-        </Link>
+        {loading ? (
+          <div className="w-full h-10 rounded-lg bg-card-hover animate-pulse" />
+        ) : user ? (
+          <div className="space-y-2">
+            <Link
+              href={`/en/profile/${user.id}`}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-card-hover transition-colors"
+            >
+              <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center text-white text-sm font-bold shrink-0">
+                {(user.display_name || user.username)[0].toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-gray-200 truncate">{user.display_name || user.username}</p>
+                <p className="text-[10px] text-gray-500">{user.tickets.toLocaleString()} Tickets</p>
+              </div>
+            </Link>
+            <button
+              onClick={logout}
+              className="w-full text-center text-sm px-4 py-2 rounded-lg border border-red-900/30 text-red-400 hover:bg-red-900/20 transition-colors"
+            >
+              Logout
+            </button>
+          </div>
+        ) : (
+          <Link
+            href="/en/login"
+            className="block text-center text-sm px-4 py-2.5 rounded-lg bg-accent hover:bg-accent-dark text-white transition-colors"
+          >
+            Login
+          </Link>
+        )}
       </div>
     </aside>
   );

@@ -1,0 +1,146 @@
+- generic [active] [ref=f22e1]:
+  - complementary [ref=f22e2]:
+    - link "WTR-LAB" [ref=f22e4] [cursor=pointer]:
+      - /url: /en
+    - generic [ref=f22e6]:
+      - textbox "Search novels..." [ref=f22e7]
+      - button [ref=f22e8]:
+        - img [ref=f22e9]
+    - navigation [ref=f22e11]:
+      - generic [ref=f22e12]:
+        - paragraph [ref=f22e13]: Browse
+        - link "Finder" [ref=f22e14] [cursor=pointer]:
+          - /url: /en/novel-finder
+        - link "Novels" [ref=f22e15] [cursor=pointer]:
+          - /url: /en/novel-list
+        - link "Ranking" [ref=f22e16] [cursor=pointer]:
+          - /url: /en/ranking/daily
+        - link "Leaderboard" [ref=f22e17] [cursor=pointer]:
+          - /url: /en/leaderboard
+        - link "Library" [ref=f22e18] [cursor=pointer]:
+          - /url: /en/library
+      - generic [ref=f22e19]:
+        - paragraph [ref=f22e20]: Discover
+        - link "Trending" [ref=f22e21] [cursor=pointer]:
+          - /url: /en/trending
+        - link "Recommendations" [ref=f22e22] [cursor=pointer]:
+          - /url: /en/recommendation
+      - generic [ref=f22e23]:
+        - paragraph [ref=f22e24]: Community
+        - link "News" [ref=f22e25] [cursor=pointer]:
+          - /url: /en/news
+        - link "Stats" [ref=f22e26] [cursor=pointer]:
+          - /url: /en/public-stats
+        - link "Request Series" [ref=f22e27] [cursor=pointer]:
+          - /url: /en/profile/request-serie
+        - link "Vote Series" [ref=f22e28] [cursor=pointer]:
+          - /url: /en/profile/vote-serie
+      - generic [ref=f22e29]:
+        - paragraph [ref=f22e30]: Admin
+        - link "Import" [ref=f22e31] [cursor=pointer]:
+          - /url: /en/admin/import
+        - link "Requests" [ref=f22e32] [cursor=pointer]:
+          - /url: /en/admin/requests
+        - link "Manage" [ref=f22e33] [cursor=pointer]:
+          - /url: /en/admin/novels
+    - link "Login" [ref=f22e35] [cursor=pointer]:
+      - /url: /en/login
+  - generic [ref=f22e36]:
+    - main [ref=f22e37]:
+      - generic [ref=f22e38]:
+        - heading "Leaderboard" [level=1] [ref=f22e39]
+        - generic [ref=f22e40]:
+          - link "#1 M Mega_bells 3.569,76 Tickets" [ref=f22e41] [cursor=pointer]:
+            - /url: /en/profile/1
+            - generic [ref=f22e42]: "#1"
+            - generic [ref=f22e43]: M
+            - paragraph [ref=f22e45]: Mega_bells
+            - generic [ref=f22e46]: 3.569,76 Tickets
+          - link "#2 S StandardCrystal 2.907,17 Tickets" [ref=f22e47] [cursor=pointer]:
+            - /url: /en/profile/2
+            - generic [ref=f22e48]: "#2"
+            - generic [ref=f22e49]: S
+            - paragraph [ref=f22e51]: StandardCrystal
+            - generic [ref=f22e52]: 2.907,17 Tickets
+          - link "#3 A Alpha2 2.693,07 Tickets" [ref=f22e53] [cursor=pointer]:
+            - /url: /en/profile/3
+            - generic [ref=f22e54]: "#3"
+            - generic [ref=f22e55]: A
+            - paragraph [ref=f22e57]: Alpha2
+            - generic [ref=f22e58]: 2.693,07 Tickets
+          - link "#4 W WhisperWind 1.845,5 Tickets" [ref=f22e59] [cursor=pointer]:
+            - /url: /en/profile/4
+            - generic [ref=f22e60]: "#4"
+            - generic [ref=f22e61]: W
+            - paragraph [ref=f22e63]: WhisperWind
+            - generic [ref=f22e64]: 1.845,5 Tickets
+          - link "#5 N NightOwl 1.623,8 Tickets" [ref=f22e65] [cursor=pointer]:
+            - /url: /en/profile/5
+            - generic [ref=f22e66]: "#5"
+            - generic [ref=f22e67]: "N"
+            - paragraph [ref=f22e69]: NightOwl
+            - generic [ref=f22e70]: 1.623,8 Tickets
+          - link "#6 S SilverFox 1.412,25 Tickets" [ref=f22e71] [cursor=pointer]:
+            - /url: /en/profile/6
+            - generic [ref=f22e72]: "#6"
+            - generic [ref=f22e73]: S
+            - paragraph [ref=f22e75]: SilverFox
+            - generic [ref=f22e76]: 1.412,25 Tickets
+          - link "#7 C CrimsonTide 1.234 Tickets" [ref=f22e77] [cursor=pointer]:
+            - /url: /en/profile/7
+            - generic [ref=f22e78]: "#7"
+            - generic [ref=f22e79]: C
+            - paragraph [ref=f22e81]: CrimsonTide
+            - generic [ref=f22e82]: 1.234 Tickets
+          - link "#8 G GoldenEagle 1.112,9 Tickets" [ref=f22e83] [cursor=pointer]:
+            - /url: /en/profile/8
+            - generic [ref=f22e84]: "#8"
+            - generic [ref=f22e85]: G
+            - paragraph [ref=f22e87]: GoldenEagle
+            - generic [ref=f22e88]: 1.112,9 Tickets
+          - link "#9 S StormChaser 987,65 Tickets" [ref=f22e89] [cursor=pointer]:
+            - /url: /en/profile/9
+            - generic [ref=f22e90]: "#9"
+            - generic [ref=f22e91]: S
+            - paragraph [ref=f22e93]: StormChaser
+            - generic [ref=f22e94]: 987,65 Tickets
+          - link "#10 M MoonlitPath 876,54 Tickets" [ref=f22e95] [cursor=pointer]:
+            - /url: /en/profile/10
+            - generic [ref=f22e96]: "#10"
+            - generic [ref=f22e97]: M
+            - paragraph [ref=f22e99]: MoonlitPath
+            - generic [ref=f22e100]: 876,54 Tickets
+    - contentinfo [ref=f22e101]:
+      - generic [ref=f22e102]:
+        - generic [ref=f22e103]:
+          - link "Intro" [ref=f22e104] [cursor=pointer]:
+            - /url: /en
+          - link "About Us" [ref=f22e105] [cursor=pointer]:
+            - /url: /en/about-us
+          - link "Contact Us" [ref=f22e106] [cursor=pointer]:
+            - /url: /en/contact-us
+          - link "Trending" [ref=f22e107] [cursor=pointer]:
+            - /url: /en/trending
+          - link "Recommendations" [ref=f22e108] [cursor=pointer]:
+            - /url: /en/recommendation
+          - link "News" [ref=f22e109] [cursor=pointer]:
+            - /url: /en/news
+          - link "Changelog" [ref=f22e110] [cursor=pointer]:
+            - /url: /en/news?type=changelog
+          - link "DMCA" [ref=f22e111] [cursor=pointer]:
+            - /url: /en/dmca
+          - link "Cookie Policy" [ref=f22e112] [cursor=pointer]:
+            - /url: /en/cookie-policy
+          - link "Privacy Policy" [ref=f22e113] [cursor=pointer]:
+            - /url: /en/privacy-policy
+          - link "Terms of Use" [ref=f22e114] [cursor=pointer]:
+            - /url: /en/terms-of-use
+          - link "Stats" [ref=f22e115] [cursor=pointer]:
+            - /url: /en/public-stats
+          - link "Request Series" [ref=f22e116] [cursor=pointer]:
+            - /url: /en/profile/request-serie
+          - link "Vote Series" [ref=f22e117] [cursor=pointer]:
+            - /url: /en/profile/vote-serie
+        - paragraph [ref=f22e118]: Copyright © 2022 - wtr-lab.com v1.13.4
+  - button "Open Next.js Dev Tools" [ref=f22e124] [cursor=pointer]:
+    - img [ref=f22e125]

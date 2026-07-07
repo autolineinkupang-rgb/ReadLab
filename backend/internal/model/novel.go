@@ -23,6 +23,7 @@ type Novel struct {
 	AIPercent   string  `gorm:"size:10"`
 	Description string  `gorm:"type:text"`
 	CoverURL    string  `gorm:"size:1000"`
+	SourceURL   string  `gorm:"size:1000"`
 	RequestedBy string  `gorm:"size:200"`
 	ReleasedBy  string  `gorm:"size:200"`
 	AddedAt     time.Time `gorm:"autoCreateTime"`

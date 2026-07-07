@@ -7,6 +7,7 @@ import { browseLinks, discoverLinks, communityLinks, adminLinks } from "@/lib/na
 import { SearchIcon, CloseIcon, MenuIcon } from "@/components/ui/Icons";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -251,9 +252,7 @@ export default function Navbar() {
               <SearchIcon className="w-5 h-5" />
             </button>
 
-            <Button variant="primary" size="md" href="/en/login" className="hidden sm:inline-flex">
-              Login
-            </Button>
+            <UserMenu />
 
             {/* Hamburger */}
             <button
@@ -358,13 +357,140 @@ export default function Navbar() {
               ))}
             </div>
             <div className="pt-2 mt-2 border-t border-line px-3">
-              <Button variant="primary" size="md" href="/en/login" className="w-full py-2.5">
-                Login
-              </Button>
+              <MobileUserMenu closeMenu={() => setOpen(false)} />
             </div>
           </div>
         </div>
       )}
     </header>
+  );
+}
+
+function UserMenu() {
+  const { user, loading, logout } = useAuth();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  if (loading) return <div className="hidden sm:block w-20 h-9 rounded-lg bg-card-hover animate-pulse" />;
+
+  if (!user) {
+    return (
+      <Button variant="primary" size="md" href="/en/login" className="hidden sm:inline-flex">
+        Login
+      </Button>
+    );
+  }
+
+  const initial = (user.display_name || user.username)[0].toUpperCase();
+
+  return (
+    <div ref={ref} className="relative hidden sm:block">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-card-hover transition-colors"
+      >
+        <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white text-sm font-bold">
+          {initial}
+        </div>
+        <div className="text-left leading-tight">
+          <p className="text-sm font-medium text-gray-200">{user.display_name || user.username}</p>
+          <p className="text-[10px] text-gray-500">{user.tickets.toLocaleString()} tickets</p>
+        </div>
+        <svg className={`w-4 h-4 text-gray-500 transition-transform ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <Card className="absolute top-full right-0 mt-1 w-52 p-2 shadow-xl z-50" padding={false}>
+          <div className="px-3 py-2 border-b border-line mb-1">
+            <p className="text-sm font-medium text-gray-200">{user.display_name || user.username}</p>
+            <p className="text-xs text-gray-500">{user.email}</p>
+            <p className="text-xs text-accent mt-1">{user.tickets.toLocaleString()} Tickets</p>
+            {user.is_admin && (
+              <span className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-accent mt-1">Admin</span>
+            )}
+          </div>
+          <Link
+            href={`/en/profile/${user.id}`}
+            onClick={() => setOpen(false)}
+            className="block text-sm text-gray-300 hover:text-white px-3 py-2 rounded-lg hover:bg-card-hover transition-colors"
+          >
+            Profile
+          </Link>
+          <Link
+            href="/en/library"
+            onClick={() => setOpen(false)}
+            className="block text-sm text-gray-300 hover:text-white px-3 py-2 rounded-lg hover:bg-card-hover transition-colors"
+          >
+            Library
+          </Link>
+          <button
+            onClick={() => { setOpen(false); logout(); }}
+            className="w-full text-left text-sm text-red-400 hover:text-red-300 px-3 py-2 rounded-lg hover:bg-card-hover transition-colors"
+          >
+            Logout
+          </button>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function MobileUserMenu({ closeMenu }: { closeMenu: () => void }) {
+  const { user, loading, logout } = useAuth();
+
+  if (loading) return <div className="w-full h-10 rounded-lg bg-card-hover animate-pulse" />;
+
+  if (!user) {
+    return (
+      <Button variant="primary" size="md" href="/en/login" className="w-full py-2.5" onClick={closeMenu}>
+        Login
+      </Button>
+    );
+  }
+
+  const handleLogout = () => { closeMenu(); logout(); };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-3 px-3 py-2">
+        <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-white font-bold">
+          {(user.display_name || user.username)[0].toUpperCase()}
+        </div>
+        <div>
+          <p className="text-sm font-medium text-gray-200">{user.display_name || user.username}</p>
+          <p className="text-xs text-gray-500">{user.tickets.toLocaleString()} Tickets</p>
+          {user.is_admin && <span className="text-[10px] text-accent">Admin</span>}
+        </div>
+      </div>
+      <Link
+        href={`/en/profile/${user.id}`}
+        onClick={closeMenu}
+        className="block text-sm text-gray-300 hover:text-white px-3 py-2 rounded-lg hover:bg-card-hover transition-colors"
+      >
+        Profile
+      </Link>
+      <Link
+        href="/en/library"
+        onClick={closeMenu}
+        className="block text-sm text-gray-300 hover:text-white px-3 py-2 rounded-lg hover:bg-card-hover transition-colors"
+      >
+        Library
+      </Link>
+      <button
+        onClick={handleLogout}
+        className="w-full text-left text-sm text-red-400 hover:text-red-300 px-3 py-2 rounded-lg hover:bg-card-hover transition-colors"
+      >
+        Logout
+      </button>
+    </div>
   );
 }

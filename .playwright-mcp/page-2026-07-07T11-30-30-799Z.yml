@@ -1,0 +1,83 @@
+- generic [active] [ref=f18e1]:
+  - complementary [ref=f18e2]:
+    - link "WTR-LAB" [ref=f18e4] [cursor=pointer]:
+      - /url: /en
+    - generic [ref=f18e6]:
+      - textbox "Search novels..." [ref=f18e7]
+      - button [ref=f18e8]:
+        - img [ref=f18e9]
+    - navigation [ref=f18e11]:
+      - generic [ref=f18e12]:
+        - paragraph [ref=f18e13]: Browse
+        - link "Finder" [ref=f18e14] [cursor=pointer]:
+          - /url: /en/novel-finder
+        - link "Novels" [ref=f18e15] [cursor=pointer]:
+          - /url: /en/novel-list
+        - link "Ranking" [ref=f18e16] [cursor=pointer]:
+          - /url: /en/ranking/daily
+        - link "Leaderboard" [ref=f18e17] [cursor=pointer]:
+          - /url: /en/leaderboard
+        - link "Library" [ref=f18e18] [cursor=pointer]:
+          - /url: /en/library
+      - generic [ref=f18e19]:
+        - paragraph [ref=f18e20]: Discover
+        - link "Trending" [ref=f18e21] [cursor=pointer]:
+          - /url: /en/trending
+        - link "Recommendations" [ref=f18e22] [cursor=pointer]:
+          - /url: /en/recommendation
+      - generic [ref=f18e23]:
+        - paragraph [ref=f18e24]: Community
+        - link "News" [ref=f18e25] [cursor=pointer]:
+          - /url: /en/news
+        - link "Stats" [ref=f18e26] [cursor=pointer]:
+          - /url: /en/public-stats
+        - link "Request Series" [ref=f18e27] [cursor=pointer]:
+          - /url: /en/profile/request-serie
+        - link "Vote Series" [ref=f18e28] [cursor=pointer]:
+          - /url: /en/profile/vote-serie
+      - generic [ref=f18e29]:
+        - paragraph [ref=f18e30]: Admin
+        - link "Import" [ref=f18e31] [cursor=pointer]:
+          - /url: /en/admin/import
+        - link "Requests" [ref=f18e32] [cursor=pointer]:
+          - /url: /en/admin/requests
+        - link "Manage" [ref=f18e33] [cursor=pointer]:
+          - /url: /en/admin/novels
+    - link "Login" [ref=f18e35] [cursor=pointer]:
+      - /url: /en/login
+  - generic [ref=f18e36]:
+    - main [ref=f18e37]
+    - contentinfo [ref=f18e42]:
+      - generic [ref=f18e43]:
+        - generic [ref=f18e44]:
+          - link "Intro" [ref=f18e45] [cursor=pointer]:
+            - /url: /en
+          - link "About Us" [ref=f18e46] [cursor=pointer]:
+            - /url: /en/about-us
+          - link "Contact Us" [ref=f18e47] [cursor=pointer]:
+            - /url: /en/contact-us
+          - link "Trending" [ref=f18e48] [cursor=pointer]:
+            - /url: /en/trending
+          - link "Recommendations" [ref=f18e49] [cursor=pointer]:
+            - /url: /en/recommendation
+          - link "News" [ref=f18e50] [cursor=pointer]:
+            - /url: /en/news
+          - link "Changelog" [ref=f18e51] [cursor=pointer]:
+            - /url: /en/news?type=changelog
+          - link "DMCA" [ref=f18e52] [cursor=pointer]:
+            - /url: /en/dmca
+          - link "Cookie Policy" [ref=f18e53] [cursor=pointer]:
+            - /url: /en/cookie-policy
+          - link "Privacy Policy" [ref=f18e54] [cursor=pointer]:
+            - /url: /en/privacy-policy
+          - link "Terms of Use" [ref=f18e55] [cursor=pointer]:
+            - /url: /en/terms-of-use
+          - link "Stats" [ref=f18e56] [cursor=pointer]:
+            - /url: /en/public-stats
+          - link "Request Series" [ref=f18e57] [cursor=pointer]:
+            - /url: /en/profile/request-serie
+          - link "Vote Series" [ref=f18e58] [cursor=pointer]:
+            - /url: /en/profile/vote-serie
+        - paragraph [ref=f18e59]: Copyright © 2022 - wtr-lab.com v1.13.4
+  - button "Open Next.js Dev Tools" [ref=f18e65] [cursor=pointer]:
+    - img [ref=f18e66]

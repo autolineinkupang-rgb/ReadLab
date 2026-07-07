@@ -1,0 +1,306 @@
+- generic [active] [ref=f20e1]:
+  - complementary [ref=f20e2]:
+    - link "WTR-LAB" [ref=f20e4] [cursor=pointer]:
+      - /url: /en
+    - generic [ref=f20e6]:
+      - textbox "Search novels..." [ref=f20e7]
+      - button [ref=f20e8]:
+        - img [ref=f20e9]
+    - navigation [ref=f20e11]:
+      - generic [ref=f20e12]:
+        - paragraph [ref=f20e13]: Browse
+        - link "Finder" [ref=f20e14] [cursor=pointer]:
+          - /url: /en/novel-finder
+        - link "Novels" [ref=f20e15] [cursor=pointer]:
+          - /url: /en/novel-list
+        - link "Ranking" [ref=f20e16] [cursor=pointer]:
+          - /url: /en/ranking/daily
+        - link "Leaderboard" [ref=f20e17] [cursor=pointer]:
+          - /url: /en/leaderboard
+        - link "Library" [ref=f20e18] [cursor=pointer]:
+          - /url: /en/library
+      - generic [ref=f20e19]:
+        - paragraph [ref=f20e20]: Discover
+        - link "Trending" [ref=f20e21] [cursor=pointer]:
+          - /url: /en/trending
+        - link "Recommendations" [ref=f20e22] [cursor=pointer]:
+          - /url: /en/recommendation
+      - generic [ref=f20e23]:
+        - paragraph [ref=f20e24]: Community
+        - link "News" [ref=f20e25] [cursor=pointer]:
+          - /url: /en/news
+        - link "Stats" [ref=f20e26] [cursor=pointer]:
+          - /url: /en/public-stats
+        - link "Request Series" [ref=f20e27] [cursor=pointer]:
+          - /url: /en/profile/request-serie
+        - link "Vote Series" [ref=f20e28] [cursor=pointer]:
+          - /url: /en/profile/vote-serie
+      - generic [ref=f20e29]:
+        - paragraph [ref=f20e30]: Admin
+        - link "Import" [ref=f20e31] [cursor=pointer]:
+          - /url: /en/admin/import
+        - link "Requests" [ref=f20e32] [cursor=pointer]:
+          - /url: /en/admin/requests
+        - link "Manage" [ref=f20e33] [cursor=pointer]:
+          - /url: /en/admin/novels
+    - link "Login" [ref=f20e35] [cursor=pointer]:
+      - /url: /en/login
+  - generic [ref=f20e36]:
+    - main [ref=f20e37]:
+      - generic [ref=f20e38]:
+        - heading "Novel List" [level=1] [ref=f20e39]
+        - generic [ref=f20e40]:
+          - generic [ref=f20e41]:
+            - generic [ref=f20e42]: Order by
+            - combobox [ref=f20e43]:
+              - option "Addition Date" [selected]
+              - option "Name"
+              - option "View"
+              - option "Reader"
+              - option "Chapter"
+          - generic [ref=f20e44]:
+            - generic [ref=f20e45]: Order
+            - combobox [ref=f20e46]:
+              - option "Descending" [selected]
+              - option "Ascending"
+          - generic [ref=f20e47]:
+            - generic [ref=f20e48]: Status
+            - generic [ref=f20e49]:
+              - button "All" [ref=f20e50]
+              - button "Ongoing" [ref=f20e51]
+              - button "Completed" [ref=f20e52]
+          - generic [ref=f20e53]:
+            - text: Genre
+            - button "All" [ref=f20e54]
+        - paragraph [ref=f20e55]: 10 novels
+        - generic [ref=f20e56]:
+          - 'link "Red Chamber: Saving the Falling Heavens 红楼之挽天倾 completed 3.142v 1782ch ★3.5 3 readers 7.81M AI 8.92% Action Drama Fantasy" [ref=f20e57] [cursor=pointer]':
+            - /url: /en/novel/1/red-chamber-saving-falling-heavens
+            - img [ref=f20e59]
+            - generic [ref=f20e61]:
+              - 'heading "Red Chamber: Saving the Falling Heavens" [level=3] [ref=f20e62]'
+              - paragraph [ref=f20e63]: 红楼之挽天倾
+              - generic [ref=f20e64]:
+                - generic [ref=f20e65]: completed
+                - generic [ref=f20e66]: 3.142v
+                - generic [ref=f20e67]: 1782ch
+                - generic [ref=f20e68]: ★3.5
+              - generic [ref=f20e69]:
+                - generic [ref=f20e70]: 3 readers
+                - generic [ref=f20e71]: 7.81M
+                - generic [ref=f20e72]: AI 8.92%
+              - generic [ref=f20e73]:
+                - generic [ref=f20e74]: Action
+                - generic [ref=f20e75]: Drama
+                - generic [ref=f20e76]: Fantasy
+          - 'link "Traveling Simultaneously: Across the Heavens 同时穿越：纵横诸天 ongoing 2.105v 84ch ★3.8 13 readers 389K AI 63.1% Action Fantasy" [ref=f20e77] [cursor=pointer]':
+            - /url: /en/novel/2/traveling-simultaneously-across-heavens
+            - img [ref=f20e79]
+            - generic [ref=f20e81]:
+              - 'heading "Traveling Simultaneously: Across the Heavens" [level=3] [ref=f20e82]'
+              - paragraph [ref=f20e83]: 同时穿越：纵横诸天
+              - generic [ref=f20e84]:
+                - generic [ref=f20e85]: ongoing
+                - generic [ref=f20e86]: 2.105v
+                - generic [ref=f20e87]: 84ch
+                - generic [ref=f20e88]: ★3.8
+              - generic [ref=f20e89]:
+                - generic [ref=f20e90]: 13 readers
+                - generic [ref=f20e91]: 389K
+                - generic [ref=f20e92]: AI 63.1%
+              - generic [ref=f20e93]:
+                - generic [ref=f20e94]: Action
+                - generic [ref=f20e95]: Fantasy
+          - link "After He Remarrying a Wealthy Young Man from Beijing's Circle, My Childhood Sweethearts Were Furious 改嫁京圈太子爷后，竹马们气疯了 completed 4.521v 1051ch ★4.0 11 readers 1.83M AI 4.76% Drama Romance Urban Life" [ref=f20e96] [cursor=pointer]:
+            - /url: /en/novel/3/remarrying-wealthy-beijing
+            - img [ref=f20e98]
+            - generic [ref=f20e100]:
+              - heading "After He Remarrying a Wealthy Young Man from Beijing's Circle, My Childhood Sweethearts Were Furious" [level=3] [ref=f20e101]
+              - paragraph [ref=f20e102]: 改嫁京圈太子爷后，竹马们气疯了
+              - generic [ref=f20e103]:
+                - generic [ref=f20e104]: completed
+                - generic [ref=f20e105]: 4.521v
+                - generic [ref=f20e106]: 1051ch
+                - generic [ref=f20e107]: ★4.0
+              - generic [ref=f20e108]:
+                - generic [ref=f20e109]: 11 readers
+                - generic [ref=f20e110]: 1.83M
+                - generic [ref=f20e111]: AI 4.76%
+              - generic [ref=f20e112]:
+                - generic [ref=f20e113]: Drama
+                - generic [ref=f20e114]: Romance
+                - generic [ref=f20e115]: Urban Life
+          - 'link "Reborn in 1983: My Wife is a Heiress from Beijing''s Elite Circle 重生1983：我妻京圈大小姐 ongoing 712v 1758ch ★3.2 9 readers 2.49M AI 4.32% Action Drama Urban Life" [ref=f20e116] [cursor=pointer]':
+            - /url: /en/novel/4/reborn-1983-beijing-elite
+            - img [ref=f20e118]
+            - generic [ref=f20e120]:
+              - 'heading "Reborn in 1983: My Wife is a Heiress from Beijing''s Elite Circle" [level=3] [ref=f20e121]'
+              - paragraph [ref=f20e122]: 重生1983：我妻京圈大小姐
+              - generic [ref=f20e123]:
+                - generic [ref=f20e124]: ongoing
+                - generic [ref=f20e125]: 712v
+                - generic [ref=f20e126]: 1758ch
+                - generic [ref=f20e127]: ★3.2
+              - generic [ref=f20e128]:
+                - generic [ref=f20e129]: 9 readers
+                - generic [ref=f20e130]: 2.49M
+                - generic [ref=f20e131]: AI 4.32%
+              - generic [ref=f20e132]:
+                - generic [ref=f20e133]: Action
+                - generic [ref=f20e134]: Drama
+                - generic [ref=f20e135]: Urban Life
+          - 'link "Real Dolls: I Use Dolls to Create Perfect Accidents 真实人偶，我用人偶制造完美意外 completed 580v 944ch ★3.0 59 readers 1.81M AI 100% Action Horror Mystery" [ref=f20e136] [cursor=pointer]':
+            - /url: /en/novel/5/real-dolls-perfect-accidents
+            - img [ref=f20e138]
+            - generic [ref=f20e140]:
+              - 'heading "Real Dolls: I Use Dolls to Create Perfect Accidents" [level=3] [ref=f20e141]'
+              - paragraph [ref=f20e142]: 真实人偶，我用人偶制造完美意外
+              - generic [ref=f20e143]:
+                - generic [ref=f20e144]: completed
+                - generic [ref=f20e145]: 580v
+                - generic [ref=f20e146]: 944ch
+                - generic [ref=f20e147]: ★3.0
+              - generic [ref=f20e148]:
+                - generic [ref=f20e149]: 59 readers
+                - generic [ref=f20e150]: 1.81M
+                - generic [ref=f20e151]: AI 100%
+              - generic [ref=f20e152]:
+                - generic [ref=f20e153]: Action
+                - generic [ref=f20e154]: Horror
+                - generic [ref=f20e155]: Mystery
+          - 'link "Attack on Titan: I''m an Ackerman 什么！我竟然是耶格尔派？ ongoing 361v 93ch ★3.6 28 readers 156K AI 71% Action Fan-Fiction" [ref=f20e156] [cursor=pointer]':
+            - /url: /en/novel/6/attack-on-titan-ackerman
+            - img [ref=f20e158]
+            - generic [ref=f20e160]:
+              - 'heading "Attack on Titan: I''m an Ackerman" [level=3] [ref=f20e161]'
+              - paragraph [ref=f20e162]: 什么！我竟然是耶格尔派？
+              - generic [ref=f20e163]:
+                - generic [ref=f20e164]: ongoing
+                - generic [ref=f20e165]: 361v
+                - generic [ref=f20e166]: 93ch
+                - generic [ref=f20e167]: ★3.6
+              - generic [ref=f20e168]:
+                - generic [ref=f20e169]: 28 readers
+                - generic [ref=f20e170]: 156K
+                - generic [ref=f20e171]: AI 71%
+              - generic [ref=f20e172]:
+                - generic [ref=f20e173]: Action
+                - generic [ref=f20e174]: Fan-Fiction
+          - link "The Background is So Invincible That the System Was Upgraded Overnight! 背景太无敌，吓得系统连夜升级！ ongoing 588v 998ch ★4.1 45 readers 2.34M AI 100% Action Comedy Fantasy" [ref=f20e175] [cursor=pointer]:
+            - /url: /en/novel/7/invincible-background-system-upgraded
+            - img [ref=f20e177]
+            - generic [ref=f20e179]:
+              - heading "The Background is So Invincible That the System Was Upgraded Overnight!" [level=3] [ref=f20e180]
+              - paragraph [ref=f20e181]: 背景太无敌，吓得系统连夜升级！
+              - generic [ref=f20e182]:
+                - generic [ref=f20e183]: ongoing
+                - generic [ref=f20e184]: 588v
+                - generic [ref=f20e185]: 998ch
+                - generic [ref=f20e186]: ★4.1
+              - generic [ref=f20e187]:
+                - generic [ref=f20e188]: 45 readers
+                - generic [ref=f20e189]: 2.34M
+                - generic [ref=f20e190]: AI 100%
+              - generic [ref=f20e191]:
+                - generic [ref=f20e192]: Action
+                - generic [ref=f20e193]: Comedy
+                - generic [ref=f20e194]: Fantasy
+          - 'link "Global Cultivation: The Salted-fish Undergraduate with an Alchemy Furnace 全民修仙：小师妹是丹道本科生 completed 8.120v 470ch ★3.9 13 readers 871K AI 21.3% Adventure Comedy Fantasy" [ref=f20e195] [cursor=pointer]':
+            - /url: /en/novel/8/global-cultivation-alchemy-furnace
+            - img [ref=f20e197]
+            - generic [ref=f20e199]:
+              - 'heading "Global Cultivation: The Salted-fish Undergraduate with an Alchemy Furnace" [level=3] [ref=f20e200]'
+              - paragraph [ref=f20e201]: 全民修仙：小师妹是丹道本科生
+              - generic [ref=f20e202]:
+                - generic [ref=f20e203]: completed
+                - generic [ref=f20e204]: 8.120v
+                - generic [ref=f20e205]: 470ch
+                - generic [ref=f20e206]: ★3.9
+              - generic [ref=f20e207]:
+                - generic [ref=f20e208]: 13 readers
+                - generic [ref=f20e209]: 871K
+                - generic [ref=f20e210]: AI 21.3%
+              - generic [ref=f20e211]:
+                - generic [ref=f20e212]: Adventure
+                - generic [ref=f20e213]: Comedy
+                - generic [ref=f20e214]: Fantasy
+          - link "Black Rock Shooter's Persona 综漫：黑岩小姐的人格面具 completed 89v 154ch ★3.4 21 readers 344K AI 39% Action Fan-Fiction Psychological" [ref=f20e215] [cursor=pointer]:
+            - /url: /en/novel/9/black-rock-shooter-persona
+            - img [ref=f20e217]
+            - generic [ref=f20e219]:
+              - heading "Black Rock Shooter's Persona" [level=3] [ref=f20e220]
+              - paragraph [ref=f20e221]: 综漫：黑岩小姐的人格面具
+              - generic [ref=f20e222]:
+                - generic [ref=f20e223]: completed
+                - generic [ref=f20e224]: 89v
+                - generic [ref=f20e225]: 154ch
+                - generic [ref=f20e226]: ★3.4
+              - generic [ref=f20e227]:
+                - generic [ref=f20e228]: 21 readers
+                - generic [ref=f20e229]: 344K
+                - generic [ref=f20e230]: AI 39%
+              - generic [ref=f20e231]:
+                - generic [ref=f20e232]: Action
+                - generic [ref=f20e233]: Fan-Fiction
+                - generic [ref=f20e234]: Psychological
+          - link "Reversing the Immortal Path 穿越之逆转仙途 completed 27v 261ch ★3.7 26 readers 626K AI 19.2% Fantasy Martial Arts Romance" [ref=f20e235] [cursor=pointer]:
+            - /url: /en/novel/10/reversing-immortal-path
+            - img [ref=f20e237]
+            - generic [ref=f20e239]:
+              - heading "Reversing the Immortal Path" [level=3] [ref=f20e240]
+              - paragraph [ref=f20e241]: 穿越之逆转仙途
+              - generic [ref=f20e242]:
+                - generic [ref=f20e243]: completed
+                - generic [ref=f20e244]: 27v
+                - generic [ref=f20e245]: 261ch
+                - generic [ref=f20e246]: ★3.7
+              - generic [ref=f20e247]:
+                - generic [ref=f20e248]: 26 readers
+                - generic [ref=f20e249]: 626K
+                - generic [ref=f20e250]: AI 19.2%
+              - generic [ref=f20e251]:
+                - generic [ref=f20e252]: Fantasy
+                - generic [ref=f20e253]: Martial Arts
+                - generic [ref=f20e254]: Romance
+        - generic [ref=f20e255]:
+          - button "Previous" [disabled] [ref=f20e256]
+          - generic [ref=f20e257]: "1"
+          - button "2" [ref=f20e258]
+          - generic [ref=f20e259]: ...
+          - button "7524" [ref=f20e260]
+          - button "Next" [ref=f20e261]
+          - generic [ref=f20e262]: 1 / 7524
+    - contentinfo [ref=f20e263]:
+      - generic [ref=f20e264]:
+        - generic [ref=f20e265]:
+          - link "Intro" [ref=f20e266] [cursor=pointer]:
+            - /url: /en
+          - link "About Us" [ref=f20e267] [cursor=pointer]:
+            - /url: /en/about-us
+          - link "Contact Us" [ref=f20e268] [cursor=pointer]:
+            - /url: /en/contact-us
+          - link "Trending" [ref=f20e269] [cursor=pointer]:
+            - /url: /en/trending
+          - link "Recommendations" [ref=f20e270] [cursor=pointer]:
+            - /url: /en/recommendation
+          - link "News" [ref=f20e271] [cursor=pointer]:
+            - /url: /en/news
+          - link "Changelog" [ref=f20e272] [cursor=pointer]:
+            - /url: /en/news?type=changelog
+          - link "DMCA" [ref=f20e273] [cursor=pointer]:
+            - /url: /en/dmca
+          - link "Cookie Policy" [ref=f20e274] [cursor=pointer]:
+            - /url: /en/cookie-policy
+          - link "Privacy Policy" [ref=f20e275] [cursor=pointer]:
+            - /url: /en/privacy-policy
+          - link "Terms of Use" [ref=f20e276] [cursor=pointer]:
+            - /url: /en/terms-of-use
+          - link "Stats" [ref=f20e277] [cursor=pointer]:
+            - /url: /en/public-stats
+          - link "Request Series" [ref=f20e278] [cursor=pointer]:
+            - /url: /en/profile/request-serie
+          - link "Vote Series" [ref=f20e279] [cursor=pointer]:
+            - /url: /en/profile/vote-serie
+        - paragraph [ref=f20e280]: Copyright © 2022 - wtr-lab.com v1.13.4
+  - button "Open Next.js Dev Tools" [ref=f20e286] [cursor=pointer]:
+    - img [ref=f20e287]

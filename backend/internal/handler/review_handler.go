@@ -56,10 +56,13 @@ func (h *ReviewHandler) List(c *gin.Context) {
 	}
 
 	var reviews []model.Review
-	h.DB.Where("novel_id = ?", novelID).
+	if err := h.DB.Where("novel_id = ?", novelID).
 		Preload("User").
 		Order("created_at DESC").
-		Find(&reviews)
+		Find(&reviews).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch reviews"})
+		return
+	}
 
 	var totalCount int64
 	h.DB.Model(&model.Review{}).Where("novel_id = ?", novelID).Count(&totalCount)
@@ -101,7 +104,11 @@ func (h *ReviewHandler) List(c *gin.Context) {
 }
 
 func (h *ReviewHandler) Create(c *gin.Context) {
-	userID, _ := c.Get("user_id")
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 
 	novelID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -152,19 +159,21 @@ func (h *ReviewHandler) Create(c *gin.Context) {
 		return
 	}
 
-	var avg float64
-	var count int64
-	h.DB.Model(&model.Review{}).
-		Select("avg(rating)").
-		Where("novel_id = ?", novelID).
-		Scan(&avg)
-	h.DB.Model(&model.Review{}).
-		Where("novel_id = ?", novelID).
-		Count(&count)
-
-	h.DB.Model(&novel).Updates(map[string]interface{}{
-		"Rating":      avg,
-		"RatingCount": count,
+	h.DB.Transaction(func(tx *gorm.DB) error {
+		var avg float64
+		var count int64
+		tx.Model(&model.Review{}).
+			Select("COALESCE(AVG(rating), 0)").
+			Where("novel_id = ?", novelID).
+			Scan(&avg)
+		tx.Model(&model.Review{}).
+			Where("novel_id = ?", novelID).
+			Count(&count)
+		return tx.Model(&model.Novel{}).Where("id = ?", novelID).
+			Updates(map[string]interface{}{
+				"Rating":      avg,
+				"RatingCount": count,
+			}).Error
 	})
 
 	h.DB.Preload("User").First(&review, review.ID)

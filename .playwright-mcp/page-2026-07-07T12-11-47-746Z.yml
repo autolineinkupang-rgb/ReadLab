@@ -1,0 +1,95 @@
+- generic [active] [ref=f31e1]:
+  - complementary [ref=f31e2]:
+    - link "WTR-LAB" [ref=f31e4] [cursor=pointer]:
+      - /url: /en
+    - generic [ref=f31e6]:
+      - textbox "Search novels..." [ref=f31e7]
+      - button [ref=f31e8]:
+        - img [ref=f31e9]
+    - navigation [ref=f31e11]:
+      - generic [ref=f31e12]:
+        - paragraph [ref=f31e13]: Browse
+        - link "Finder" [ref=f31e14] [cursor=pointer]:
+          - /url: /en/novel-finder
+        - link "Novels" [ref=f31e15] [cursor=pointer]:
+          - /url: /en/novel-list
+        - link "Ranking" [ref=f31e16] [cursor=pointer]:
+          - /url: /en/ranking/daily
+        - link "Leaderboard" [ref=f31e17] [cursor=pointer]:
+          - /url: /en/leaderboard
+        - link "Library" [ref=f31e18] [cursor=pointer]:
+          - /url: /en/library
+      - generic [ref=f31e19]:
+        - paragraph [ref=f31e20]: Discover
+        - link "Trending" [ref=f31e21] [cursor=pointer]:
+          - /url: /en/trending
+        - link "Recommendations" [ref=f31e22] [cursor=pointer]:
+          - /url: /en/recommendation
+      - generic [ref=f31e23]:
+        - paragraph [ref=f31e24]: Community
+        - link "News" [ref=f31e25] [cursor=pointer]:
+          - /url: /en/news
+        - link "Stats" [ref=f31e26] [cursor=pointer]:
+          - /url: /en/public-stats
+        - link "Request Series" [ref=f31e27] [cursor=pointer]:
+          - /url: /en/profile/request-serie
+        - link "Vote Series" [ref=f31e28] [cursor=pointer]:
+          - /url: /en/profile/vote-serie
+      - generic [ref=f31e29]:
+        - paragraph [ref=f31e30]: Admin
+        - link "Import" [ref=f31e31] [cursor=pointer]:
+          - /url: /en/admin/import
+        - link "Requests" [ref=f31e32] [cursor=pointer]:
+          - /url: /en/admin/requests
+        - link "Manage" [ref=f31e33] [cursor=pointer]:
+          - /url: /en/admin/novels
+    - link "Login" [ref=f31e35] [cursor=pointer]:
+      - /url: /en/login
+  - generic [ref=f31e36]:
+    - main [ref=f31e37]:
+      - generic [ref=f31e38]:
+        - heading "Import Novel" [level=1] [ref=f31e39]
+        - paragraph [ref=f31e40]: Search and import novels from NovelUpdates via the free Consumet API.
+        - generic [ref=f31e42]:
+          - textbox "Search novel name..." [ref=f31e43]
+          - button "Search" [ref=f31e44]
+        - generic [ref=f31e45]:
+          - checkbox "Also import chapter list" [ref=f31e46]
+          - text: Also import chapter list
+        - generic [ref=f31e47]:
+          - img [ref=f31e48]
+          - paragraph [ref=f31e50]: Search for novels from NovelUpdates to import.
+    - contentinfo [ref=f31e51]:
+      - generic [ref=f31e52]:
+        - generic [ref=f31e53]:
+          - link "Intro" [ref=f31e54] [cursor=pointer]:
+            - /url: /en
+          - link "About Us" [ref=f31e55] [cursor=pointer]:
+            - /url: /en/about-us
+          - link "Contact Us" [ref=f31e56] [cursor=pointer]:
+            - /url: /en/contact-us
+          - link "Trending" [ref=f31e57] [cursor=pointer]:
+            - /url: /en/trending
+          - link "Recommendations" [ref=f31e58] [cursor=pointer]:
+            - /url: /en/recommendation
+          - link "News" [ref=f31e59] [cursor=pointer]:
+            - /url: /en/news
+          - link "Changelog" [ref=f31e60] [cursor=pointer]:
+            - /url: /en/news?type=changelog
+          - link "DMCA" [ref=f31e61] [cursor=pointer]:
+            - /url: /en/dmca
+          - link "Cookie Policy" [ref=f31e62] [cursor=pointer]:
+            - /url: /en/cookie-policy
+          - link "Privacy Policy" [ref=f31e63] [cursor=pointer]:
+            - /url: /en/privacy-policy
+          - link "Terms of Use" [ref=f31e64] [cursor=pointer]:
+            - /url: /en/terms-of-use
+          - link "Stats" [ref=f31e65] [cursor=pointer]:
+            - /url: /en/public-stats
+          - link "Request Series" [ref=f31e66] [cursor=pointer]:
+            - /url: /en/profile/request-serie
+          - link "Vote Series" [ref=f31e67] [cursor=pointer]:
+            - /url: /en/profile/vote-serie
+        - paragraph [ref=f31e68]: Copyright © 2022 - wtr-lab.com v1.13.4
+  - button "Open Next.js Dev Tools" [ref=f31e74] [cursor=pointer]:
+    - img [ref=f31e75]

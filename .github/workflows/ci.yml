@@ -1,0 +1,45 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: wtrlab
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: wtrlab_test
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd pg_isready -U wtrlab
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+      - run: cd backend && go build ./...
+      - run: cd backend && go vet ./...
+      - run: cd backend && govulncheck ./...
+      - run: cd backend && go test ./... -v
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: cd frontend && npm ci
+      - run: cd frontend && npm run lint
+      - name: Run npm audit
+        run: cd frontend && npm audit --audit-level=high || true
+      - run: cd frontend && npm run build

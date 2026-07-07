@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { auth } from "@/lib/api";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login, register } = useAuth();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,9 +21,9 @@ export default function LoginPage() {
 
     try {
       if (mode === "login") {
-        await auth.login(email, password);
+        await login(email, password);
       } else {
-        await auth.register(username, email, password);
+        await register(username, email, password);
       }
       router.push("/en");
       router.refresh();
@@ -75,6 +76,7 @@ export default function LoginPage() {
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 minLength={3}
+                autoComplete="username"
                 placeholder="Your username"
                 className="w-full bg-card-hover border border-line-light rounded-lg px-4 py-2.5 text-sm text-gray-200 outline-none focus:border-violet-600 transition-colors"
               />
@@ -88,6 +90,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
               placeholder="your@email.com"
               className="w-full bg-card-hover border border-line-light rounded-lg px-4 py-2.5 text-sm text-gray-200 outline-none focus:border-violet-600 transition-colors"
             />
@@ -101,6 +104,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
+              autoComplete="current-password"
               placeholder="••••••••"
               className="w-full bg-card-hover border border-line-light rounded-lg px-4 py-2.5 text-sm text-gray-200 outline-none focus:border-violet-600 transition-colors"
             />

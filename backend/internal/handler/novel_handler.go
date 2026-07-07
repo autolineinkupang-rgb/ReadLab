@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -164,7 +165,8 @@ func (h *NovelHandler) Chapters(c *gin.Context) {
 
 	var chapters []model.Chapter
 	offset := (page - 1) * limit
-	if err := h.DB.Where("novel_id = ?", novelID).
+	if err := h.DB.Select("id", "novel_id", "number", "title", "is_locked", "ticket_cost", "created_at", "updated_at").
+		Where("novel_id = ?", novelID).
 		Order("number ASC").
 		Offset(offset).Limit(limit).
 		Find(&chapters).Error; err != nil {
@@ -178,6 +180,90 @@ func (h *NovelHandler) Chapters(c *gin.Context) {
 		"limit":   limit,
 		"total":   total,
 	})
+}
+
+func (h *NovelHandler) GetChapterByNum(c *gin.Context) {
+	novelID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid novel id"})
+		return
+	}
+
+	num, err := strconv.Atoi(c.Param("num"))
+	if err != nil || num < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid chapter number"})
+		return
+	}
+
+	var chapter model.Chapter
+	if err := h.DB.Preload("Novel").Where("novel_id = ? AND number = ?", novelID, num).First(&chapter).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "chapter not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if chapter.IsLocked {
+		userID, exists := c.Get("user_id")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "login required to access locked chapter"})
+			return
+		}
+
+		var user model.User
+		if err := h.DB.First(&user, userID).Error; err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not found"})
+			return
+		}
+
+		var existingTx model.TicketTransaction
+		err := h.DB.Where("user_id = ? AND ref_type = ? AND ref_id = ?", user.ID, "chapter", chapter.ID).First(&existingTx).Error
+		if err == nil {
+			c.JSON(http.StatusOK, chapter)
+			return
+		}
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
+			return
+		}
+
+		err = h.DB.Transaction(func(tx *gorm.DB) error {
+			var txUser model.User
+			if err := tx.First(&txUser, user.ID).Error; err != nil {
+				return err
+			}
+			if txUser.Tickets < float64(chapter.TicketCost) {
+				return ErrInsufficientTickets
+			}
+			if err := tx.Model(&txUser).Update("tickets", gorm.Expr("tickets - ?", chapter.TicketCost)).Error; err != nil {
+				return err
+			}
+			txRecord := model.TicketTransaction{
+				UserID:  user.ID,
+				Amount:  -float64(chapter.TicketCost),
+				Type:    "spend",
+				RefType: "chapter",
+				RefID:   chapter.ID,
+				Note:    "Unlock chapter " + strconv.Itoa(chapter.Number) + " of " + chapter.Novel.Title,
+			}
+			if err := tx.Create(&txRecord).Error; err != nil {
+				return err
+			}
+			return nil
+		})
+		if err != nil {
+			if errors.Is(err, ErrInsufficientTickets) {
+				c.JSON(http.StatusPaymentRequired, gin.H{"error": "insufficient tickets"})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to process ticket payment"})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, chapter)
 }
 
 func (h *NovelHandler) Random(c *gin.Context) {
@@ -224,14 +310,25 @@ func (h *NovelHandler) Recommendations(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": novels})
 }
 
+type CreateChapterItem struct {
+	Number  int    `json:"number"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
+}
+
 type CreateNovelRequest struct {
-	Title       string   `json:"title" binding:"required"`
-	AltTitle    string   `json:"alt_title"`
-	Author      string   `json:"author"`
-	Status      string   `json:"status"`
-	Description string   `json:"description"`
-	CoverURL    string   `json:"cover_url"`
-	GenreIDs    []uint   `json:"genre_ids"`
+	Title       string              `json:"title" binding:"required"`
+	AltTitle    string              `json:"alt_title"`
+	Author      string              `json:"author"`
+	Status      string              `json:"status"`
+	Description string              `json:"description"`
+	CoverURL    string              `json:"cover_url"`
+	Chars       string              `json:"chars"`
+	AIPercent   string              `json:"ai_percent"`
+	Rating      float64             `json:"rating"`
+	SourceURL   string              `json:"source_url"`
+	GenreIDs    []uint              `json:"genre_ids"`
+	Chapters    []CreateChapterItem `json:"chapters"`
 }
 
 func (h *NovelHandler) Create(c *gin.Context) {
@@ -252,6 +349,11 @@ func (h *NovelHandler) Create(c *gin.Context) {
 		Status:      req.Status,
 		Description: req.Description,
 		CoverURL:    req.CoverURL,
+		SourceURL:   req.SourceURL,
+		Chars:       req.Chars,
+		AIPercent:   req.AIPercent,
+		Rating:      req.Rating,
+		Chapters:    len(req.Chapters),
 	}
 
 	if novel.Status == "" {
@@ -269,6 +371,17 @@ func (h *NovelHandler) Create(c *gin.Context) {
 		}
 		if len(genres) > 0 {
 			if err := tx.Model(&novel).Association("Genres").Append(genres); err != nil {
+				return err
+			}
+		}
+		for _, ch := range req.Chapters {
+			chapter := model.Chapter{
+				NovelID: novel.ID,
+				Number:  ch.Number,
+				Title:   ch.Title,
+				Content: ch.Content,
+			}
+			if err := tx.Create(&chapter).Error; err != nil {
 				return err
 			}
 		}
@@ -290,6 +403,10 @@ type UpdateNovelRequest struct {
 	Status      string   `json:"status"`
 	Description string   `json:"description"`
 	CoverURL    string   `json:"cover_url"`
+	Chars       string   `json:"chars"`
+	AIPercent   string   `json:"ai_percent"`
+	Rating      *float64 `json:"rating"`
+	SourceURL   string   `json:"source_url"`
 	GenreIDs    []uint   `json:"genre_ids"`
 }
 
@@ -332,6 +449,15 @@ func (h *NovelHandler) Update(c *gin.Context) {
 	}
 	if req.CoverURL != "" {
 		updates["cover_url"] = req.CoverURL
+	}
+	if req.Chars != "" {
+		updates["chars"] = req.Chars
+	}
+	if req.AIPercent != "" {
+		updates["ai_percent"] = req.AIPercent
+	}
+	if req.Rating != nil {
+		updates["rating"] = *req.Rating
 	}
 
 	err = h.DB.Transaction(func(tx *gorm.DB) error {
