@@ -35,6 +35,7 @@ func main() {
 		&model.News{},
 		&model.ReadingHistory{},
 		&model.NovelFollow{},
+		&model.Review{},
 	); err != nil {
 		log.Fatalf("failed to migrate: %v", err)
 	}
