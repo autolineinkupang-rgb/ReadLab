@@ -1,0 +1,117 @@
+[     135ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[     170ms] [LOG] [Fast Refresh] done in 135ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[     358ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[     398ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[     672ms] [ERROR] Each child in a list should have a unique "key" prop.%s%s See https://react.dev/link/warning-keys for more information. 
+
+Check the render method of `div`.  It was passed a child from AdminChaptersPage. @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:3318
+[     865ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[     967ms] [LOG] [Fast Refresh] done in 202ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   33924ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   33930ms] [ERROR] ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx:517:5
+Expression expected
+  515 |         </div>
+  516 |       )}
+> 517 |     </div>
+      |     ^
+  518 |   );
+  519 | }
+  520 |
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Client Component Browser]
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Client Component SSR]
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:3318
+[   33931ms] [ERROR] ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx:517:6
+Unterminated regexp literal
+  515 |         </div>
+  516 |       )}
+> 517 |     </div>
+      |      ^^^^^
+  518 |   );
+  519 | }
+  520 |
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Client Component Browser]
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Client Component SSR]
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:3318
+[   51023ms] [ERROR] ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx:496:7
+Expected '</', got ')'
+  494 |           )}
+  495 |         </Card>
+> 496 |       ))}
+      |       ^
+  497 |       {totalPages > 1 && (
+  498 |             <div className="flex items-center justify-center gap-2 mt-8">
+  499 |               <button
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Client Component Browser]
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Client Component SSR]
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:3318
+[   51035ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   59355ms] [ERROR] ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx:516:11
+Expected '</', got 'ident'
+  514 |             </div>
+  515 |           )}
+> 516 |         </div>
+      |           ^^^
+  517 |       )}
+  518 |     </div>
+  519 |   );
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Client Component Browser]
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Client Component SSR]
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:3318
+[   59367ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[   81789ms] [ERROR] ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx:517:6
+Unterminated regexp literal
+  515 |           )}
+  516 |         </>
+> 517 |     </div>
+      |      ^^^^^
+  518 |   );
+  519 | }
+  520 |
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Client Component Browser]
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Client Component SSR]
+    ./src/app/en/(main)/admin/novels/[id]/chapters/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:3318
+[   81794ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  110299ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  110624ms] [LOG] [Fast Refresh] done in 251ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  110725ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477
+[  110901ms] [LOG] [Fast Refresh] done in 276ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1ybzpk2._.js:2477

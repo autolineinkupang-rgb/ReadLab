@@ -7,9 +7,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"gorm.io/gorm"
+	"wtr-lab-clone/backend/internal/model"
 )
 
-func AuthRequired(jwtSecret string) gin.HandlerFunc {
+func AuthRequired(jwtSecret string, db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenStr := ""
 
@@ -58,13 +60,18 @@ func AuthRequired(jwtSecret string) gin.HandlerFunc {
 
 		if role, ok := claims["role"].(string); ok {
 			c.Set("role", role)
+		} else if db != nil {
+			var user model.User
+			if err := db.First(&user, uint(userID)).Error; err == nil {
+				c.Set("role", user.Role)
+			}
 		}
 
 		c.Next()
 	}
 }
 
-func OptionalAuth(jwtSecret string) gin.HandlerFunc {
+func OptionalAuth(jwtSecret string, db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenStr := ""
 
@@ -108,8 +115,14 @@ func OptionalAuth(jwtSecret string) gin.HandlerFunc {
 			c.Set("user_id", uint(userID))
 		}
 
-		if role, ok := claims["role"].(string); ok {
-			c.Set("role", role)
+		roleClaim, hasRole := claims["role"].(string)
+		if hasRole {
+			c.Set("role", roleClaim)
+		} else if db != nil {
+			var user model.User
+			if err := db.First(&user, uint(userID)).Error; err == nil {
+				c.Set("role", user.Role)
+			}
 		}
 
 		c.Next()

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { novels, genres as genresApi, adminNovels } from "@/lib/api";
 import Card from "@/components/ui/Card";
 
@@ -344,6 +345,9 @@ export default function AdminNovelsPage() {
                       </div>
                     </div>
                     <div className="flex gap-2 shrink-0">
+                      <Link href={`/en/admin/novels/${n.ID}/chapters`} className="px-3 py-1.5 bg-violet-900/50 hover:bg-violet-800/50 text-violet-400 text-xs rounded-lg transition-colors">
+                        Ch
+                      </Link>
                       <button onClick={() => startEdit(n)} className="flex-1 sm:flex-none px-3 py-1.5 bg-card-hover hover:bg-line-light text-gray-300 text-xs rounded-lg transition-colors">
                         Edit
                       </button>

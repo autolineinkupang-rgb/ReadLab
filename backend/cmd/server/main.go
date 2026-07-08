@@ -12,15 +12,14 @@ import (
 	"gorm.io/gorm"
 )
 
-func main() {
-	cfg := config.Load()
-
-	db, err := gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{
-		SkipDefaultTransaction: true,
-		PrepareStmt:            true,
-	})
-	if err != nil {
-		log.Fatalf("failed to connect to database: %v", err)
+func migrateDB(db *gorm.DB) {
+	if db.Migrator().HasColumn(&model.User{}, "is_admin") {
+		log.Println("migrating is_admin → role...")
+		db.Exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'member'")
+		db.Exec("UPDATE users SET role = 'admin' WHERE is_admin = TRUE")
+		db.Exec("UPDATE users SET role = 'member' WHERE is_admin = FALSE OR is_admin IS NULL")
+		db.Migrator().DropColumn(&model.User{}, "is_admin")
+		log.Println("is_admin migration complete")
 	}
 
 	if err := db.AutoMigrate(
@@ -41,6 +40,20 @@ func main() {
 	}
 
 	log.Println("database migration completed")
+}
+
+func main() {
+	cfg := config.Load()
+
+	db, err := gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{
+		SkipDefaultTransaction: true,
+		PrepareStmt:            true,
+	})
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+
+	migrateDB(db)
 
 	r := router.Setup(db, cfg.JWTSecret, cfg.FrontendURL, cfg.CookieSecure)
 

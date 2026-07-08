@@ -188,6 +188,28 @@ export const scraper = {
 		}),
 };
 
+// Admin chapters (protected)
+export const adminChapters = {
+  list: (novelId: number | string, params?: { page?: number; limit?: number }) =>
+    fetcher<{ data: any[]; total: number; page: number; limit: number; total_pages: number }>(`/admin/novels/${novelId}/chapters`, { params: params as any }),
+  get: (id: number | string) =>
+    fetcher<{ chapter: any }>(`/admin/chapters/${id}`),
+  create: (novelId: number | string, data: { number?: number; title: string; content: string; is_locked?: boolean; ticket_cost?: number }) =>
+    fetcher<{ chapter: any }>(`/admin/novels/${novelId}/chapters`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  update: (novelId: number | string, chapterId: number | string, data: { number?: number; title?: string; content?: string; is_locked?: boolean; ticket_cost?: number }) =>
+    fetcher<{ chapter: any }>(`/admin/novels/${novelId}/chapters/${chapterId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  delete: (id: number | string) =>
+    fetcher<{ message: string }>(`/admin/chapters/${id}`, {
+      method: "DELETE",
+    }),
+};
+
 // Admin novels (protected)
 export const adminNovels = {
 	create: (data: any) =>
@@ -217,11 +239,44 @@ export const translateApi = {
 
 // Admin requests (protected)
 export const adminRequests = {
+	list: (params?: { page?: number; limit?: number; status?: string }) =>
+		fetcher<{ data: any[]; total: number; page: number; limit: number; total_pages: number }>("/admin/requests", { params: params as any }),
 	review: (id: number | string, status: string) =>
 		fetcher<any>(`/requests/${id}`, {
 			method: "PUT",
 			body: JSON.stringify({ status }),
 		}),
+};
+
+// Admin reviews (protected)
+export const adminReviews = {
+	list: (params?: { page?: number; limit?: number }) =>
+		fetcher<{ data: any[]; total: number; page: number; limit: number; total_pages: number }>("/admin/reviews", { params: params as any }),
+	delete: (id: number | string) =>
+		fetcher<{ message: string }>("/admin/reviews/" + id, { method: "DELETE" }),
+};
+
+// Admin users (protected)
+export const adminUsers = {
+	list: (params?: { page?: number; limit?: number; role?: string; q?: string }) =>
+		fetcher<{ data: any[]; page: number; limit: number; total: number; total_pages: number }>("/admin/users", { params: params as any }),
+	get: (id: number | string) => fetcher<any>(`/admin/users/${id}`),
+	update: (id: number | string, data: { role?: string; tickets?: number }) =>
+		fetcher<any>(`/admin/users/${id}`, {
+			method: "PUT",
+			body: JSON.stringify(data),
+		}),
+	delete: (id: number | string) =>
+		fetcher<any>(`/admin/users/${id}`, {
+			method: "DELETE",
+		}),
+	createAdmin: (data: { username: string; email: string; password: string }) =>
+		fetcher<any>("/admin/users/admin", {
+			method: "POST",
+			body: JSON.stringify(data),
+		}),
+	stats: () =>
+		fetcher<{ total_users: number; total_novels: number; total_chapters: number; total_admins: number; max_admins: number }>("/admin/stats"),
 };
 
 // Reviews

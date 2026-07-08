@@ -28,10 +28,10 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 	api.GET("/novels/random", novelHandler.Random)
 	api.GET("/novels/:id", novelHandler.Get)
 	api.GET("/novels/:id/chapters", novelHandler.Chapters)
-	api.GET("/novels/:id/chapters/:num", middleware.OptionalAuth(jwtSecret), novelHandler.GetChapterByNum)
+	api.GET("/novels/:id/chapters/:num", middleware.OptionalAuth(jwtSecret, db), novelHandler.GetChapterByNum)
 
 	chapterHandler := handler.NewChapterHandler(db)
-	api.GET("/chapters/:id", middleware.OptionalAuth(jwtSecret), chapterHandler.Get)
+	api.GET("/chapters/:id", middleware.OptionalAuth(jwtSecret, db), chapterHandler.Get)
 
 	authHandler := handler.NewAuthHandler(db, jwtSecret, cookieSecure)
 	authLimiter := middleware.NewRateLimiter(10, 1*time.Minute)
@@ -42,7 +42,7 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 		authGroup.POST("/login", authHandler.Login)
 		authGroup.POST("/logout", authHandler.Logout)
 	}
-	authMeGroup := api.Group("/auth", middleware.AuthRequired(jwtSecret))
+	authMeGroup := api.Group("/auth", middleware.AuthRequired(jwtSecret, db))
 	authMeGroup.GET("/me", authHandler.Me)
 
 	rankingHandler := handler.NewRankingHandler(db)
@@ -79,7 +79,7 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 	readingHandler := handler.NewReadingHandler(db)
 
 	protected := api.Group("")
-	protected.Use(middleware.AuthRequired(jwtSecret))
+	protected.Use(middleware.AuthRequired(jwtSecret, db))
 	{
 		voteHandler := handler.NewVoteHandler(db)
 		protected.POST("/votes", voteHandler.Create)
@@ -95,12 +95,19 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 		protected.GET("/novels/:id/my-progress", readingHandler.Progress)
 	}
 
+	adminChapterHandler := handler.NewAdminChapterHandler(db)
+
 	writerGroup := protected.Group("")
 	writerGroup.Use(middleware.RequireRole("writer", "admin"))
 	{
 		writerGroup.POST("/novels", novelHandler.Create)
 		writerGroup.PUT("/novels/:id", novelHandler.Update)
 		writerGroup.DELETE("/novels/:id", novelHandler.Delete)
+
+		writerGroup.POST("/admin/novels/:id/chapters", adminChapterHandler.Create)
+		writerGroup.PUT("/admin/novels/:id/chapters/:chapterID", adminChapterHandler.Update)
+		writerGroup.GET("/admin/novels/:id/chapters", adminChapterHandler.List)
+		writerGroup.GET("/admin/chapters/:id", adminChapterHandler.Get)
 	}
 
 	adminGroup := protected.Group("")
@@ -118,6 +125,19 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 
 		lncrawlHandler := handler.NewLncrawlHandler(db)
 		adminGroup.POST("/novels/lncrawl", lncrawlHandler.Crawl)
+
+		adminHandler := handler.NewAdminHandler(db)
+		adminGroup.GET("/admin/users", adminHandler.ListUsers)
+		adminGroup.GET("/admin/users/:id", adminHandler.GetUser)
+		adminGroup.PUT("/admin/users/:id", adminHandler.UpdateUser)
+		adminGroup.DELETE("/admin/users/:id", adminHandler.DeleteUser)
+		adminGroup.POST("/admin/users/admin", adminHandler.CreateAdmin)
+		adminGroup.GET("/admin/stats", adminHandler.GetStats)
+		adminGroup.GET("/admin/reviews", adminHandler.ListReviews)
+		adminGroup.DELETE("/admin/reviews/:id", adminHandler.DeleteReview)
+		adminGroup.GET("/admin/requests", adminHandler.ListRequests)
+
+		adminGroup.DELETE("/admin/chapters/:id", adminChapterHandler.Delete)
 	}
 
 	translateHandler := handler.NewTranslateHandler()

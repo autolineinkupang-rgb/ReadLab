@@ -28,7 +28,7 @@ func TestAuthRequired_RejectsNoneAlgorithm(t *testing.T) {
 	tokenStr := base64Encode([]byte(header)) + "." + base64Encode([]byte(payload)) + "."
 
 	r := gin.New()
-	r.GET("/test", AuthRequired("secret"), func(c *gin.Context) {
+	r.GET("/test", AuthRequired("secret", nil), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"ok": true})
 	})
 
@@ -45,7 +45,7 @@ func TestAuthRequired_RejectsNoToken(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	r := gin.New()
-	r.GET("/test", AuthRequired("secret"), func(c *gin.Context) {
+	r.GET("/test", AuthRequired("secret", nil), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"ok": true})
 	})
 
@@ -66,7 +66,7 @@ func TestAuthRequired_AcceptsHS256Token(t *testing.T) {
 	tokenStr, _ := token.SignedString([]byte("secret"))
 
 	r := gin.New()
-	r.GET("/test", AuthRequired("secret"), func(c *gin.Context) {
+	r.GET("/test", AuthRequired("secret", nil), func(c *gin.Context) {
 		uid, _ := c.Get("user_id")
 		if uid != uint(1) {
 			t.Errorf("expected user_id 1, got %v", uid)
@@ -91,7 +91,7 @@ func TestOptionalAuth_SkipsOnNoneAlgorithm(t *testing.T) {
 	tokenStr := base64Encode([]byte(header)) + "." + base64Encode([]byte(payload)) + "."
 
 	r := gin.New()
-	r.GET("/test", OptionalAuth("secret"), func(c *gin.Context) {
+	r.GET("/test", OptionalAuth("secret", nil), func(c *gin.Context) {
 		_, exists := c.Get("user_id")
 		if exists {
 			t.Error("expected no user_id for invalid token")

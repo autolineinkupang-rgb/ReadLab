@@ -23,9 +23,11 @@ export const writerLinks = [
 ];
 
 export const adminLinks = [
-  { href: "/en/admin/import", label: "Import" },
+  { href: "/en/admin/users", label: "Users" },
+  { href: "/en/admin/novels", label: "Novels" },
   { href: "/en/admin/requests", label: "Requests" },
-  { href: "/en/admin/novels", label: "Manage" },
+  { href: "/en/admin/import", label: "Import" },
+  { href: "/en/admin/reviews", label: "Reviews" },
 ];
 
 export const navSections = [
