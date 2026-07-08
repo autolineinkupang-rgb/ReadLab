@@ -35,12 +35,16 @@ func createTestUser(t *testing.T, db *gorm.DB, isAdmin bool) model.User {
 	username := fmt.Sprintf("testuser%d", testUserCounter)
 	email := fmt.Sprintf("test%d@example.com", testUserCounter)
 	hash, _ := bcryptHash("password123")
+	role := "member"
+	if isAdmin {
+		role = "admin"
+	}
 	user := model.User{
 		Username:     username,
 		Email:        email,
 		PasswordHash: hash,
 		DisplayName:  username,
-		IsAdmin:      isAdmin,
+		Role:         role,
 	}
 	if err := db.Create(&user).Error; err != nil {
 		t.Fatal(err)

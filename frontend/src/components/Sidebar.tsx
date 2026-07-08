@@ -55,7 +55,13 @@ export default function Sidebar() {
       </form>
 
       <nav className="flex-1 overflow-y-auto px-3 pb-4 space-y-6">
-        {sections.map((section) => (
+        {sections
+          .filter((s) => {
+            if (s.title === "Admin" && user?.role !== "admin") return false;
+            if (s.title === "Writer" && user?.role !== "writer" && user?.role !== "admin") return false;
+            return true;
+          })
+          .map((section) => (
           <div key={section.title}>
             <p className="text-[10px] uppercase tracking-wider text-gray-600 px-3 pb-1 font-semibold">
               {section.title}

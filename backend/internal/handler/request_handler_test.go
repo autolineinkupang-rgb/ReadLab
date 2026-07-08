@@ -65,7 +65,7 @@ func setupRequestTest(t *testing.T) (*gin.Engine, string, string) {
 			return
 		}
 		var u model.User
-		if err := db.First(&u, uid).Error; err != nil || !u.IsAdmin {
+		if err := db.First(&u, uid).Error; err != nil || u.Role != "admin" {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "admin access required"})
 			return
 		}

@@ -200,11 +200,17 @@ export default function NovelFinderPage() {
       if (minReviews > 0) params.min_reviews = minReviews;
       const res = await novels.list(params);
       const apiData: Novel[] = res.data || [];
-      const filtered = clientSideFilter(apiData);
+      const unique = apiData.filter(
+        (novel, idx, self) => idx === self.findIndex((n) => n.ID === novel.ID)
+      );
+      const filtered = clientSideFilter(unique);
       setData(filtered);
       setTotalPages(res.total_pages || Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1);
     } catch {
-      const filtered = clientSideFilter(FALLBACK_NOVELS);
+      const unique = FALLBACK_NOVELS.filter(
+        (novel, idx, self) => idx === self.findIndex((n) => n.ID === novel.ID)
+      );
+      const filtered = clientSideFilter(unique);
       setData(filtered);
       setTotalPages(Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1);
     } finally {

@@ -12,6 +12,7 @@ import (
 func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool) *gin.Engine {
 	r := gin.Default()
 
+	r.Use(middleware.SecurityHeaders())
 	r.Use(middleware.CORS(frontendURL))
 	r.Use(middleware.Logger())
 
@@ -94,15 +95,19 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 		protected.GET("/novels/:id/my-progress", readingHandler.Progress)
 	}
 
+	writerGroup := protected.Group("")
+	writerGroup.Use(middleware.RequireRole("writer", "admin"))
+	{
+		writerGroup.POST("/novels", novelHandler.Create)
+		writerGroup.PUT("/novels/:id", novelHandler.Update)
+		writerGroup.DELETE("/novels/:id", novelHandler.Delete)
+	}
+
 	adminGroup := protected.Group("")
-	adminGroup.Use(middleware.AdminRequired(db))
+	adminGroup.Use(middleware.RequireRole("admin"))
 	{
 		requestHandler := handler.NewRequestHandler(db)
 		adminGroup.PUT("/requests/:id", requestHandler.Review)
-
-		adminGroup.POST("/novels", novelHandler.Create)
-		adminGroup.PUT("/novels/:id", novelHandler.Update)
-		adminGroup.DELETE("/novels/:id", novelHandler.Delete)
 
 		importerHandler := handler.NewImporterHandler(db)
 		adminGroup.POST("/novels/import", importerHandler.Import)

@@ -2,33 +2,80 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { library, auth } from "@/lib/api";
+import { library as libraryApi, auth } from "@/lib/api";
 import Card from "@/components/ui/Card";
 
 type Tab = "updates" | "history" | "folders";
 
-interface FollowItem { title: string; href: string; chapters: number; newChapters?: number; }
-interface HistoryItem { title: string; chapter: string; novelHref: string; chapterHref: string; time: string; }
+interface FollowItem {
+  ID: number;
+  NovelID: number;
+  Novel: {
+    ID: number;
+    Title: string;
+    Slug: string;
+    Chapters: number;
+    CoverURL: string;
+  };
+  CreatedAt: string;
+}
 
-const MOCK_FOLLOWS: FollowItem[] = [
-  { title: "Naruto: In Konoha Village, I Awakened Wood Release", href: "/en/novel/11/naruto-konoha-wood", chapters: 1002, newChapters: 3 },
-  { title: "Could I Really End Up 'collapsing My Image'", href: "/en/novel/8/rule-horror", chapters: 925, newChapters: 1 },
-  { title: "Don't Be Too Wild", href: "/en/novel/10/dont-be-too-wild", chapters: 160, newChapters: 2 },
-];
-
-const MOCK_HISTORY: HistoryItem[] = [
-  { title: "Having Dinner with His Brother", chapter: "Chapter 135", novelHref: "/en/novel/1/having-dinner", chapterHref: "/en/novel/1/having-dinner/chapter-135", time: "2 hours ago" },
-  { title: "Corpse Puppet Phoenix Girl", chapter: "Chapter 242", novelHref: "/en/novel/2/corpse-puppet", chapterHref: "/en/novel/2/corpse-puppet/chapter-242", time: "5 hours ago" },
-];
+interface HistoryItem {
+  ID: number;
+  NovelID: number;
+  ChapterNum: number;
+  Novel: {
+    ID: number;
+    Title: string;
+    Slug: string;
+  };
+  Chapter: {
+    Num: number;
+    Slug: string;
+  };
+  CreatedAt: string;
+}
 
 export default function LibraryPage() {
   const [activeTab, setActiveTab] = useState<Tab>("updates");
   const [loggedIn, setLoggedIn] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [follows, setFollows] = useState<FollowItem[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    auth.me().then(() => setLoggedIn(true)).catch(() => {}).finally(() => setChecking(false));
+    auth.me().then(() => {
+      setLoggedIn(true);
+      fetchData();
+    }).catch(() => {}).finally(() => setChecking(false));
   }, []);
+
+  async function fetchData() {
+    setLoading(true);
+    try {
+      const res = await libraryApi.get();
+      setFollows(res.follows || []);
+      setHistory(res.history || []);
+    } catch {
+      setFollows([]);
+      setHistory([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function timeAgo(dateStr: string): string {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    if (days < 30) return `${days}d ago`;
+    return `${Math.floor(days / 30)}mo ago`;
+  }
 
   if (checking) return <div className="max-w-4xl mx-auto px-4 py-16 text-center text-sm text-gray-500">Checking...</div>;
 
@@ -59,32 +106,47 @@ export default function LibraryPage() {
         ))}
       </div>
 
-      {activeTab === "updates" && MOCK_FOLLOWS.map((novel, i) => (
-        <Link key={i} href={novel.href} className="flex items-center gap-4 p-4 mb-3 bg-card border border-line rounded-xl hover:border-violet-800/40 transition-colors group">
-          <div className="w-14 h-20 rounded-lg bg-card-hover flex-shrink-0 flex items-center justify-center">
-            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm text-gray-200 group-hover:text-violet-400 transition-colors font-medium">{novel.title}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{novel.chapters} chapters</p>
-          </div>
-          {novel.newChapters && <span className="text-xs px-2 py-1 rounded-full bg-violet-900/40 text-violet-300 border border-violet-800/30">+{novel.newChapters} new</span>}
-        </Link>
-      ))}
-
-      {activeTab === "history" && MOCK_HISTORY.map((item, i) => (
-        <Link key={i} href={item.chapterHref} className="flex items-center justify-between p-3 rounded-lg hover:bg-card transition-colors group">
-          <div className="min-w-0 flex-1">
-            <p className="text-sm text-gray-200 group-hover:text-violet-400 transition-colors">{item.title}</p>
-            <p className="text-xs text-violet-400 mt-0.5">{item.chapter}</p>
-          </div>
-          <span className="text-xs text-gray-600 shrink-0 ml-4">{item.time}</span>
-        </Link>
-      ))}
-
-      {activeTab === "folders" && (
+      {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : activeTab === "updates" ? (
+        follows.length === 0 ? (
+          <div className="text-center py-16 text-sm text-gray-500">No followed novels yet.</div>
+        ) : (
+          follows.map((item) => (
+            <Link key={item.ID} href={`/en/novel/${item.NovelID}/${item.Novel.Slug}`} className="flex items-center gap-4 p-4 mb-3 bg-card border border-line rounded-xl hover:border-violet-800/40 transition-colors group">
+              <div className="w-14 h-20 rounded-lg bg-card-hover flex-shrink-0 flex items-center justify-center">
+                {item.Novel.CoverURL ? (
+                  <img src={item.Novel.CoverURL} alt="" className="w-full h-full object-cover rounded-lg" />
+                ) : (
+                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-gray-200 group-hover:text-violet-400 transition-colors font-medium">{item.Novel.Title}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{item.Novel.Chapters} chapters</p>
+              </div>
+            </Link>
+          ))
+        )
+      ) : activeTab === "history" ? (
+        history.length === 0 ? (
+          <div className="text-center py-16 text-sm text-gray-500">No reading history yet.</div>
+        ) : (
+          history.map((item) => (
+            <Link key={item.ID} href={`/en/novel/${item.NovelID}/${item.Novel.Slug}/chapter-${item.ChapterNum}`} className="flex items-center justify-between p-3 rounded-lg hover:bg-card transition-colors group">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-gray-200 group-hover:text-violet-400 transition-colors">{item.Novel.Title}</p>
+                <p className="text-xs text-violet-400 mt-0.5">Chapter {item.ChapterNum}</p>
+              </div>
+              <span className="text-xs text-gray-600 shrink-0 ml-4">{timeAgo(item.CreatedAt)}</span>
+            </Link>
+          ))
+        )
+      ) : (
         <div className="text-center py-8 text-sm text-gray-500">No folders yet. Follow novels to create folders.</div>
       )}
     </div>

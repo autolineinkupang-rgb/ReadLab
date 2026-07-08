@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { profile as profileApi } from "@/lib/api";
+import { useAuth } from "@/lib/AuthContext";
 import { ProfileData } from "@/types";
 
 const tabs = ["overview", "library", "votes", "requests"];
@@ -12,10 +13,13 @@ const tabs = ["overview", "library", "votes", "requests"];
 export default function ProfilePage() {
   const params = useParams();
   const profileId = params?.id as string;
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   const [profile, setProfile] = useState<ProfileData>({
     id: 0, username: "reader1", display_name: "Reader One", avatar_url: "", tickets: 150, created_at: "2025-01-01",
   });
+
+  const isOwner = user !== null && profile.id !== 0 && user.id === profile.id;
 
   useEffect(() => {
     if (!profileId) return;
@@ -38,7 +42,14 @@ export default function ProfilePage() {
             {profile.username[0]?.toUpperCase() || "?"}
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl font-bold text-white">{profile.display_name || profile.username}</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-bold text-white">{profile.display_name || profile.username}</h1>
+              {isOwner && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-violet-800/30 text-violet-400 border border-violet-700/40">
+                  You
+                </span>
+              )}
+            </div>
             <p className="text-sm text-gray-500">@{profile.username}</p>
             <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-400">
               <span>🎫 {profile.tickets.toFixed(2)} Tickets</span>

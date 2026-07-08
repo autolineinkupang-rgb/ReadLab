@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, usePathname } from "next/navigation";
 import { novels, chapters as chaptersApi } from "@/lib/api";
 import ChapterReader from "@/components/ChapterReader";
@@ -15,8 +15,11 @@ export default function ChapterReaderPage() {
   const [novel, setNovel] = useState<{ id: number; slug: string; title: string; totalChapters: number; coverUrl?: string; description?: string; author?: string; sourceUrl?: string } | null>(null);
   const [chapters, setChapters] = useState<{ number: number; title: string; createdAt?: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [chapterLoading, setChapterLoading] = useState(false);
   const [inLibrary, setInLibrary] = useState(false);
   const [error, setError] = useState("");
+
+  const novelCache = useRef<{ id: number } | null>(null);
 
   const chapterNum = (() => {
     const match = pathname.match(/chapter-(\d+)$/);
@@ -26,49 +29,72 @@ export default function ChapterReaderPage() {
   useEffect(() => {
     if (!rawId) return;
 
-    setLoading(true);
     setError("");
-    setChapter(null);
 
     const novelId = parseInt(rawId);
+    const isNewNovel = !novelCache.current || novelCache.current.id !== novelId;
 
-    Promise.all([
-      novels.get(novelId),
-      novels.chapters(novelId, { page: 1, limit: 9999 }),
-      chaptersApi.getByNovel(novelId, chapterNum),
-    ])
-      .then(([novelRes, chListRes, chRes]) => {
-        const n = novelRes;
-        const chList = (chListRes.data || []).map((ch: any) => ({
-          number: ch.Number,
-          title: ch.Title || "",
-          createdAt: ch.CreatedAt,
-        }));
+    if (isNewNovel) {
+      setLoading(true);
+      setChapter(null);
 
-        setNovel({
-          id: n.ID,
-          slug: n.Slug || slug,
-          title: n.Title,
-          totalChapters: n.Chapters || chList.length,
-          coverUrl: n.CoverURL || "",
-          description: n.Description || "",
-          author: n.Author || "",
-          sourceUrl: n.SourceURL || "",
+      Promise.all([
+        novels.get(novelId),
+        novels.chapters(novelId, { page: 1, limit: 9999 }),
+        chaptersApi.getByNovel(novelId, chapterNum),
+      ])
+        .then(([novelRes, chListRes, chRes]) => {
+          const n = novelRes;
+          const chList = (chListRes.data || []).map((ch: any) => ({
+            number: ch.Number,
+            title: ch.Title || "",
+            createdAt: ch.CreatedAt,
+          }));
+
+          setNovel({
+            id: n.ID,
+            slug: n.Slug || slug,
+            title: n.Title,
+            totalChapters: n.Chapters || chList.length,
+            coverUrl: n.CoverURL || "",
+            description: n.Description || "",
+            author: n.Author || "",
+            sourceUrl: n.SourceURL || "",
+          });
+          setChapters(chList);
+          setChapter({
+            number: chRes.Number,
+            title: chRes.Title || "",
+            content: chRes.Content || "",
+            isLocked: chRes.IsLocked || false,
+          });
+          novelCache.current = { id: novelId };
+        })
+        .catch((e: any) => {
+          setError(e.message || "Failed to load chapter");
+        })
+        .finally(() => {
+          setLoading(false);
         });
-        setChapters(chList);
-        setChapter({
-          number: chRes.Number,
-          title: chRes.Title || "",
-          content: chRes.Content || "",
-          isLocked: chRes.IsLocked || false,
+    } else {
+      setChapterLoading(true);
+
+      chaptersApi.getByNovel(novelId, chapterNum)
+        .then((chRes) => {
+          setChapter({
+            number: chRes.Number,
+            title: chRes.Title || "",
+            content: chRes.Content || "",
+            isLocked: chRes.IsLocked || false,
+          });
+        })
+        .catch((e: any) => {
+          setError(e.message || "Failed to load chapter");
+        })
+        .finally(() => {
+          setChapterLoading(false);
         });
-      })
-      .catch((e: any) => {
-        setError(e.message || "Failed to load chapter");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    }
   }, [pathname]);
 
   const totalChapters = novel?.totalChapters || 0;
@@ -87,6 +113,7 @@ export default function ChapterReaderPage() {
       novel={novel}
       chapters={chapters}
       loading={loading}
+      chapterLoading={chapterLoading}
       error={error}
       prevHref={prevHref}
       nextHref={nextHref}

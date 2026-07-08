@@ -29,12 +29,13 @@ func TestAdminRequired_AcceptsAdminUser(t *testing.T) {
 		Email:        "admin@test.com",
 		PasswordHash: "hash",
 		DisplayName:  "admin",
-		IsAdmin:      true,
+		Role:         "admin",
 	})
 
 	r := gin.New()
 	r.GET("/admin", func(c *gin.Context) {
 		c.Set("user_id", uint(1))
+		c.Set("role", "admin")
 		c.Next()
 	}, AdminRequired(db), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"ok": true})
@@ -58,12 +59,13 @@ func TestAdminRequired_RejectsNonAdminUser(t *testing.T) {
 		Email:        "user@test.com",
 		PasswordHash: "hash",
 		DisplayName:  "user",
-		IsAdmin:      false,
+		Role:         "member",
 	})
 
 	r := gin.New()
 	r.GET("/admin", func(c *gin.Context) {
 		c.Set("user_id", uint(1))
+		c.Set("role", "member")
 		c.Next()
 	}, AdminRequired(db), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"ok": true})
@@ -78,7 +80,7 @@ func TestAdminRequired_RejectsNonAdminUser(t *testing.T) {
 	}
 }
 
-func TestAdminRequired_RejectsUnauthenticated(t *testing.T) {
+func TestAdminRequired_RejectsNoRole(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	db := setupAdminTestDB(t)
 
@@ -91,18 +93,19 @@ func TestAdminRequired_RejectsUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusUnauthorized {
-		t.Errorf("expected 401, got %d: %s", w.Code, w.Body.String())
+	if w.Code != http.StatusForbidden {
+		t.Errorf("expected 403, got %d: %s", w.Code, w.Body.String())
 	}
 }
 
-func TestAdminRequired_RejectsNonExistentUser(t *testing.T) {
+func TestAdminRequired_RejectsNonAdminRole(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	db := setupAdminTestDB(t)
 
 	r := gin.New()
 	r.GET("/admin", func(c *gin.Context) {
 		c.Set("user_id", uint(999))
+		c.Set("role", "member")
 		c.Next()
 	}, AdminRequired(db), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"ok": true})
@@ -112,7 +115,7 @@ func TestAdminRequired_RejectsNonExistentUser(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusUnauthorized {
-		t.Errorf("expected 401, got %d: %s", w.Code, w.Body.String())
+	if w.Code != http.StatusForbidden {
+		t.Errorf("expected 403, got %d: %s", w.Code, w.Body.String())
 	}
 }

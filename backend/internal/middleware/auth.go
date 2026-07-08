@@ -55,6 +55,11 @@ func AuthRequired(jwtSecret string) gin.HandlerFunc {
 		}
 
 		c.Set("user_id", uint(userID))
+
+		if role, ok := claims["role"].(string); ok {
+			c.Set("role", role)
+		}
+
 		c.Next()
 	}
 }
@@ -101,6 +106,10 @@ func OptionalAuth(jwtSecret string) gin.HandlerFunc {
 		userID, ok := claims["user_id"].(float64)
 		if ok {
 			c.Set("user_id", uint(userID))
+		}
+
+		if role, ok := claims["role"].(string); ok {
+			c.Set("role", role)
 		}
 
 		c.Next()

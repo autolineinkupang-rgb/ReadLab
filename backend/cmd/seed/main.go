@@ -530,13 +530,17 @@ func seedUsers(db *gorm.DB) {
 		}
 
 		hash, _ := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+		role := "member"
+		if u.IsAdmin {
+			role = "admin"
+		}
 		user := model.User{
 			Username:     u.Username,
 			Email:        u.Email,
 			PasswordHash: string(hash),
 			DisplayName:  u.Username,
 			Tickets:      u.Tickets,
-			IsAdmin:      u.IsAdmin,
+			Role:         role,
 		}
 		db.Create(&user)
 		fmt.Printf("seeded user: %s\n", u.Username)

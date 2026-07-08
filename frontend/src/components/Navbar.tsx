@@ -3,21 +3,24 @@
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { browseLinks, discoverLinks, communityLinks, adminLinks } from "@/lib/navigation";
+import { browseLinks, discoverLinks, communityLinks, writerLinks, adminLinks } from "@/lib/navigation";
 import { SearchIcon, CloseIcon, MenuIcon } from "@/components/ui/Icons";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { useAuth } from "@/lib/AuthContext";
 
 export default function Navbar() {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showWriter, setShowWriter] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const adminRef = useRef<HTMLDivElement>(null);
+  const writerRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -32,6 +35,7 @@ export default function Navbar() {
     setOpen(false);
     setShowSearch(false);
     setShowAdmin(false);
+    setShowWriter(false);
     setShowMore(false);
   }, [pathname]);
 
@@ -39,6 +43,7 @@ export default function Navbar() {
     function handleClick(e: MouseEvent) {
       const target = e.target as Node;
       if (adminRef.current && !adminRef.current.contains(target)) setShowAdmin(false);
+      if (writerRef.current && !writerRef.current.contains(target)) setShowWriter(false);
       if (moreRef.current && !moreRef.current.contains(target)) setShowMore(false);
     }
     document.addEventListener("mousedown", handleClick);
@@ -185,7 +190,36 @@ export default function Navbar() {
                 </Card>
               )}
             </div>
+            {/* Writer dropdown */}
+            {(user?.role === "writer" || user?.role === "admin") && (
+            <div ref={writerRef} className="relative">
+              <button
+                onClick={() => setShowWriter(!showWriter)}
+                className={`text-xs px-2 py-1.5 rounded-lg transition-colors ${
+                  isActive("/en/writer") ? "text-accent-light" : "text-gray-500 hover:text-accent-light"
+                }`}
+              >
+                Writer
+              </button>
+              {showWriter && (
+                <Card className="absolute top-full right-0 mt-1 w-40 p-2 shadow-xl z-50" padding={false}>
+                  {writerLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setShowWriter(false)}
+                      className="block text-xs text-gray-300 hover:text-white px-3 py-2 rounded-lg hover:bg-card-hover transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </Card>
+              )}
+            </div>
+            )}
+
             {/* Admin dropdown */}
+            {user?.role === "admin" && (
             <div ref={adminRef} className="relative">
               <button
                 onClick={() => setShowAdmin(!showAdmin)}
@@ -210,6 +244,7 @@ export default function Navbar() {
                 </Card>
               )}
             </div>
+            )}
           </nav>
 
           {/* Tablet search toggle */}
@@ -339,6 +374,26 @@ export default function Navbar() {
                 </Link>
               ))}
             </div>
+            {user && (user.role === "writer" || user.role === "admin") && (
+            <div className="pt-2 mt-2 border-t border-line">
+              <p className="text-[10px] uppercase tracking-wider text-gray-600 px-3 pb-1 font-semibold">Writer</p>
+              {writerLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className={`block text-sm px-3 py-2.5 rounded-lg transition-colors ${
+                    isActive(link.href)
+                      ? "text-accent-light bg-accent/10"
+                      : "text-gray-400 hover:text-white hover:bg-card-hover"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+            )}
+            {user?.role === "admin" && (
             <div className="pt-2 mt-2 border-t border-line">
               <p className="text-[10px] uppercase tracking-wider text-gray-600 px-3 pb-1 font-semibold">Admin</p>
               {adminLinks.map((link) => (
@@ -356,6 +411,7 @@ export default function Navbar() {
                 </Link>
               ))}
             </div>
+            )}
             <div className="pt-2 mt-2 border-t border-line px-3">
               <MobileUserMenu closeMenu={() => setOpen(false)} />
             </div>
@@ -414,7 +470,7 @@ function UserMenu() {
             <p className="text-sm font-medium text-gray-200">{user.display_name || user.username}</p>
             <p className="text-xs text-gray-500">{user.email}</p>
             <p className="text-xs text-accent mt-1">{user.tickets.toLocaleString()} Tickets</p>
-            {user.is_admin && (
+            {user.role === "admin" && (
               <span className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-accent mt-1">Admin</span>
             )}
           </div>
@@ -468,7 +524,7 @@ function MobileUserMenu({ closeMenu }: { closeMenu: () => void }) {
         <div>
           <p className="text-sm font-medium text-gray-200">{user.display_name || user.username}</p>
           <p className="text-xs text-gray-500">{user.tickets.toLocaleString()} Tickets</p>
-          {user.is_admin && <span className="text-[10px] text-accent">Admin</span>}
+          {user.role === "admin" && <span className="text-[10px] text-accent">Admin</span>}
         </div>
       </div>
       <Link

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { stripHtml, splitParagraphs } from "@/lib/utils";
-import { translateApi } from "@/lib/api";
+import { reading, translateApi } from "@/lib/api";
 import { useAuth } from "@/lib/AuthContext";
 
 interface ChapterData {
@@ -30,6 +30,7 @@ interface ChapterReaderProps {
   novel: NovelData | null;
   chapters?: { number: number; title: string; createdAt?: string }[];
   loading: boolean;
+  chapterLoading?: boolean;
   error?: string;
   prevHref?: string;
   nextHref?: string;
@@ -68,7 +69,7 @@ const navItems = [
   { key: "more", label: "More", icon: "M4 5h16M4 12h16M4 19h16" },
 ];
 
-export default function ChapterReader({ chapter, novel, chapters, loading, error, prevHref, nextHref, novelHref, onAddToLibrary, inLibrary }: ChapterReaderProps) {
+export default function ChapterReader({ chapter, novel, chapters, loading, chapterLoading, error, prevHref, nextHref, novelHref, onAddToLibrary, inLibrary }: ChapterReaderProps) {
   const [activeTab, setActiveTab] = useState("read");
   const [fontSize, setFontSize] = useState(18);
   const [lineHeight, setLineHeight] = useState(1.7);
@@ -99,9 +100,7 @@ export default function ChapterReader({ chapter, novel, chapters, loading, error
     setShowToc(false);
 
     if (user && novel?.id && chapter.number) {
-      import("@/lib/api").then(({ reading }) => {
-        reading.track(novel.id, chapter.number).catch(() => {});
-      });
+      reading.track(novel.id, chapter.number).catch(() => {});
     }
   }, [chapter?.number, user, novel?.id]);
 
@@ -184,7 +183,7 @@ export default function ChapterReader({ chapter, novel, chapters, loading, error
     }
   }, [isSpeaking]);
 
-  if (loading || !chapter || !novel) {
+  if (loading) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16">
         <div className="animate-pulse space-y-4">
@@ -355,6 +354,11 @@ export default function ChapterReader({ chapter, novel, chapters, loading, error
 
   return (
     <div className="min-h-screen transition-colors" style={{ backgroundColor: siteTheme.bg, color: siteTheme.text }}>
+      {chapterLoading && (
+        <div className="fixed top-0 left-0 right-0 z-50 h-0.5 overflow-hidden" style={{ backgroundColor: `${siteTheme.border}` }}>
+          <div className="h-full w-full animate-pulse opacity-80" style={{ background: "linear-gradient(90deg, #2193b0, #6dd5ed)", backgroundSize: "200% 100%" }} />
+        </div>
+      )}
       {/* Top bar: novel title */}
       <div className="sticky top-0 z-30" style={{ backgroundColor: siteTheme.card, borderBottom: `1px solid ${siteTheme.border}` }}>
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -475,8 +479,14 @@ export default function ChapterReader({ chapter, novel, chapters, loading, error
                   <Link href={novelHref} className="text-xs uppercase tracking-wider font-semibold transition-colors hover:text-accent" style={{ color: siteTheme.muted }}>
                     {novel.title}
                   </Link>
-                  <h2 className="text-xl sm:text-2xl font-bold leading-tight mt-1" style={{ color: textColor }}>
+                  <h2 className="text-xl sm:text-2xl font-bold leading-tight mt-1 inline-flex items-center gap-2" style={{ color: textColor }}>
                     #{chapter.number} {chapter.title}
+                    {chapterLoading && (
+                      <svg className="w-5 h-5 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    )}
                   </h2>
                   {novel.author && <p className="text-xs mt-1" style={{ color: siteTheme.muted }}>by {novel.author}</p>}
                   {novel.description && (
@@ -493,8 +503,14 @@ export default function ChapterReader({ chapter, novel, chapters, loading, error
                 <Link href={novelHref} className="text-xs font-medium transition-colors hover:text-accent" style={{ color: siteTheme.muted }}>
                   {novel.title}
                 </Link>
-                <h2 className="text-xl sm:text-2xl font-bold leading-tight mt-1" style={{ color: textColor }}>
+                <h2 className="text-xl sm:text-2xl font-bold leading-tight mt-1 inline-flex items-center gap-2" style={{ color: textColor }}>
                   #{chapter.number} {chapter.title}
+                  {chapterLoading && (
+                    <svg className="w-5 h-5 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  )}
                 </h2>
                 <div className="mt-4 h-px w-full opacity-15" style={{ backgroundColor: textColor }} />
               </header>

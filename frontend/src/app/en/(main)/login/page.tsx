@@ -1,8 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
+
+function passwordStrength(pw: string): { score: number; label: string; color: string } {
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[a-z]/.test(pw)) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^a-zA-Z0-9]/.test(pw)) score++;
+
+  if (score <= 2) return { score, label: "Weak", color: "bg-red-500" };
+  if (score <= 4) return { score, label: "Fair", color: "bg-yellow-500" };
+  if (score <= 5) return { score, label: "Good", color: "bg-blue-500" };
+  return { score: 6, label: "Strong", color: "bg-green-500" };
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,6 +28,8 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const strength = useMemo(() => passwordStrength(password), [password]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,11 +120,33 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength={6}
-              autoComplete="current-password"
+              minLength={8}
+              autoComplete={mode === "register" ? "new-password" : "current-password"}
               placeholder="••••••••"
               className="w-full bg-card-hover border border-line-light rounded-lg px-4 py-2.5 text-sm text-gray-200 outline-none focus:border-violet-600 transition-colors"
             />
+            {mode === "register" && password.length > 0 && (
+              <div className="mt-2">
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div
+                      key={i}
+                      className={`h-1 flex-1 rounded-full transition-colors ${
+                        i <= strength.score ? strength.color : "bg-gray-700"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <p className={`text-xs mt-1 ${strength.score <= 2 ? "text-red-400" : strength.score <= 4 ? "text-yellow-400" : "text-green-400"}`}>
+                  {strength.label}
+                </p>
+              </div>
+            )}
+            {mode === "register" && (
+              <p className="text-[10px] text-gray-600 mt-1">
+                Min 8 characters with uppercase, lowercase, number &amp; special character
+              </p>
+            )}
           </div>
 
           <button

@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -24,7 +26,7 @@ func NewAuthHandler(db *gorm.DB, jwtSecret string, cookieSecure bool) *AuthHandl
 type RegisterRequest struct {
 	Username string `json:"username" binding:"required,min=3,max=50"`
 	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6"`
+	Password string `json:"password" binding:"required,min=8"`
 }
 
 type LoginRequest struct {
@@ -35,6 +37,11 @@ type LoginRequest struct {
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := validatePassword(req.Password); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -50,6 +57,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		Email:        req.Email,
 		PasswordHash: string(hash),
 		DisplayName:  req.Username,
+		Role:         "member",
 	}
 
 	if err := h.DB.Create(&user).Error; err != nil {
@@ -70,6 +78,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 			"id":       user.ID,
 			"username": user.Username,
 			"email":    user.Email,
+			"role":     user.Role,
 		},
 	})
 }
@@ -105,6 +114,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 			"id":       user.ID,
 			"username": user.Username,
 			"email":    user.Email,
+			"role":     user.Role,
 		},
 	})
 }
@@ -129,18 +139,32 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		"display_name": user.DisplayName,
 		"avatar_url": user.AvatarURL,
 		"tickets":    user.Tickets,
-		"is_admin":   user.IsAdmin,
+		"role":       user.Role,
 	})
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
-	c.SetCookie("auth_token", "", -1, "/", "", h.CookieSecure, true)
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "auth_token",
+		Value:    "",
+		MaxAge:   -1,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   h.CookieSecure,
+		SameSite: http.SameSiteStrictMode,
+	})
 	c.JSON(http.StatusOK, gin.H{"message": "logged out"})
 }
 
 func (h *AuthHandler) generateToken(userID uint) (string, error) {
+	var user model.User
+	if err := h.DB.First(&user, userID).Error; err != nil {
+		return "", err
+	}
+
 	claims := jwt.MapClaims{
 		"user_id": userID,
+		"role":    user.Role,
 		"exp":     time.Now().Add(7 * 24 * time.Hour).Unix(),
 		"iat":     time.Now().Unix(),
 	}
@@ -150,5 +174,37 @@ func (h *AuthHandler) generateToken(userID uint) (string, error) {
 }
 
 func (h *AuthHandler) setCookie(c *gin.Context, token string) {
-	c.SetCookie("auth_token", token, 7*24*3600, "/", "", h.CookieSecure, true)
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "auth_token",
+		Value:    token,
+		MaxAge:   7 * 24 * 3600,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   h.CookieSecure,
+		SameSite: http.SameSiteStrictMode,
+	})
+}
+
+func validatePassword(password string) error {
+	if len(password) < 8 {
+		return fmt.Errorf("password must be at least 8 characters")
+	}
+	hasUpper := regexp.MustCompile(`[A-Z]`).MatchString
+	hasLower := regexp.MustCompile(`[a-z]`).MatchString
+	hasDigit := regexp.MustCompile(`[0-9]`).MatchString
+	hasSpecial := regexp.MustCompile(`[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]`).MatchString
+
+	if !hasUpper(password) {
+		return fmt.Errorf("password must contain at least one uppercase letter")
+	}
+	if !hasLower(password) {
+		return fmt.Errorf("password must contain at least one lowercase letter")
+	}
+	if !hasDigit(password) {
+		return fmt.Errorf("password must contain at least one digit")
+	}
+	if !hasSpecial(password) {
+		return fmt.Errorf("password must contain at least one special character")
+	}
+	return nil
 }

@@ -12,5 +12,5 @@ type User struct {
 	DisplayName  string `gorm:"size:100"`
 	AvatarURL    string `gorm:"size:1000"`
 	Tickets      float64 `gorm:"default:0"`
-	IsAdmin      bool    `gorm:"default:false"`
+	Role         string `gorm:"size:20;default:member"`
 }

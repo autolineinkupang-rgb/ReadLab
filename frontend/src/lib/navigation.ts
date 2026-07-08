@@ -18,6 +18,10 @@ export const communityLinks = [
   { href: "/en/profile/vote-serie", label: "Vote Series" },
 ];
 
+export const writerLinks = [
+  { href: "/en/writer", label: "Dashboard" },
+];
+
 export const adminLinks = [
   { href: "/en/admin/import", label: "Import" },
   { href: "/en/admin/requests", label: "Requests" },
@@ -28,5 +32,6 @@ export const navSections = [
   { title: "Browse", links: browseLinks },
   { title: "Discover", links: discoverLinks },
   { title: "Community", links: communityLinks },
+  { title: "Writer", links: writerLinks },
   { title: "Admin", links: adminLinks },
 ];

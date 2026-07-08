@@ -10,7 +10,7 @@ export interface UserData {
   display_name: string;
   avatar_url: string;
   tickets: number;
-  is_admin: boolean;
+  role: "admin" | "writer" | "member";
 }
 
 interface AuthContextType {

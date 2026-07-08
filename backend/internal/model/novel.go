@@ -28,7 +28,9 @@ type Novel struct {
 	ReleasedBy  string  `gorm:"size:200"`
 	AddedAt     time.Time `gorm:"autoCreateTime"`
 
-	Genres []Genre `gorm:"many2many:novel_genres;"`
+	WriterID *uint  `gorm:"index"`
+	Writer   User   `gorm:"foreignKey:WriterID"`
+	Genres   []Genre `gorm:"many2many:novel_genres;"`
 }
 
 type NovelGenre struct {

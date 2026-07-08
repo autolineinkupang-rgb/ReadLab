@@ -32,6 +32,7 @@ func (h *NovelHandler) List(c *gin.Context) {
 	minReviews, _ := strconv.Atoi(c.DefaultQuery("min_reviews", "0"))
 	genresParam := c.Query("genres")
 	genreMode := c.DefaultQuery("genre_mode", "or")
+	writerIDStr := c.Query("writer_id")
 
 	if page < 1 {
 		page = 1
@@ -83,6 +84,12 @@ func (h *NovelHandler) List(c *gin.Context) {
 	}
 	if minRating > 0 {
 		query = query.Where("rating >= ?", minRating)
+	}
+	if writerIDStr != "" {
+		writerID, err := strconv.Atoi(writerIDStr)
+		if err == nil {
+			query = query.Where("writer_id = ?", writerID)
+		}
 	}
 	if minReviews > 0 {
 		query = query.Where("rating_count >= ?", minReviews)
@@ -340,6 +347,9 @@ func (h *NovelHandler) Create(c *gin.Context) {
 
 	slug := generateSlug(req.Title)
 
+	userID, _ := c.Get("user_id")
+	role, _ := c.Get("role")
+
 	novel := model.Novel{
 		Title:       req.Title,
 		AltTitle:    req.AltTitle,
@@ -358,6 +368,11 @@ func (h *NovelHandler) Create(c *gin.Context) {
 
 	if novel.Status == "" {
 		novel.Status = "ongoing"
+	}
+
+	if role == "writer" {
+		uid := userID.(uint)
+		novel.WriterID = &uid
 	}
 
 	var genres []model.Genre
@@ -420,6 +435,13 @@ func (h *NovelHandler) Update(c *gin.Context) {
 	var novel model.Novel
 	if err := h.DB.Preload("Genres").First(&novel, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "novel not found"})
+		return
+	}
+
+	role, _ := c.Get("role")
+	userID, _ := c.Get("user_id")
+	if role != "admin" && (novel.WriterID == nil || *novel.WriterID != userID.(uint)) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "you do not have permission to edit this novel"})
 		return
 	}
 
@@ -496,6 +518,13 @@ func (h *NovelHandler) Delete(c *gin.Context) {
 	var novel model.Novel
 	if err := h.DB.First(&novel, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "novel not found"})
+		return
+	}
+
+	role, _ := c.Get("role")
+	userID, _ := c.Get("user_id")
+	if role != "admin" && (novel.WriterID == nil || *novel.WriterID != userID.(uint)) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "you do not permission to delete this novel"})
 		return
 	}
 
