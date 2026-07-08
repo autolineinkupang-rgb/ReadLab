@@ -2,9 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { stripHtml, splitParagraphs } from "@/lib/utils";
+import DOMPurify from "isomorphic-dompurify";
+import { stripHtml } from "@/lib/utils";
 import { reading, translateApi } from "@/lib/api";
 import { useAuth } from "@/lib/AuthContext";
+import { translateHtmlPreservingStructure } from "@/lib/htmlTranslate";
+
+const XP_PER_CHAPTER = 10;
+const XP_MIN_SECONDS = 60;
 
 interface ChapterData {
   number: number;
@@ -83,7 +88,7 @@ export default function ChapterReader({ chapter, novel, chapters, loading, chapt
   const [translationProvider, setTranslationProvider] = useState("google");
   const [showToc, setShowToc] = useState(false);
   const [translating, setTranslating] = useState(false);
-  const [translatedParas, setTranslatedParas] = useState<string[] | null>(null);
+  const [translatedHtml, setTranslatedHtml] = useState<string | null>(null);
   const { user } = useAuth();
   const contentRef = useRef<HTMLDivElement>(null);
   const speechSynthRef = useRef<SpeechSynthesisUtterance | null>(null);
@@ -94,14 +99,57 @@ export default function ChapterReader({ chapter, novel, chapters, loading, chapt
   const textColor = readerBg.text;
   const bgColor = readerBg.bg;
 
+  const chapterStartRef = useRef<number>(0);
+  const [xpProgress, setXpProgress] = useState(0);
+  const xpClaimedRef = useRef(false);
+  const [xpEarned, setXpEarned] = useState(0);
+  const [showXpCelebration, setShowXpCelebration] = useState(false);
+  const xpIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   useEffect(() => {
     if (!chapter) return;
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
     setShowToc(false);
+    setXpProgress(0);
+    setXpEarned(0);
+    setShowXpCelebration(false);
+    xpClaimedRef.current = false;
+    chapterStartRef.current = Date.now();
 
     if (user && novel?.id && chapter?.number) {
       reading.track(novel?.id, chapter?.number).catch(() => {});
     }
+
+    if (user && novel?.id && chapter?.number) {
+      xpIntervalRef.current = setInterval(() => {
+        const elapsed = (Date.now() - chapterStartRef.current) / 1000;
+        const pct = Math.min(100, (elapsed / XP_MIN_SECONDS) * 100);
+        setXpProgress(pct);
+
+        if (pct >= 100 && !xpClaimedRef.current) {
+          xpClaimedRef.current = true;
+          if (xpIntervalRef.current) clearInterval(xpIntervalRef.current);
+          reading.claimXP(novel.id, chapter.number).then((res) => {
+            if (res.xp_earned > 0) {
+              setXpEarned((prev) => prev + res.xp_earned);
+              setShowXpCelebration(true);
+              setTimeout(() => setShowXpCelebration(false), 3000);
+            }
+          }).catch(() => {});
+        }
+      }, 500);
+    }
+
+    return () => {
+      if (xpIntervalRef.current) clearInterval(xpIntervalRef.current);
+      const elapsed = (Date.now() - chapterStartRef.current) / 1000;
+      if (user && novel?.id && chapter?.number && elapsed >= XP_MIN_SECONDS && !xpClaimedRef.current) {
+        xpClaimedRef.current = true;
+        reading.claimXP(novel.id, chapter.number).then((res) => {
+          if (res.xp_earned > 0) setXpEarned((prev) => prev + res.xp_earned);
+        }).catch(() => {});
+      }
+    };
   }, [chapter?.number, user, novel?.id]);
 
   useEffect(() => {
@@ -117,33 +165,31 @@ export default function ChapterReader({ chapter, novel, chapters, loading, chapt
     };
   }, [isSpeaking, chapter?.content, speechSpeed, language]);
 
-  const contentParas = splitParagraphs(stripHtml(chapter?.content || ""));
-  const displayParas = translatedParas || contentParas;
+  const allowedTags = ["p", "h2", "h3", "strong", "em", "u", "s", "ul", "ol", "li", "blockquote", "hr", "br"];
+  const sanitizedHtml = DOMPurify.sanitize(chapter?.content || "", { ALLOWED_TAGS: allowedTags });
+  const displayHtml = translatedHtml || sanitizedHtml;
 
   useEffect(() => {
     if (language === "auto" || language === prevLangRef.current) return;
     prevLangRef.current = language;
     if (!chapter?.content || language === "en-US") {
-      setTranslatedParas(null);
+      setTranslatedHtml(null);
       return;
     }
-    const paras = contentParas;
-    if (paras.length === 0) return;
     setTranslating(true);
     let cancelled = false;
-    const results: string[] = [];
-    let idx = 0;
-    function translateNext() {
-      if (cancelled || idx >= paras.length) {
-        if (!cancelled) setTranslatedParas(results);
-        setTranslating(false);
-        return;
-      }
-      translateApi.translate(paras[idx], language)
-        .then((res) => { results[idx] = res.data; idx++; translateNext(); })
-        .catch(() => { results[idx] = paras[idx]; idx++; translateNext(); });
-    }
-    translateNext();
+    translateHtmlPreservingStructure(chapter.content, (text) =>
+      translateApi.translate(text, language).then((r) => r.data)
+    )
+      .then((html) => {
+        if (!cancelled) setTranslatedHtml(html);
+      })
+      .catch(() => {
+        if (!cancelled) setTranslatedHtml(null);
+      })
+      .finally(() => {
+        if (!cancelled) setTranslating(false);
+      });
     return () => { cancelled = true; };
   }, [language, chapter?.content]);
 
@@ -524,13 +570,22 @@ export default function ChapterReader({ chapter, novel, chapters, loading, chapt
               </div>
             )}
 
-            <div key={chapter?.number} className={`leading-relaxed ${fontClasses[fontFamily]}`} style={{ fontSize: `${fontSize}px`, lineHeight: `${lineHeight}`, color: textColor, backgroundColor: bgColor, padding: "1.25rem", borderRadius: "0.5rem" }}>
-              {displayParas.map((para, i) => (
-                <p key={i} className="mb-4 last:mb-0 leading-relaxed">
-                  {para}
-                </p>
-              ))}
-            </div>
+            <div
+              key={chapter?.number}
+              className={`chapter-content ${fontClasses[fontFamily]}`}
+              style={{ fontSize: `${fontSize}px`, lineHeight: `${lineHeight}`, color: textColor, backgroundColor: bgColor, padding: "1.25rem", borderRadius: "0.5rem" }}
+              dangerouslySetInnerHTML={{ __html: displayHtml }}
+            />
+
+            {/* XP Progress & Celebration */}
+            {user && (
+              <XpProgressBar
+                progress={xpProgress}
+                earned={xpEarned}
+                showCelebration={showXpCelebration}
+                siteTheme={siteTheme}
+              />
+            )}
 
             {!user && (
               <div className="mt-8 p-4 rounded-xl text-center" style={{ backgroundColor: "#1e1e3a", border: "1px solid #3a3a5a" }}>
@@ -620,6 +675,93 @@ export default function ChapterReader({ chapter, novel, chapters, loading, chapt
         >
           {inLibrary ? "In Library" : "+ Library"}
         </button>
+      </div>
+
+      {/* XP Celebration particles */}
+      {showXpCelebration && (
+        <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+          {[...Array(8)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute text-emerald-400 text-2xl font-bold"
+              style={{
+                left: `${30 + Math.random() * 40}%`,
+                top: `${30 + Math.random() * 40}%`,
+                animation: `xpFloat 1.5s ease-out forwards`,
+                animationDelay: `${i * 0.08}s`,
+              }}
+            >
+              ✦
+            </div>
+          ))}
+          <style>{`
+            @keyframes xpFloat {
+              0% { transform: translateY(0) scale(0.5); opacity: 1; }
+              50% { transform: translateY(-40px) scale(1.2); opacity: 0.8; }
+              100% { transform: translateY(-80px) scale(0.8); opacity: 0; }
+            }
+          `}</style>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function XpProgressBar({
+  progress,
+  earned,
+  showCelebration,
+  siteTheme,
+}: {
+  progress: number;
+  earned: number;
+  showCelebration: boolean;
+  siteTheme: { bg: string; text: string; card: string; border: string; muted: string };
+}) {
+  if (progress === 0 && earned === 0) return null;
+
+  const remaining = Math.ceil(60 * (1 - progress / 100));
+  const isComplete = progress >= 100;
+
+  return (
+    <div className="mt-6 relative">
+      {showCelebration && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+          <div className="text-center animate-bounce">
+            <div className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent drop-shadow-lg">
+              ✦ +{earned} XP ✦
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div
+        className="rounded-xl p-4 transition-all duration-500"
+        style={{
+          backgroundColor: siteTheme.card,
+          border: `1px solid ${siteTheme.border}`,
+          opacity: showCelebration ? 0.25 : 1,
+        }}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-medium" style={{ color: isComplete ? "#10b981" : siteTheme.muted }}>
+            {isComplete ? "✦ XP Earned" : "📖 Reading"}
+          </span>
+          <span className="text-xs font-semibold" style={{ color: isComplete ? "#10b981" : "#6dd5ed" }}>
+            {isComplete ? `+${earned} XP` : `+10 XP in ${remaining}s`}
+          </span>
+        </div>
+        <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: siteTheme.border }}>
+          <div
+            className="h-full rounded-full transition-all duration-500 ease-out"
+            style={{
+              width: `${progress}%`,
+              background: isComplete
+                ? "linear-gradient(90deg, #10b981, #34d399)"
+                : "linear-gradient(90deg, #2193b0, #6dd5ed)",
+            }}
+          />
+        </div>
       </div>
     </div>
   );

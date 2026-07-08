@@ -1,6 +1,6 @@
 {
-  "name": "WTR-LAB",
-  "short_name": "WTR-LAB",
+  "name": "ReadLab",
+  "short_name": "ReadLab",
   "description": "Read Light Novels in English Machine Translation",
   "start_url": "/en",
   "display": "standalone",
@@ -8,14 +8,9 @@
   "theme_color": "#1a1a3e",
   "icons": [
     {
-      "src": "/assets/favicon/favicon-96x96.png",
+      "src": "/assets/favicon/favicon.svg",
       "sizes": "96x96",
-      "type": "image/png"
-    },
-    {
-      "src": "/assets/favicon/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png"
+      "type": "image/svg+xml"
     }
   ]
 }

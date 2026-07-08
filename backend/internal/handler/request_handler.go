@@ -23,6 +23,26 @@ type CreateRequest struct {
 	Source     string `json:"source"`
 }
 
+func (h *RequestHandler) List(c *gin.Context) {
+	var requests []model.Request
+	h.DB.Order("created_at DESC").Find(&requests)
+
+	items := make([]gin.H, len(requests))
+	for i, r := range requests {
+		items[i] = gin.H{
+			"id":          r.ID,
+			"novel_title": r.NovelTitle,
+			"novel_url":   r.NovelURL,
+			"source":      r.Source,
+			"status":      r.Status,
+			"votes":       r.Votes,
+			"created_at":  r.CreatedAt.Format("2006-01-02T15:04:05Z"),
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": items})
+}
+
 func (h *RequestHandler) Create(c *gin.Context) {
 	userID, exists := c.Get("user_id")
 	if !exists {

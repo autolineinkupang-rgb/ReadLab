@@ -1,0 +1,162 @@
+- generic [active] [ref=f4e1]:
+  - img [ref=f4e2]
+  - generic [ref=f4e3]:
+    - navigation [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - button [ref=f4e6] [cursor=pointer]:
+          - img
+        - link "WTR-LAB" [ref=f4e7] [cursor=pointer]:
+          - /url: /en
+          - img [ref=f4e8]
+          - generic [ref=f4e12]: WTR-LAB
+        - generic [ref=f4e14]:
+          - searchbox "Search" [ref=f4e16]
+          - img [ref=f4e17]
+        - generic [ref=f4e19]:
+          - link "Library" [ref=f4e20] [cursor=pointer]:
+            - /url: /en/library
+            - img [ref=f4e22]
+            - generic [ref=f4e24]: Library
+          - link "Novels" [ref=f4e25] [cursor=pointer]:
+            - /url: /en/novel-list
+            - img [ref=f4e27]
+            - generic [ref=f4e29]: Novels
+          - link "Ranking" [ref=f4e30] [cursor=pointer]:
+            - /url: /en/ranking/daily
+            - img [ref=f4e32]
+            - generic [ref=f4e34]: Ranking
+          - link "Leaderboard" [ref=f4e35] [cursor=pointer]:
+            - /url: /en/leaderboard
+            - img [ref=f4e37]
+            - generic [ref=f4e39]: Leaderboard
+        - button "Loading" [disabled]:
+          - status "Loading"
+        - button [ref=f4e40] [cursor=pointer]:
+          - img
+    - generic [ref=f4e42]:
+      - generic [ref=f4e43]:
+        - generic [ref=f4e45]:
+          - generic [ref=f4e46]:
+            - generic [ref=f4e47]:
+              - heading "I Was Livestreaming in Douluo Continent, and My Audience Was Bibi Dong!" [level=1] [ref=f4e48]
+              - paragraph [ref=f4e49]: 我在斗罗开直播，观众竟是比比东
+            - button [ref=f4e51] [cursor=pointer]:
+              - img
+          - generic [ref=f4e52]:
+            - generic [ref=f4e54] [cursor=pointer]:
+              - img [ref=f4e56]
+              - generic [ref=f4e58]:
+                - img
+              - img "I Was Livestreaming in Douluo Continent, and My Audience Was Bibi Dong!" [ref=f4e59]
+            - generic [ref=f4e61]:
+              - generic [ref=f4e62]:
+                - generic [ref=f4e63]:
+                  - generic [ref=f4e64]: Status
+                  - generic [ref=f4e67]: Ongoing
+                - generic [ref=f4e68]:
+                  - generic [ref=f4e69]: Views
+                  - generic [ref=f4e70]: 288K
+                - generic [ref=f4e71]:
+                  - generic [ref=f4e72]: Chapters
+                  - generic [ref=f4e73]: "377"
+                - generic [ref=f4e74]:
+                  - generic [ref=f4e75]: Rating
+                  - generic [ref=f4e76]:
+                    - generic [ref=f4e77]: ★
+                    - generic [ref=f4e78]: 2.4 (16)
+                - generic [ref=f4e79]:
+                  - generic [ref=f4e80]: Readers
+                  - generic [ref=f4e81]: "975"
+                - generic [ref=f4e82]:
+                  - generic [ref=f4e83]: Chars
+                  - generic [ref=f4e84]: 655K
+              - generic [ref=f4e85]:
+                - button "Loading" [ref=f4e88] [cursor=pointer]:
+                  - generic [ref=f4e89]:
+                    - status "Loading"
+                - button "Start Reading" [ref=f4e90] [cursor=pointer]:
+                  - generic [ref=f4e91]: Start Reading
+          - generic [ref=f4e92]:
+            - generic [ref=f4e93]: Male
+            - generic [ref=f4e94]: Douluo Dalu
+            - generic [ref=f4e95]: adult
+            - generic [ref=f4e96]: adventure
+            - generic [ref=f4e97]: drama
+            - generic [ref=f4e98]: ecchi
+            - generic [ref=f4e99]: erciyuan
+            - generic [ref=f4e100]: fan-fiction
+            - generic [ref=f4e101]: fantasy
+            - generic [ref=f4e102]: harem
+            - generic [ref=f4e103]: slice-of-life
+            - generic [ref=f4e104]: tragedy
+        - generic [ref=f4e105]:
+          - generic [ref=f4e106]:
+            - generic [ref=f4e107]:
+              - img [ref=f4e108]
+              - generic [ref=f4e110]: AI-Unlock Progress
+            - generic [ref=f4e111]:
+              - generic [ref=f4e112]: "377"
+              - generic [ref=f4e113]: /
+              - generic [ref=f4e114]: "377"
+          - generic [ref=f4e118]: All chapters unlocked
+        - generic [ref=f4e121]:
+          - tablist [ref=f4e122]:
+            - tab "About" [ref=f4e123] [cursor=pointer]
+            - tab "Table of Contents" [selected] [ref=f4e124] [cursor=pointer]
+            - tab "Reviews" [ref=f4e125] [cursor=pointer]
+            - tab "Recommendations" [ref=f4e126] [cursor=pointer]
+          - tabpanel [ref=f4e127]:
+            - generic [ref=f4e128]:
+              - generic [ref=f4e129]:
+                - generic [ref=f4e131]: Latest Release
+                - generic [ref=f4e132]:
+                  - link "#377 Chapter 377 the separation of powers in the sea god pavilion" [ref=f4e133] [cursor=pointer]:
+                    - /url: /en/novel/80088/i-was-livestreaming-in-douluo-continent-and-my-audience-was-bibi-dong/chapter-377
+                    - generic [ref=f4e134]: "#377"
+                    - generic [ref=f4e135]: Chapter 377 the separation of powers in the sea god pavilion
+                  - link "#376 Chapter 376 two secretaries" [ref=f4e137] [cursor=pointer]:
+                    - /url: /en/novel/80088/i-was-livestreaming-in-douluo-continent-and-my-audience-was-bibi-dong/chapter-376
+                    - generic [ref=f4e138]: "#376"
+                    - generic [ref=f4e139]: Chapter 376 two secretaries
+                  - 'link "#375 Chapter 375 a five-hundred-thousand-year-old soul bone: preparing to take office" [ref=f4e141] [cursor=pointer]':
+                    - /url: /en/novel/80088/i-was-livestreaming-in-douluo-continent-and-my-audience-was-bibi-dong/chapter-375
+                    - generic [ref=f4e142]: "#375"
+                    - generic [ref=f4e143]: "Chapter 375 a five-hundred-thousand-year-old soul bone: preparing to take office"
+                  - link "#374 Chapter 374 spreads throughout shrek" [ref=f4e145] [cursor=pointer]:
+                    - /url: /en/novel/80088/i-was-livestreaming-in-douluo-continent-and-my-audience-was-bibi-dong/chapter-374
+                    - generic [ref=f4e146]: "#374"
+                    - generic [ref=f4e147]: Chapter 374 spreads throughout shrek
+                  - link "#373 Chapter 373 an ordinary genius training camp" [ref=f4e149] [cursor=pointer]:
+                    - /url: /en/novel/80088/i-was-livestreaming-in-douluo-continent-and-my-audience-was-bibi-dong/chapter-373
+                    - generic [ref=f4e150]: "#373"
+                    - generic [ref=f4e151]: Chapter 373 an ordinary genius training camp
+              - generic [ref=f4e153]:
+                - generic [ref=f4e155]: Chapters
+                - region
+      - region "Notifications alt+T"
+    - contentinfo [ref=f4e156]:
+      - generic [ref=f4e157]:
+        - generic [ref=f4e158]:
+          - link "Intro" [ref=f4e159] [cursor=pointer]:
+            - /url: /
+          - link "About Us" [ref=f4e160] [cursor=pointer]:
+            - /url: /en/about-us
+          - link "Contact Us" [ref=f4e161] [cursor=pointer]:
+            - /url: /en/contact-us
+          - link "Changelog" [ref=f4e162] [cursor=pointer]:
+            - /url: /en/news?type=changelog
+          - link "DMCA" [ref=f4e163] [cursor=pointer]:
+            - /url: /en/dmca
+          - link "Cookie Policy" [ref=f4e164] [cursor=pointer]:
+            - /url: /en/cookie-policy
+          - link "Privacy Policy" [ref=f4e165] [cursor=pointer]:
+            - /url: /en/privacy-policy
+          - link "Terms of Use" [ref=f4e166] [cursor=pointer]:
+            - /url: /en/terms-of-use
+          - link "Stats" [ref=f4e167] [cursor=pointer]:
+            - /url: /en/public-stats
+        - separator [ref=f4e168]
+        - generic [ref=f4e169]:
+          - text: Copyright © 2022 - wtr-lab.com
+          - link "v1.13.4" [ref=f4e170] [cursor=pointer]:
+            - /url: /en/news?type=changelog

@@ -49,6 +49,7 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 		"display_name": user.DisplayName,
 		"avatar_url":   user.AvatarURL,
 		"tickets":      user.Tickets,
+		"xp":           user.XP,
 		"created_at":   user.CreatedAt,
 	})
 }

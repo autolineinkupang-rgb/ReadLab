@@ -3,7 +3,7 @@ import Link from "next/link";
 import Card from "@/components/ui/Card";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - WTR-LAB",
+  title: "Privacy Policy - ReadLab",
 };
 
 export default function PrivacyPolicyPage() {
@@ -16,7 +16,7 @@ export default function PrivacyPolicyPage() {
       </nav>
       <h1 className="text-3xl font-bold text-white mb-8">Privacy Policy</h1>
       <Card className="p-8 space-y-4 text-sm text-gray-300 leading-relaxed">
-        <p>Your privacy is important to us. This Privacy Policy explains how WTR-Lab collects, uses, and protects your personal information.</p>
+        <p>Your privacy is important to us. This Privacy Policy explains how ReadLab collects, uses, and protects your personal information.</p>
         <h2 className="text-lg font-semibold text-white mt-6">Information We Collect</h2>
         <ul className="list-disc pl-5 space-y-1">
           <li><strong>Account Information:</strong> Username, email address, and password (encrypted) when you register</li>
@@ -33,7 +33,7 @@ export default function PrivacyPolicyPage() {
         <h2 className="text-lg font-semibold text-white mt-6">Data Protection</h2>
         <p>We implement appropriate security measures to protect your personal information. Passwords are encrypted and we never share your data with third parties without your consent.</p>
         <h2 className="text-lg font-semibold text-white mt-6">Contact</h2>
-        <p>For privacy-related inquiries, please contact us at <a href="mailto:admin@wtr-lab.com" className="text-violet-400 hover:text-violet-300">admin@wtr-lab.com</a>.</p>
+        <p>For privacy-related inquiries, please contact us at <a href="mailto:your-email@example.com" className="text-violet-400 hover:text-violet-300">your-email@example.com</a>.</p>
       </Card>
     </div>
   );

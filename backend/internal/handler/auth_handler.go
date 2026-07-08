@@ -139,6 +139,7 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		"display_name": user.DisplayName,
 		"avatar_url": user.AvatarURL,
 		"tickets":    user.Tickets,
+		"xp":         user.XP,
 		"role":       user.Role,
 	})
 }

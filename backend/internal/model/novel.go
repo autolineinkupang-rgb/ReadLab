@@ -17,6 +17,7 @@ type Novel struct {
 	Views       uint64  `gorm:"default:0"`
 	Rating      float64 `gorm:"default:0"`
 	RatingCount uint    `gorm:"default:0"`
+	Votes       uint    `gorm:"default:0"`
 	Chapters    int     `gorm:"default:0"`
 	Readers     int     `gorm:"default:0"`
 	Chars       string  `gorm:"size:20"`

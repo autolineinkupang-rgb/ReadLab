@@ -45,7 +45,7 @@ export default function PublicStatsPage() {
         <span className="text-gray-400">Public Stats</span>
       </nav>
       <h1 className="text-3xl font-bold text-white mb-2">Public Statistics</h1>
-      <p className="text-sm text-gray-500 mb-8">Real-time platform statistics for WTR-Lab</p>
+      <p className="text-sm text-gray-500 mb-8">Real-time platform statistics for ReadLab</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {statCards.map((s) => (
           <Card key={s.key} className="p-5">

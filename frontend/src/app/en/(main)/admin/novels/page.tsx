@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { novels, genres as genresApi, adminNovels } from "@/lib/api";
+import { parseMarkdownNovel, ParsedNovel } from "@/lib/novelMarkdownImport";
 import Card from "@/components/ui/Card";
 
 interface NovelItem {
@@ -28,6 +29,8 @@ export default function AdminNovelsPage() {
   const [editForm, setEditForm] = useState<any>({});
   const [genreOptions, setGenreOptions] = useState<{ ID: number; Name: string }[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [parsedNovel, setParsedNovel] = useState<ParsedNovel | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [addForm, setAddForm] = useState({
     title: "", alt_title: "", author: "", status: "ongoing",
     description: "", cover_url: "", chars: "", ai_percent: "", rating: 0,
@@ -102,14 +105,25 @@ export default function AdminNovelsPage() {
     if (!addForm.title.trim()) return;
     setMessage("");
     try {
-      await adminNovels.create(addForm);
+      const payload = parsedNovel
+        ? { ...addForm, chapters: parsedNovel.chapters.map((ch) => ({ number: ch.number, title: ch.title, content: ch.content })) }
+        : addForm;
+      await adminNovels.create(payload);
       setMessage("Novel created.");
       setShowAddForm(false);
+      setParsedNovel(null);
       setAddForm({ title: "", alt_title: "", author: "", status: "ongoing", description: "", cover_url: "", chars: "", ai_percent: "", rating: 0, genre_ids: [] });
       fetchNovels(page);
     } catch (e: any) {
       setMessage(`Create failed: ${e.message}`);
     }
+  }
+
+  async function handleImportMd(file: File) {
+    const text = await file.text();
+    const parsed = parseMarkdownNovel(text, file.name);
+    setParsedNovel(parsed);
+    setAddForm((prev: any) => ({ ...prev, title: parsed.title }));
   }
 
   function toggleAddGenre(id: number) {
@@ -147,6 +161,35 @@ export default function AdminNovelsPage() {
       {showAddForm && (
         <Card className="mb-6 p-4 space-y-3">
           <h2 className="text-white text-sm font-semibold">Add New Novel</h2>
+          <div className="flex gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".md,.markdown"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleImportMd(f);
+                e.target.value = "";
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="px-3 py-1.5 bg-violet-900/50 hover:bg-violet-800/50 text-violet-400 text-xs rounded-lg transition-colors"
+            >
+              + Import from Markdown
+            </button>
+            {parsedNovel && (
+              <button
+                type="button"
+                onClick={() => { setParsedNovel(null); }}
+                className="px-3 py-1.5 bg-red-900/50 hover:bg-red-800/50 text-red-400 text-xs rounded-lg transition-colors"
+              >
+                Clear Import
+              </button>
+            )}
+          </div>
           <input
             value={addForm.title}
             onChange={(e) => setAddForm((p: any) => ({ ...p, title: e.target.value }))}
@@ -230,12 +273,30 @@ export default function AdminNovelsPage() {
               ))}
             </div>
           </div>
+          {parsedNovel && (
+            <div className="border border-line-light rounded-lg p-3 space-y-2">
+              <p className="text-xs text-gray-400 font-semibold">
+                Imported Chapters ({parsedNovel.chapters.length})
+              </p>
+              <div className="max-h-48 overflow-y-auto space-y-1">
+                {parsedNovel.chapters.map((ch) => (
+                  <div key={ch.number} className="flex items-start gap-2 text-xs">
+                    <span className="text-gray-500 shrink-0 w-6 text-right">#{ch.number}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-gray-200 truncate">{ch.title}</p>
+                      <p className="text-gray-500 truncate">{ch.content.replace(/<[^>]+>/g, "").slice(0, 80)}...</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <button
             onClick={handleAddNovel}
             disabled={!addForm.title.trim()}
             className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
           >
-            Create Novel
+            {parsedNovel ? "Create Novel with Chapters" : "Create Novel"}
           </button>
         </Card>
       )}

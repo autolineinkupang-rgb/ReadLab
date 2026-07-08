@@ -3,8 +3,8 @@ import Link from "next/link";
 import Card from "@/components/ui/Card";
 
 export const metadata: Metadata = {
-  title: "Contact Us - WTR-LAB",
-  description: "Get in touch with WTR-Lab support team.",
+  title: "Contact Us - ReadLab",
+  description: "Get in touch with ReadLab support team.",
 };
 
 export default function ContactUsPage() {
@@ -27,10 +27,10 @@ export default function ContactUsPage() {
             For general inquiries and support:
           </p>
           <a
-            href="mailto:admin@wtr-lab.com"
+            href="mailto:your-email@example.com"
             className="text-violet-400 hover:text-violet-300 text-sm transition-colors mt-1 inline-block"
           >
-            admin@wtr-lab.com
+            your-email@example.com
           </a>
         </Card>
 
@@ -41,7 +41,7 @@ export default function ContactUsPage() {
             Join our Discord community for bug reports and discussions:
           </p>
           <a
-            href="https://discord.gg/wtrlab"
+            href="https://discord.gg/YOUR_DISCORD_INVITE"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 bg-[#5865F2] hover:bg-[#4752c4] text-white text-sm rounded-lg transition-colors"
@@ -60,7 +60,7 @@ export default function ContactUsPage() {
             Like what we do? Support us on Patreon:
           </p>
           <a
-            href="https://patreon.com/wtrlab"
+            href="https://patreon.com/YOUR_PATREON"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF424D] hover:bg-[#e63945] text-white text-sm rounded-lg transition-colors"
@@ -79,12 +79,12 @@ export default function ContactUsPage() {
             Found a bug? Please report it on our Discord server.
           </p>
           <a
-            href="https://discord.gg/wtrlab"
+            href="https://discord.gg/YOUR_DISCORD_INVITE"
             target="_blank"
             rel="noopener noreferrer"
             className="text-violet-400 hover:text-violet-300 text-sm transition-colors"
           >
-            discord.gg/wtrlab →
+            discord.gg/YOUR_DISCORD_INVITE →
           </a>
         </Card>
       </div>

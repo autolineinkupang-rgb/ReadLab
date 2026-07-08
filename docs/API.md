@@ -61,7 +61,7 @@ Authenticate and receive a JWT token (set as cookie + returned in body).
 ```bash
 curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email": "admin@wtrlab.com", "password": "admin123"}'
+  -d '{"email": "admin@example.com", "password": "admin123"}'
 ```
 
 Response:
@@ -90,7 +90,7 @@ Response:
 {
   "ID": 1,
   "Username": "admin",
-  "Email": "admin@wtrlab.com",
+  "Email": "admin@example.com",
   "DisplayName": "admin",
   "Tickets": 99999,
   "IsAdmin": true,

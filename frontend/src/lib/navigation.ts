@@ -28,6 +28,7 @@ export const adminLinks = [
   { href: "/en/admin/requests", label: "Requests" },
   { href: "/en/admin/import", label: "Import" },
   { href: "/en/admin/reviews", label: "Reviews" },
+  { href: "/en/admin/news", label: "News" },
 ];
 
 export const navSections = [

@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { novels, reviews, reading, author as authorApi } from "@/lib/api";
+import { novels, reviews, reading, shares, author as authorApi } from "@/lib/api";
 import { stripHtml, formatViews } from "@/lib/utils";
 import { Novel, Chapter } from "@/types";
 import { useAuth } from "@/lib/AuthContext";
 import type { ReviewResponse, RatingSummary } from "@/lib/api";
-import Card from "@/components/ui/Card";
+
 
 export default function NovelDetailPage() {
   const params = useParams();
@@ -16,8 +16,6 @@ export default function NovelDetailPage() {
 
   const [novel, setNovel] = useState<Novel | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
-  const [chapterPage, setChapterPage] = useState(1);
-  const [totalChapters, setTotalChapters] = useState(0);
   const [activeTab, setActiveTab] = useState<"about" | "toc" | "reviews" | "recommendations">("about");
   const [loading, setLoading] = useState(true);
   const [reviewsData, setReviewsData] = useState<ReviewResponse[]>([]);
@@ -31,7 +29,40 @@ export default function NovelDetailPage() {
   const [formError, setFormError] = useState("");
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [authorNovels, setAuthorNovels] = useState<Novel[]>([]);
+  const [xpToast, setXpToast] = useState<{ show: boolean; message: string }>({ show: false, message: "" });
   const { user } = useAuth();
+
+  const showXpToast = (msg: string) => {
+    setXpToast({ show: true, message: msg });
+    setTimeout(() => setXpToast({ show: false, message: "" }), 3000);
+  };
+
+  const handleShare = async (platform: string) => {
+    if (!user) return;
+    try {
+      const url = encodeURIComponent(`https://readlab.my.id/en/novel/${novel?.ID}/${novel?.Slug}`);
+      const text = encodeURIComponent(`Read ${novel?.Title} on ReadLab`);
+
+      const shareUrls: Record<string, string> = {
+        whatsapp: `https://wa.me/?text=${text}%20${url}`,
+        telegram: `https://t.me/share/url?url=${url}&text=${text}`,
+        twitter: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
+      };
+
+      if (shareUrls[platform]) {
+        window.open(shareUrls[platform], "_blank", "noopener,width=600,height=500");
+      } else {
+        await navigator.clipboard.writeText(`https://readlab.my.id/en/novel/${novel?.ID}/${novel?.Slug}`);
+      }
+
+      const res = await shares.create(novel?.ID!, platform);
+      if (res.xp_earned > 0) {
+        showXpToast(`+${res.xp_earned} XP from sharing!`);
+      }
+    } catch {
+      // silent
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -55,10 +86,10 @@ export default function NovelDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    novels.chapters(id, { page: chapterPage, limit: 50 })
-      .then((res) => { setChapters(res.data); setTotalChapters(res.total); })
-      .catch(() => { setChapters([]); setTotalChapters(0); });
-  }, [id, chapterPage]);
+    novels.chapters(id, { page: 1, limit: 200 })
+      .then((res) => { setChapters(res.data); })
+      .catch(() => { setChapters([]); });
+  }, [id]);
 
   useEffect(() => {
     if (!id) return;
@@ -91,7 +122,6 @@ export default function NovelDetailPage() {
   }
 
   const firstChapter = chapters.length > 0 ? chapters[0] : null;
-  const pageCount = Math.ceil(totalChapters / 50) || 1;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -171,8 +201,8 @@ export default function NovelDetailPage() {
             ))}
           </div>
 
-          {/* Start Reading */}
-          <div className="flex flex-wrap gap-3 mt-6">
+          {/* Start Reading & Share */}
+          <div className="flex flex-wrap items-center gap-3 mt-6">
             {firstChapter && (
               <Link
                 href={`/en/novel/${novel.ID}/${novel.Slug}/chapter-${firstChapter.Number}`}
@@ -181,6 +211,27 @@ export default function NovelDetailPage() {
                 Start Reading
               </Link>
             )}
+            <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
+              <span className="text-xs text-gray-500 mr-1">Share</span>
+              {[
+                { key: "whatsapp", label: "WA", icon: "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.588-.524-1.012-1.11-1.132-1.298-.116-.187-.013-.289.088-.39.087-.088.199-.232.298-.347.1-.115.133-.198.198-.33.066-.134.034-.248-.015-.347-.05-.099-.67-1.616-.922-2.213-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" },
+                { key: "telegram", label: "TG", icon: "M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" },
+                { key: "twitter", label: "X", icon: "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" },
+                { key: "copy", label: "Link", icon: "M7.217 10.907a1.25 1.25 0 01-.026 1.768l-2.536 2.535a3.25 3.25 0 104.596 4.596l2.536-2.535a1.25 1.25 0 011.742 1.793l-2.536 2.535a5.75 5.75 0 11-8.132-8.132l2.536-2.535a1.25 1.25 0 011.768.026l.026.026a1.25 1.25 0 01-.026 1.768l-2.536 2.535a3.25 3.25 0 004.596 4.596l2.536-2.535a1.25 1.25 0 011.742 1.793l-2.536 2.535a5.75 5.75 0 11-8.132-8.132l2.536-2.535a1.25 1.25 0 011.768.026zm4.212.338a1.25 1.25 0 01.026-1.768l2.536-2.535a3.25 3.25 0 10-4.596-4.596l-2.536 2.535a1.25 1.25 0 11-1.742-1.793l2.536-2.535a5.75 5.75 0 118.132 8.132l-2.536 2.535a1.25 1.25 0 01-1.768-.026z" },
+              ].map((s) => (
+                <button
+                  key={s.key}
+                  onClick={() => handleShare(s.key)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center border transition-colors hover:bg-accent/10"
+                  style={{ borderColor: "var(--color-line)", color: "var(--color-muted)" }}
+                  title={`Share on ${s.label}`}
+                >
+                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d={s.icon} />
+                  </svg>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -276,58 +327,92 @@ export default function NovelDetailPage() {
       )}
 
       {activeTab === "toc" && (
-        <div className="bg-card border border-line rounded-xl p-4">
-          <div className="space-y-1 max-h-[600px] overflow-y-auto">
-            {chapters.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-8">No chapters available.</p>
-            ) : (
-              chapters.map((ch) => (
-                <Link
-                  key={ch.ID}
-                  href={`/en/novel/${novel.ID}/${novel.Slug}/chapter-${ch.Number}`}
-                  className="flex items-center justify-between px-4 py-2.5 rounded-lg hover:bg-card-hover transition-colors group"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-sm text-gray-500 w-8 flex-shrink-0">#{ch.Number}</span>
-                    <span className="text-sm text-gray-200 group-hover:text-violet-400 transition-colors line-clamp-1">
-                      {ch.Title || `Chapter ${ch.Number}`}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {ch.IsLocked && (
-                      <span className="text-xs text-yellow-500 flex items-center gap-1">
-                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                        </svg>
-                        {ch.TicketCost}
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              ))
-            )}
-          </div>
-
-          {totalChapters > 50 && (
-            <div className="flex items-center justify-center gap-2 mt-4 pt-4 border-t border-line">
-              <button
-                onClick={() => setChapterPage(Math.max(1, chapterPage - 1))}
-                disabled={chapterPage <= 1}
-                className="px-3 py-1 text-xs rounded bg-card-hover text-gray-400 hover:text-white disabled:opacity-40 transition-colors"
-              >
-                Previous
-              </button>
-              <span className="text-xs text-gray-500">
-                {chapterPage} / {pageCount}
-              </span>
-              <button
-                onClick={() => setChapterPage(Math.min(pageCount, chapterPage + 1))}
-                disabled={chapterPage >= pageCount}
-                className="px-3 py-1 text-xs rounded bg-card-hover text-gray-400 hover:text-white disabled:opacity-40 transition-colors"
-              >
-                Next
-              </button>
+        <div className="space-y-4">
+          {chapters.length === 0 ? (
+            <div className="bg-card border border-line rounded-xl p-6 text-center">
+              <p className="text-sm text-gray-500">No chapters available.</p>
             </div>
+          ) : (
+            <>
+              {/* Latest Release */}
+              <div className="bg-card border border-line rounded-xl p-4">
+                <h3 className="text-sm font-semibold text-white mb-3">Latest Release</h3>
+                <div className="space-y-0.5">
+                  {[...chapters]
+                    .sort((a, b) => {
+                      if (!a.CreatedAt || !b.CreatedAt) return b.Number - a.Number;
+                      return new Date(b.CreatedAt).getTime() - new Date(a.CreatedAt).getTime();
+                    })
+                    .slice(0, 5)
+                    .map((ch) => (
+                      <Link
+                        key={ch.ID}
+                        href={`/en/novel/${novel.ID}/${novel.Slug}/chapter-${ch.Number}`}
+                        className="flex items-center justify-between px-4 py-2 rounded-lg hover:bg-card-hover transition-colors group"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="text-sm text-gray-500 w-10 flex-shrink-0">#{ch.Number}</span>
+                          <span className="text-sm text-gray-200 group-hover:text-violet-400 transition-colors line-clamp-1">
+                            {ch.Title || `Chapter ${ch.Number}`}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-600 flex-shrink-0 ml-2">
+                          {ch.CreatedAt ? timeAgo(ch.CreatedAt) : ""}
+                        </span>
+                      </Link>
+                    ))}
+                </div>
+              </div>
+
+              {/* Chapter Groups */}
+              <div className="bg-card border border-line rounded-xl p-4">
+                <h3 className="text-sm font-semibold text-white mb-3">Chapters</h3>
+                <div className="space-y-2">
+                  {groupChapters(chapters).map((group) => (
+                    <details key={group.label} className="group rounded-lg border border-line-light overflow-hidden">
+                      <summary className="flex items-center justify-between px-4 py-3 bg-card-hover hover:bg-line-light cursor-pointer text-sm text-gray-200 font-medium transition-colors list-none">
+                        {group.label}
+                        <svg
+                          className="w-4 h-4 text-gray-500 transition-transform group-open:rotate-180"
+                          fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </summary>
+                      <div className="divide-y divide-line-light">
+                        {group.chapters.map((ch) => (
+                          <Link
+                            key={ch.ID}
+                            href={`/en/novel/${novel.ID}/${novel.Slug}/chapter-${ch.Number}`}
+                            className="flex items-center justify-between px-4 py-2 hover:bg-card-hover transition-colors group"
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <span className="text-sm text-gray-500 w-10 flex-shrink-0">#{ch.Number}</span>
+                              <span className="text-sm text-gray-200 group-hover:text-violet-400 transition-colors line-clamp-1">
+                                {ch.Title || `Chapter ${ch.Number}`}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              {ch.CreatedAt && (
+                                <span className="text-xs text-gray-600">{timeAgo(ch.CreatedAt)}</span>
+                              )}
+                              {ch.IsLocked && (
+                                <span className="text-xs text-yellow-500 flex items-center gap-1">
+                                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                                  </svg>
+                                  {ch.TicketCost}
+                                </span>
+                              )}
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
         </div>
       )}
@@ -386,10 +471,13 @@ export default function NovelDetailPage() {
                   if (formContent.trim().length < 10) { setFormError("Review must be at least 10 characters"); return; }
                   setFormSubmitting(true);
                   setFormError("");
-                  try {
-                    const res = await reviews.create(parseInt(id), formRating, formContent);
-                    setMyReview(res.data);
-                    setReviewsData((prev) => [res.data, ...prev]);
+                    try {
+                      const res = await reviews.create(parseInt(id), formRating, formContent);
+                      setMyReview(res.data);
+                      setReviewsData((prev) => [res.data, ...prev]);
+                      if ((res as any).xp_earned > 0) {
+                        showXpToast(`+${(res as any).xp_earned} XP from review!`);
+                      }
                     if (ratingSummary) {
                       const newCount = ratingSummary.count + 1;
                       const newAvg = ((ratingSummary.average * ratingSummary.count) + formRating) / newCount;
@@ -476,6 +564,16 @@ export default function NovelDetailPage() {
           No recommendations available.
         </div>
       )}
+
+      {/* XP Toast */}
+      {xpToast.show && (
+        <div className="fixed bottom-6 right-6 z-50 animate-slide-up">
+          <div className="bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2">
+            <span>✦</span>
+            {xpToast.message}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -538,6 +636,21 @@ function ReviewCard({ review }: { review: ReviewResponse }) {
       </div>
     </div>
   );
+}
+
+function groupChapters(chapters: Chapter[]) {
+  const sorted = [...chapters].sort((a, b) => a.Number - b.Number);
+  const groups: { label: string; chapters: Chapter[] }[] = [];
+  let start = 1;
+  while (start <= (sorted[sorted.length - 1]?.Number || 0)) {
+    const end = Math.min(start + 99, sorted[sorted.length - 1]?.Number || 0);
+    const group = sorted.filter((ch) => ch.Number >= start && ch.Number <= end);
+    if (group.length > 0) {
+      groups.push({ label: `Chapters ${start} - ${end}`, chapters: group });
+    }
+    start += 100;
+  }
+  return groups;
 }
 
 function timeAgo(dateStr: string) {

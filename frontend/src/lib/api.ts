@@ -108,7 +108,7 @@ export const news = {
 // Votes (protected)
 export const votes = {
   create: (novelId: number) =>
-    fetcher<{ message: string }>("/votes", {
+    fetcher<{ message: string; xp_earned: number }>("/votes", {
       method: "POST",
       body: JSON.stringify({ novel_id: novelId }),
     }),
@@ -116,6 +116,8 @@ export const votes = {
 
 // Requests (protected)
 export const requests = {
+  list: () =>
+    fetcher<{ data: any[] }>("/requests"),
   create: (data: { novel_title: string; novel_url?: string; source?: string }) =>
     fetcher<any>("/requests", {
       method: "POST",
@@ -167,10 +169,10 @@ export const importer = {
 
 // Lncrawl (protected)
 export const lncrawl = {
-	crawl: (url: string, maxChapters?: number) =>
+	crawl: (url: string, maxChapters?: number, chapterRange?: string) =>
 		fetcher<{ data: any }>("/novels/lncrawl", {
 			method: "POST",
-			body: JSON.stringify({ url, max_chapters: maxChapters ?? 0 }),
+			body: JSON.stringify({ url, max_chapters: maxChapters ?? 0, chapter_range: chapterRange }),
 		}),
 };
 
@@ -181,10 +183,10 @@ export const scraper = {
 			method: "POST",
 			body: JSON.stringify({ url }),
 		}),
-	import: (url: string, withContent: boolean) =>
+	import: (url: string, withContent: boolean, chapterRange?: string) =>
 		fetcher<{ data: any }>("/novels/scrape/import", {
 			method: "POST",
-			body: JSON.stringify({ url, with_content: withContent }),
+			body: JSON.stringify({ url, with_content: withContent, chapter_range: chapterRange }),
 		}),
 };
 
@@ -256,6 +258,16 @@ export const adminReviews = {
 		fetcher<{ message: string }>("/admin/reviews/" + id, { method: "DELETE" }),
 };
 
+// Admin news (protected)
+export const adminNews = {
+  create: (data: { title: string; content: string; type: string }) =>
+    fetcher<any>("/admin/news", { method: "POST", body: JSON.stringify(data) }),
+  update: (id: number | string, data: { title?: string; content?: string; type?: string }) =>
+    fetcher<any>("/admin/news/" + id, { method: "PUT", body: JSON.stringify(data) }),
+  delete: (id: number | string) =>
+    fetcher<{ message: string }>("/admin/news/" + id, { method: "DELETE" }),
+};
+
 // Admin users (protected)
 export const adminUsers = {
 	list: (params?: { page?: number; limit?: number; role?: string; q?: string }) =>
@@ -290,10 +302,23 @@ export const reviews = {
     }),
 };
 
+// Shares
+export const shares = {
+  create: (novelId: number, platform: string) =>
+    fetcher<{ message: string; xp_earned: number }>(`/novels/${novelId}/share`, {
+      method: "POST",
+      body: JSON.stringify({ platform }),
+    }),
+};
+
 // Reading tracking
 export const reading = {
   track: (novelId: number, chapterNum: number) =>
     fetcher<{ message: string }>(`/novels/${novelId}/chapters/${chapterNum}/read`, {
+      method: "POST",
+    }),
+  claimXP: (novelId: number, chapterNum: number) =>
+    fetcher<{ message: string; xp_earned: number }>(`/novels/${novelId}/chapters/${chapterNum}/xp`, {
       method: "POST",
     }),
   progress: (novelId: number) =>

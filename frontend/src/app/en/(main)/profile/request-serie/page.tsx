@@ -1,23 +1,18 @@
 "use client";
 
 import Card from "@/components/ui/Card";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { requests } from "@/lib/api";
 
 interface RequestItem {
   id: number;
-  title: string;
+  novel_title: string;
+  novel_url: string;
   source: string;
   status: string;
   votes: number;
-  date: string;
+  created_at: string;
 }
-
-const mockRequests: RequestItem[] = [
-  { id: 1, title: "Solo Leveling: Ragnarok", source: "kakao.com", status: "pending", votes: 45, date: "2 days ago" },
-  { id: 2, title: "The Beginning After The End", source: "tapas.io", status: "approved", votes: 123, date: "1 week ago" },
-  { id: 3, title: "Omniscient Reader's Viewpoint", source: "munpia.com", status: "completed", votes: 89, date: "2 weeks ago" },
-];
 
 function statusBadge(status: string) {
   const styles: Record<string, string> = {
@@ -29,21 +24,52 @@ function statusBadge(status: string) {
   return `text-xs px-2 py-0.5 rounded border ${styles[status] || styles.pending}`;
 }
 
+function timeAgo(dateStr: string) {
+  const now = Date.now();
+  const date = new Date(dateStr).getTime();
+  const diff = now - date;
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  const months = Math.floor(days / 30);
+  return `${months}mo ago`;
+}
+
 export default function RequestSeriePage() {
   const [showForm, setShowForm] = useState(false);
   const [novelTitle, setNovelTitle] = useState("");
   const [novelURL, setNovelURL] = useState("");
   const [source, setSource] = useState("");
-  const [items, setItems] = useState(mockRequests);
+  const [items, setItems] = useState<RequestItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    requests.list()
+      .then((res) => setItems(res.data || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     try {
       await requests.create({ novel_title: novelTitle, novel_url: novelURL, source });
-      setItems([{ id: Date.now(), title: novelTitle, source: source || "manual", status: "pending", votes: 0, date: "Just now" }, ...items]);
+      setItems([{
+        id: Date.now(),
+        novel_title: novelTitle,
+        novel_url: novelURL || "",
+        source: source || "manual",
+        status: "pending",
+        votes: 0,
+        created_at: new Date().toISOString(),
+      }, ...items]);
       setNovelTitle("");
       setNovelURL("");
       setSource("");
@@ -92,23 +118,34 @@ export default function RequestSeriePage() {
         </form>
       )}
 
-      <div className="space-y-3">
-        {items.map((req) => (
-          <Card key={req.id} className="flex items-center gap-4">
-            <div className="min-w-0 flex-1">
-              <p className="text-sm text-gray-200 font-medium">{req.title}</p>
-              <div className="flex items-center gap-3 mt-1">
-                <span className="text-xs text-gray-500">{req.source}</span>
-                <span className={statusBadge(req.status)}>{req.status}</span>
+      {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {items.map((req) => (
+            <Card key={req.id} className="flex items-center gap-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-gray-200 font-medium">{req.novel_title}</p>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="text-xs text-gray-500">{req.source || "—"}</span>
+                  <span className={statusBadge(req.status)}>{req.status}</span>
+                </div>
               </div>
+              <div className="text-right shrink-0">
+                <p className="text-sm text-violet-400 font-medium">{req.votes} votes</p>
+                <p className="text-xs text-gray-600">{timeAgo(req.created_at)}</p>
+              </div>
+            </Card>
+          ))}
+          {items.length === 0 && (
+            <div className="text-center py-16 text-gray-500">
+              <p>No requests yet. Be the first to request a novel!</p>
             </div>
-            <div className="text-right shrink-0">
-              <p className="text-sm text-violet-400 font-medium">{req.votes} votes</p>
-              <p className="text-xs text-gray-600">{req.date}</p>
-            </div>
-          </Card>
-        ))}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

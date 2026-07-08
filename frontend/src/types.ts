@@ -28,6 +28,7 @@ export interface Novel {
   Tags?: string[];
   ReleaseStatus?: string;
   AddedMinutesAgo?: number;
+  Votes?: number;
 }
 
 export interface Chapter {
@@ -47,5 +48,7 @@ export interface ProfileData {
   display_name: string;
   avatar_url: string;
   tickets: number;
+  xp: number;
   created_at: string;
 }
+

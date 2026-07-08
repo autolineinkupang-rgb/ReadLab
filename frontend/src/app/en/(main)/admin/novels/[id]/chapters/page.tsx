@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useState, useRef, Fragment } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import DOMPurify from "isomorphic-dompurify";
 import { novels, adminChapters } from "@/lib/api";
 import Card from "@/components/ui/Card";
+import ChapterContentEditor from "@/components/admin/ChapterContentEditor";
+import type { ChapterContentEditorHandle } from "@/components/admin/ChapterContentEditor";
+import { txtToHtml } from "@/lib/htmlImport";
 
 interface ChapterItem {
   id: number;
@@ -28,6 +32,8 @@ function charCount(text: string): number {
 export default function AdminChaptersPage() {
   const { id } = useParams<{ id: string }>();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const addEditorRef = useRef<ChapterContentEditorHandle>(null);
+  const editEditorRef = useRef<ChapterContentEditorHandle>(null);
   const [novel, setNovel] = useState<any>(null);
   const [data, setData] = useState<ChapterItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -170,25 +176,26 @@ export default function AdminChaptersPage() {
   }
 
   function handleImportFile(field: "add" | "edit") {
-    fileInputRef.current?.click();
-    fileInputRef.current!.dataset.target = field;
-  }
-
-  function handleFileSelected(e: any) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const text = ev.target?.result as string || "";
-      const target = (fileInputRef.current?.dataset.target || "add") as "add" | "edit";
-      if (target === "add") {
-        setAddForm((p: any) => ({ ...p, content: text }));
-      } else {
-        setEditForm((p: any) => ({ ...p, content: text }));
-      }
+    const ref = field === "add" ? addEditorRef.current : editEditorRef.current;
+    if (!ref) {
+      fileInputRef.current?.click();
+      fileInputRef.current!.dataset.target = field;
+      return;
+    }
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".txt";
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const text = ev.target?.result as string || "";
+        ref.importText(txtToHtml(text));
+      };
+      reader.readAsText(file);
     };
-    reader.readAsText(file);
-    e.target.value = "";
+    input.click();
   }
 
   function formatDate(dateStr: string) {
@@ -197,9 +204,11 @@ export default function AdminChaptersPage() {
     return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   }
 
-  function renderPreview(text: string) {
-    if (!text) return null;
-    return <pre className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap font-sans">{text}</pre>;
+  function renderPreview(html: string) {
+    if (!html) return null;
+    const allowed = ["p", "h2", "h3", "strong", "em", "u", "s", "ul", "ol", "li", "blockquote", "hr", "br"];
+    const clean = DOMPurify.sanitize(html, { ALLOWED_TAGS: allowed });
+    return <div className="chapter-content text-gray-300 text-sm" dangerouslySetInnerHTML={{ __html: clean }} />;
   }
 
   return (
@@ -249,14 +258,6 @@ export default function AdminChaptersPage() {
             </div>
           </div>
 
-          <input
-            type="file"
-            accept=".txt"
-            ref={fileInputRef}
-            className="hidden"
-            onChange={handleFileSelected}
-          />
-
           <div className="grid grid-cols-2 gap-3">
             <input
               type="number"
@@ -279,18 +280,12 @@ export default function AdminChaptersPage() {
               {addForm.content ? renderPreview(addForm.content) : <p className="text-gray-500 italic">No content to preview</p>}
             </div>
           ) : (
-            <div className="relative">
-              <textarea
-                value={addForm.content}
-                onChange={(e) => setAddForm((p: any) => ({ ...p, content: e.target.value }))}
-                className="w-full bg-card-hover border border-line-light rounded-lg px-3 py-2 text-sm text-gray-200 outline-none resize-y min-h-[300px] max-h-[600px] font-mono"
-                placeholder="Content"
-                rows={16}
-              />
-              <div className="absolute bottom-3 right-3 text-[10px] text-gray-600 bg-card-hover px-2 py-0.5 rounded">
-                {wordCount(addForm.content)}w &middot; {charCount(addForm.content)}c
-              </div>
-            </div>
+            <ChapterContentEditor
+              ref={addEditorRef}
+              value={addForm.content}
+              onChange={(html) => setAddForm((p: any) => ({ ...p, content: html }))}
+              onImportError={(msg) => showMessage(msg, "error")}
+            />
           )}
 
           <div className="flex items-center justify-between">
@@ -440,18 +435,12 @@ export default function AdminChaptersPage() {
                   {editForm.content ? renderPreview(editForm.content) : <p className="text-gray-500 italic">No content</p>}
                 </div>
               ) : (
-                <div className="relative">
-                  <textarea
-                    value={editForm.content}
-                    onChange={(e) => setEditForm((p: any) => ({ ...p, content: e.target.value }))}
-                    className="w-full bg-card-hover border border-line-light rounded-lg px-3 py-2 text-sm text-gray-200 outline-none resize-y min-h-[300px] max-h-[600px] font-mono"
-                    placeholder="Content"
-                    rows={16}
-                  />
-                  <div className="absolute bottom-3 right-3 text-[10px] text-gray-600 bg-card-hover px-2 py-0.5 rounded">
-                    {wordCount(editForm.content || "")}w &middot; {charCount(editForm.content || "")}c
-                  </div>
-                </div>
+                <ChapterContentEditor
+                  ref={editEditorRef}
+                  value={editForm.content}
+                  onChange={(html) => setEditForm((p: any) => ({ ...p, content: html }))}
+                  onImportError={(msg) => showMessage(msg, "error")}
+                />
               )}
 
               <div className="flex items-center gap-6">

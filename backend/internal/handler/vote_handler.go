@@ -43,5 +43,13 @@ func (h *VoteHandler) Create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "voted"})
+	h.DB.Model(&model.Novel{}).Where("id = ?", req.NovelID).
+		UpdateColumn("votes", gorm.Expr("votes + 1"))
+
+	var user model.User
+	h.DB.First(&user, userID)
+	xpAwarded := int64(2)
+	h.DB.Model(&user).Update("xp", gorm.Expr("xp + ?", xpAwarded))
+
+	c.JSON(http.StatusCreated, gin.H{"message": "voted", "xp_earned": xpAwarded})
 }

@@ -29,7 +29,7 @@ export default function Footer() {
           ))}
         </div>
         <p className="text-center text-sm text-gray-600">
-          Copyright © 2022 - wtr-lab.com <span className="text-accent ml-2">v1.13.4</span>
+          Copyright © 2026 - ReadLab <span className="text-accent ml-2">v1.0.0</span>
         </p>
       </div>
     </footer>

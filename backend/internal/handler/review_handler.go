@@ -176,7 +176,12 @@ func (h *ReviewHandler) Create(c *gin.Context) {
 			}).Error
 	})
 
+	var user model.User
+	h.DB.First(&user, userID)
+	xpAwarded := int64(5)
+	h.DB.Model(&user).Update("xp", gorm.Expr("xp + ?", xpAwarded))
+
 	h.DB.Preload("User").First(&review, review.ID)
 
-	c.JSON(http.StatusCreated, gin.H{"data": toReviewResponse(review)})
+	c.JSON(http.StatusCreated, gin.H{"data": toReviewResponse(review), "xp_earned": xpAwarded})
 }

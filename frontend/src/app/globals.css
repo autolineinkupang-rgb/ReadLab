@@ -44,6 +44,33 @@ body {
   scrollbar-width: none;
 }
 
+.chapter-content { line-height: 1.9; }
+.chapter-content p { margin-bottom: 1.25em; }
+.chapter-content h2 { font-size: 1.3em; font-weight: 700; margin: 1.5em 0 0.75em; color: var(--color-accent-light); }
+.chapter-content h3 { font-size: 1.1em; font-weight: 700; margin: 1.25em 0 0.5em; color: var(--color-accent-light); }
+.chapter-content strong { font-weight: 700; }
+.chapter-content em { font-style: italic; }
+.chapter-content u { text-decoration: underline; }
+.chapter-content s { text-decoration: line-through; }
+.chapter-content blockquote { border-left: 3px solid var(--color-accent); padding-left: 1em; margin: 1.25em 0; color: var(--color-muted); font-style: italic; }
+.chapter-content hr { border: none; border-top: 1px solid var(--color-line-light); margin: 2em auto; width: 40%; }
+.chapter-content ul, .chapter-content ol { margin: 1em 0 1.25em 1.5em; }
+.chapter-content li { margin-bottom: 0.5em; }
+
+details summary::-webkit-details-marker,
+details summary::marker {
+  display: none;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 .hide {
   position: absolute;
   width: 1px;

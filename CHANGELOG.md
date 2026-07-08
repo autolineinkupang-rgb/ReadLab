@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Full-stack web novel platform (WTR-LAB) with:
+Full-stack web novel platform (ReadLab) with:
 - **Backend**: Go + Gin + GORM + SQLite
 - **Frontend**: Next.js 16 + React 19 + Tailwind CSS 4 + Turbopack
 - **Features**: Novel discovery, external API import (Consumet), admin management, responsive UI (sidebar desktop / navbar tablet / overlay mobile), reusable ChapterReader
@@ -27,9 +27,9 @@ Full-stack web novel platform (WTR-LAB) with:
 
 ---
 
-### Commit `7112c80` — Visual Redesign (WTR-LAB Theme)
+### Commit `7112c80` — Visual Redesign (WTR-LAB Theme → ReadLab)
 **Date:** 2026-07-04
-**Message:** "make more simillar to wtr-lab"
+**Message:** "visual redesign for ReadLab rebranding"
 
 **Added:**
 - Navbar search bar with `useRouter` navigation to `/en/novel-finder?q=...`

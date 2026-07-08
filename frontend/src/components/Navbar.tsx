@@ -95,7 +95,7 @@ export default function Navbar() {
             href="/en"
             className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-accent to-accent-light bg-clip-text text-transparent shrink-0"
           >
-            WTR-LAB
+            ReadLab
           </Link>
 
           {/* Tablet nav (md-lg) */}

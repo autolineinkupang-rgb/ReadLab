@@ -35,6 +35,7 @@ func migrateDB(db *gorm.DB) {
 		&model.ReadingHistory{},
 		&model.NovelFollow{},
 		&model.Review{},
+		&model.Share{},
 	); err != nil {
 		log.Fatalf("failed to migrate: %v", err)
 	}

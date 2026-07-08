@@ -1,0 +1,105 @@
+- generic [active] [ref=f10e1]:
+  - complementary [ref=f10e2]:
+    - link "ReadLab" [ref=f10e4] [cursor=pointer]:
+      - /url: /en
+    - generic [ref=f10e6]:
+      - textbox "Search novels..." [ref=f10e7]
+      - button [ref=f10e8]:
+        - img [ref=f10e9]
+    - navigation [ref=f10e11]:
+      - generic [ref=f10e12]:
+        - paragraph [ref=f10e13]: Browse
+        - link "Finder" [ref=f10e14] [cursor=pointer]:
+          - /url: /en/novel-finder
+        - link "Novels" [ref=f10e15] [cursor=pointer]:
+          - /url: /en/novel-list
+        - link "Ranking" [ref=f10e16] [cursor=pointer]:
+          - /url: /en/ranking/daily
+        - link "Leaderboard" [ref=f10e17] [cursor=pointer]:
+          - /url: /en/leaderboard
+        - link "Library" [ref=f10e18] [cursor=pointer]:
+          - /url: /en/library
+      - generic [ref=f10e19]:
+        - paragraph [ref=f10e20]: Discover
+        - link "Trending" [ref=f10e21] [cursor=pointer]:
+          - /url: /en/trending
+        - link "Recommendations" [ref=f10e22] [cursor=pointer]:
+          - /url: /en/recommendation
+      - generic [ref=f10e23]:
+        - paragraph [ref=f10e24]: Community
+        - link "News" [ref=f10e25] [cursor=pointer]:
+          - /url: /en/news
+        - link "Stats" [ref=f10e26] [cursor=pointer]:
+          - /url: /en/public-stats
+        - link "Request Series" [ref=f10e27] [cursor=pointer]:
+          - /url: /en/profile/request-serie
+        - link "Vote Series" [ref=f10e28] [cursor=pointer]:
+          - /url: /en/profile/vote-serie
+  - generic [ref=f10e31]:
+    - main [ref=f10e32]:
+      - generic [ref=f10e33]:
+        - navigation [ref=f10e34]:
+          - link "Home" [ref=f10e35] [cursor=pointer]:
+            - /url: /en
+          - text: /Public Stats
+        - heading "Public Statistics" [level=1] [ref=f10e36]
+        - paragraph [ref=f10e37]: Real-time platform statistics for ReadLab
+        - generic [ref=f10e38]:
+          - generic [ref=f10e39]:
+            - generic [ref=f10e41]: 📚
+            - paragraph [ref=f10e42]: "23.456"
+            - paragraph [ref=f10e43]: Total Novels
+          - generic [ref=f10e44]:
+            - generic [ref=f10e46]: 📝
+            - paragraph [ref=f10e47]: 1.234.567
+            - paragraph [ref=f10e48]: Total Chapters
+          - generic [ref=f10e49]:
+            - generic [ref=f10e51]: 👥
+            - paragraph [ref=f10e52]: "89.012"
+            - paragraph [ref=f10e53]: Total Users
+          - generic [ref=f10e54]:
+            - generic [ref=f10e56]: 👁️
+            - paragraph [ref=f10e57]: 56.789.012
+            - paragraph [ref=f10e58]: Total Views
+          - generic [ref=f10e59]:
+            - generic [ref=f10e61]: 🗳️
+            - paragraph [ref=f10e62]: "456.789"
+            - paragraph [ref=f10e63]: Total Votes Cast
+          - generic [ref=f10e64]:
+            - generic [ref=f10e66]: 📋
+            - paragraph [ref=f10e67]: "3.456"
+            - paragraph [ref=f10e68]: Novels Requested
+    - contentinfo [ref=f10e69]:
+      - generic [ref=f10e70]:
+        - generic [ref=f10e71]:
+          - link "Intro" [ref=f10e72] [cursor=pointer]:
+            - /url: /en
+          - link "About Us" [ref=f10e73] [cursor=pointer]:
+            - /url: /en/about-us
+          - link "Contact Us" [ref=f10e74] [cursor=pointer]:
+            - /url: /en/contact-us
+          - link "Trending" [ref=f10e75] [cursor=pointer]:
+            - /url: /en/trending
+          - link "Recommendations" [ref=f10e76] [cursor=pointer]:
+            - /url: /en/recommendation
+          - link "News" [ref=f10e77] [cursor=pointer]:
+            - /url: /en/news
+          - link "Changelog" [ref=f10e78] [cursor=pointer]:
+            - /url: /en/news?type=changelog
+          - link "DMCA" [ref=f10e79] [cursor=pointer]:
+            - /url: /en/dmca
+          - link "Cookie Policy" [ref=f10e80] [cursor=pointer]:
+            - /url: /en/cookie-policy
+          - link "Privacy Policy" [ref=f10e81] [cursor=pointer]:
+            - /url: /en/privacy-policy
+          - link "Terms of Use" [ref=f10e82] [cursor=pointer]:
+            - /url: /en/terms-of-use
+          - link "Stats" [ref=f10e83] [cursor=pointer]:
+            - /url: /en/public-stats
+          - link "Request Series" [ref=f10e84] [cursor=pointer]:
+            - /url: /en/profile/request-serie
+          - link "Vote Series" [ref=f10e85] [cursor=pointer]:
+            - /url: /en/profile/vote-serie
+        - paragraph [ref=f10e86]: Copyright © 2026 - ReadLab v1.0.0
+  - button "Open Next.js Dev Tools" [ref=f10e92] [cursor=pointer]:
+    - img [ref=f10e93]

@@ -3,7 +3,7 @@ import Link from "next/link";
 import Card from "@/components/ui/Card";
 
 export const metadata: Metadata = {
-  title: "Cookie Policy - WTR-LAB",
+  title: "Cookie Policy - ReadLab",
 };
 
 export default function CookiePolicyPage() {
@@ -16,7 +16,7 @@ export default function CookiePolicyPage() {
       </nav>
       <h1 className="text-3xl font-bold text-white mb-8">Cookie Policy</h1>
       <Card className="p-8 space-y-4 text-sm text-gray-300 leading-relaxed">
-        <p>This Cookie Policy explains how WTR-Lab uses cookies and similar technologies to recognize you when you visit our website.</p>
+        <p>This Cookie Policy explains how ReadLab uses cookies and similar technologies to recognize you when you visit our website.</p>
         <h2 className="text-lg font-semibold text-white mt-6">What are cookies?</h2>
         <p>Cookies are small data files that are placed on your computer or mobile device when you visit a website. Cookies are widely used by website owners to make their websites work more efficiently and to provide reporting information.</p>
         <h2 className="text-lg font-semibold text-white mt-6">How we use cookies</h2>

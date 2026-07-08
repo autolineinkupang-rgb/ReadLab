@@ -1,5 +1,5 @@
 {
-  "name": "wtr-lab-clone",
+  "name": "readlab",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,12 +10,22 @@
   },
   "dependencies": {
     "@consumet/extensions": "^1.8.8",
+    "@tiptap/extension-character-count": "^3.27.3",
+    "@tiptap/extension-placeholder": "^3.27.3",
+    "@tiptap/extension-underline": "^3.27.3",
+    "@tiptap/pm": "^3.27.3",
+    "@tiptap/react": "^3.27.3",
+    "@tiptap/starter-kit": "^3.27.3",
+    "dompurify": "^3.4.11",
+    "isomorphic-dompurify": "^3.18.0",
+    "mammoth": "^1.12.0",
     "next": "16.2.10",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/dompurify": "^3.0.5",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

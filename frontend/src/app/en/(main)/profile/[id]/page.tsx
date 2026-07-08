@@ -8,6 +8,9 @@ import { profile as profileApi } from "@/lib/api";
 import { useAuth } from "@/lib/AuthContext";
 import { ProfileData } from "@/types";
 
+function xpForLevel(level: number) { return (level - 1) ** 2 * 100; }
+function calcLevel(xp: number) { return Math.floor(Math.sqrt(xp / 100)) + 1; }
+
 const tabs = ["overview", "library", "votes", "requests"];
 
 export default function ProfilePage() {
@@ -16,7 +19,7 @@ export default function ProfilePage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   const [profile, setProfile] = useState<ProfileData>({
-    id: 0, username: "reader1", display_name: "Reader One", avatar_url: "", tickets: 150, created_at: "2025-01-01",
+    id: 0, username: "reader1", display_name: "Reader One", avatar_url: "", tickets: 150, xp: 0, created_at: "2025-01-01",
   });
 
   const isOwner = user !== null && profile.id !== 0 && user.id === profile.id;
@@ -34,12 +37,22 @@ export default function ProfilePage() {
     } catch { return "January 2025"; }
   })();
 
+  const level = calcLevel(profile.xp);
+  const currentLevelXp = xpForLevel(level);
+  const nextLevelXp = xpForLevel(level + 1);
+  const progressPct = nextLevelXp > currentLevelXp
+    ? Math.min(100, ((profile.xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100)
+    : 100;
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <Card className="p-6 mb-6">
         <div className="flex items-center gap-5">
-          <div className="w-20 h-20 rounded-full bg-card-hover flex items-center justify-center text-2xl font-bold text-gray-500 shrink-0 border-2 border-violet-800/30">
+          <div className="w-20 h-20 rounded-full bg-card-hover flex items-center justify-center text-2xl font-bold text-gray-500 shrink-0 border-2 border-violet-800/30 relative">
             {profile.username[0]?.toUpperCase() || "?"}
+            <span className="absolute -bottom-1 right-0 text-[10px] px-1.5 py-0.5 rounded-full bg-violet-800/60 text-violet-300 border border-violet-700/50 font-bold">
+              Lv.{level}
+            </span>
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
@@ -53,6 +66,16 @@ export default function ProfilePage() {
             <p className="text-sm text-gray-500">@{profile.username}</p>
             <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-400">
               <span>🎫 {profile.tickets.toFixed(2)} Tickets</span>
+              <span className="text-violet-400">✦ {profile.xp} XP</span>
+            </div>
+            <div className="mt-2 max-w-xs">
+              <div className="flex items-center justify-between text-xs text-gray-500 mb-0.5">
+                <span>Level {level}</span>
+                <span>{profile.xp - currentLevelXp} / {nextLevelXp - currentLevelXp} XP</span>
+              </div>
+              <div className="w-full h-1.5 bg-card-hover rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-violet-600 to-purple-600 rounded-full transition-all" style={{ width: `${progressPct}%` }} />
+              </div>
             </div>
             <p className="text-xs text-gray-600 mt-1">Joined {joined}</p>
           </div>

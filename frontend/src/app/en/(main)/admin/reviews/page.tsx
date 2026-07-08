@@ -11,6 +11,7 @@ interface ReviewItem {
   username: string;
   novel_id: number;
   novel_title: string;
+  novel_votes: number;
   rating: number;
   content: string;
   created_at: string;
@@ -81,6 +82,9 @@ function AdminReviews() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-semibold text-white">{r.novel_title}</span>
                       <span className="text-xs text-gray-500">by {r.username}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded border border-violet-800/30 bg-violet-900/40 text-violet-400">
+                        {r.novel_votes || 0} votes
+                      </span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <div className="flex items-center gap-0.5">

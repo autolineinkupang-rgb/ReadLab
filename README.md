@@ -1,4 +1,4 @@
-# WTR-LAB Clone
+# ReadLab
 
 A full-stack **web novel platform** with novel discovery, reading, and community features. Built with Go (Gin/GORM) + PostgreSQL on the backend and Next.js 16 (App Router) + Tailwind CSS 4 on the frontend.
 
@@ -37,8 +37,8 @@ A full-stack **web novel platform** with novel discovery, reading, and community
 
 ```bash
 # Clone and start all services
-git clone <repo-url> wtr-lab-clone
-cd wtr-lab-clone
+git clone <repo-url> readlab
+cd readlab
 docker compose up -d
 
 # Seed the database with sample data
@@ -76,14 +76,14 @@ npm run dev
 
 | Username | Email | Password | Role |
 |---|---|---|---|
-| `admin` | admin@wtrlab.com | admin123 | Admin |
+| `admin` | your-email@example.com | admin123 | Admin |
 | `Mega_bells` | mega@example.com | password | User |
 | `reader1` | reader1@example.com | password | User |
 
 ## Project Structure
 
 ```
-wtr-lab-clone/
+readlab/
 ├── docker-compose.yml         # Orchestrates db + backend + frontend
 ├── .env.example               # Environment config template
 ├── backend/

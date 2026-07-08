@@ -10,6 +10,7 @@ export interface UserData {
   display_name: string;
   avatar_url: string;
   tickets: number;
+  xp: number;
   role: "admin" | "writer" | "member";
 }
 

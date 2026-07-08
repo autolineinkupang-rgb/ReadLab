@@ -33,7 +33,7 @@ export default function Sidebar() {
           href="/en"
           className="text-2xl font-bold bg-gradient-to-r from-accent to-accent-light bg-clip-text text-transparent"
         >
-          WTR-LAB
+          ReadLab
         </Link>
       </div>
 

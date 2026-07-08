@@ -86,13 +86,18 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 
 		requestHandler := handler.NewRequestHandler(db)
 		protected.POST("/requests", requestHandler.Create)
+		protected.GET("/requests", requestHandler.List)
 
 		libraryHandler := handler.NewLibraryHandler(db)
 		protected.GET("/library", libraryHandler.Get)
 
 		protected.POST("/novels/:id/reviews", reviewHandler.Create)
 		protected.POST("/novels/:id/chapters/:num/read", readingHandler.TrackRead)
+		protected.POST("/novels/:id/chapters/:num/xp", readingHandler.ClaimXP)
 		protected.GET("/novels/:id/my-progress", readingHandler.Progress)
+
+		shareHandler := handler.NewShareHandler(db)
+		protected.POST("/novels/:id/share", shareHandler.Create)
 	}
 
 	adminChapterHandler := handler.NewAdminChapterHandler(db)
@@ -136,6 +141,9 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 		adminGroup.GET("/admin/reviews", adminHandler.ListReviews)
 		adminGroup.DELETE("/admin/reviews/:id", adminHandler.DeleteReview)
 		adminGroup.GET("/admin/requests", adminHandler.ListRequests)
+		adminGroup.POST("/admin/news", adminHandler.CreateNews)
+		adminGroup.PUT("/admin/news/:id", adminHandler.UpdateNews)
+		adminGroup.DELETE("/admin/news/:id", adminHandler.DeleteNews)
 
 		adminGroup.DELETE("/admin/chapters/:id", adminChapterHandler.Delete)
 	}

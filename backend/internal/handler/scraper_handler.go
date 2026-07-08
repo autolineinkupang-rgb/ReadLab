@@ -2,6 +2,8 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -45,6 +47,36 @@ func (h *ScraperHandler) Scrape(c *gin.Context) {
 type ScrapeImportRequest struct {
 	URL          string `json:"url" binding:"required"`
 	WithContent  bool   `json:"with_content"`
+	ChapterRange string `json:"chapter_range"`
+}
+
+func parseChapterRange(rangeStr string) map[int]bool {
+	result := make(map[int]bool)
+	if rangeStr == "" || rangeStr == "all" {
+		return result
+	}
+	for _, part := range strings.Split(rangeStr, ",") {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		if strings.Contains(part, "-") {
+			bounds := strings.SplitN(part, "-", 2)
+			start, err1 := strconv.Atoi(strings.TrimSpace(bounds[0]))
+			end, err2 := strconv.Atoi(strings.TrimSpace(bounds[1]))
+			if err1 == nil && err2 == nil && start > 0 && end >= start {
+				for i := start; i <= end; i++ {
+					result[i] = true
+				}
+			}
+		} else {
+			num, err := strconv.Atoi(part)
+			if err == nil && num > 0 {
+				result[num] = true
+			}
+		}
+	}
+	return result
 }
 
 func (h *ScraperHandler) Import(c *gin.Context) {
@@ -60,23 +92,53 @@ func (h *ScraperHandler) Import(c *gin.Context) {
 		return
 	}
 
-	slug := generateSlug(novel.Title)
-
-	status := novel.Status
-	if status == "" {
-		status = "ongoing"
+	var existingNovel model.Novel
+	exists := h.DB.Where("source_url = ?", req.URL).First(&existingNovel).Error == nil
+	if !exists {
+		exists = h.DB.Where("LOWER(title) = LOWER(?)", novel.Title).First(&existingNovel).Error == nil
 	}
 
-	dbNovel := model.Novel{
-		Title:       novel.Title,
-		AltTitle:    novel.AltTitle,
-		Slug:        slug,
-		Author:      novel.Author,
-		AuthorSlug:  generateSlug(novel.Author),
-		Status:      status,
-		Description: novel.Description,
-		CoverURL:    novel.CoverURL,
-		Chapters:    len(novel.Chapters),
+	var dbNovelID uint
+	var isNew bool
+
+	if exists {
+		dbNovelID = existingNovel.ID
+		isNew = false
+	} else {
+		slug := generateSlug(novel.Title)
+		status := novel.Status
+		if status == "" {
+			status = "ongoing"
+		}
+		dbNovel := model.Novel{
+			Title:       novel.Title,
+			AltTitle:    novel.AltTitle,
+			Slug:        slug,
+			Author:      novel.Author,
+			AuthorSlug:  generateSlug(novel.Author),
+			Status:      status,
+			Description: novel.Description,
+			CoverURL:    novel.CoverURL,
+			SourceURL:   req.URL,
+			Chapters:    0,
+		}
+		if err := h.DB.Create(&dbNovel).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create novel: " + err.Error()})
+			return
+		}
+		dbNovelID = dbNovel.ID
+		isNew = true
+	}
+
+	chapterFilter := parseChapterRange(req.ChapterRange)
+	if len(chapterFilter) > 0 {
+		var filtered []scraper.ScrapedChapter
+		for _, ch := range novel.Chapters {
+			if chapterFilter[ch.Number] {
+				filtered = append(filtered, ch)
+			}
+		}
+		novel.Chapters = filtered
 	}
 
 	var matchedGenres []model.Genre
@@ -94,18 +156,39 @@ func (h *ScraperHandler) Import(c *gin.Context) {
 	}
 
 	err = h.DB.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(&dbNovel).Error; err != nil {
-			return err
-		}
-		if len(matchedGenres) > 0 {
-			if err := tx.Model(&dbNovel).Association("Genres").Append(matchedGenres); err != nil {
-				return err
+		if isNew {
+			if len(matchedGenres) > 0 {
+				var n model.Novel
+				if err := tx.First(&n, dbNovelID).Error; err != nil {
+					return err
+				}
+				if err := tx.Model(&n).Association("Genres").Append(matchedGenres); err != nil {
+					return err
+				}
 			}
-		}
-
-		type chapterJob struct {
-			ch  scraper.ScrapedChapter
-			err error
+		} else {
+			status := novel.Status
+			if status == "" {
+				status = "ongoing"
+			}
+			updates := map[string]interface{}{
+				"cover_url":   novel.CoverURL,
+				"description": novel.Description,
+				"author":      novel.Author,
+				"author_slug": generateSlug(novel.Author),
+				"alt_title":   novel.AltTitle,
+				"status":      status,
+			}
+			tx.Model(&model.Novel{}).Where("id = ?", dbNovelID).Updates(updates)
+			if len(matchedGenres) > 0 {
+				var n model.Novel
+				if err := tx.First(&n, dbNovelID).Error; err != nil {
+					return err
+				}
+				if err := tx.Model(&n).Association("Genres").Replace(matchedGenres); err != nil {
+					return err
+				}
+			}
 		}
 
 		chapters := make([]model.Chapter, 0, len(novel.Chapters))
@@ -113,51 +196,56 @@ func (h *ScraperHandler) Import(c *gin.Context) {
 
 		if req.WithContent {
 			var wg sync.WaitGroup
-			ch := make(chan scraper.ScrapedChapter, len(novel.Chapters))
 
 			for _, sc := range novel.Chapters {
 				wg.Add(1)
 				go func(sc scraper.ScrapedChapter) {
 					defer wg.Done()
 					chapter, err := h.Scraper.ScrapeChapter(sc.URL)
+					mu.Lock()
 					if err == nil && chapter.Content != "" {
-						mu.Lock()
 						chapters = append(chapters, model.Chapter{
-							NovelID: dbNovel.ID,
+							NovelID: dbNovelID,
 							Number:  chapter.Number,
 							Title:   chapter.Title,
 							Content: chapter.Content,
 						})
-						mu.Unlock()
 					} else {
-						mu.Lock()
 						chapters = append(chapters, model.Chapter{
-							NovelID: dbNovel.ID,
+							NovelID: dbNovelID,
 							Number:  sc.Number,
 							Title:   sc.Title,
 							Content: "",
 						})
-						mu.Unlock()
 					}
+					mu.Unlock()
 				}(sc)
 			}
 			wg.Wait()
-			close(ch)
 		} else {
 			for _, sc := range novel.Chapters {
 				chapters = append(chapters, model.Chapter{
-					NovelID: dbNovel.ID,
+					NovelID: dbNovelID,
 					Number:  sc.Number,
 					Title:   sc.Title,
 				})
 			}
 		}
 
-		if len(chapters) > 0 {
-			if err := tx.Create(&chapters).Error; err != nil {
-				return err
+		for _, ch := range chapters {
+			var count int64
+			tx.Model(&model.Chapter{}).Where("novel_id = ? AND number = ?", dbNovelID, ch.Number).Count(&count)
+			if count == 0 {
+				if err := tx.Create(&ch).Error; err != nil {
+					return err
+				}
 			}
 		}
+
+		var totalChapters int64
+		tx.Model(&model.Chapter{}).Where("novel_id = ?", dbNovelID).Count(&totalChapters)
+		tx.Model(&model.Novel{}).Where("id = ?", dbNovelID).UpdateColumn("chapters", totalChapters)
+
 		return nil
 	})
 
@@ -166,6 +254,11 @@ func (h *ScraperHandler) Import(c *gin.Context) {
 		return
 	}
 
-	h.DB.Preload("Genres").First(&dbNovel, dbNovel.ID)
-	c.JSON(http.StatusCreated, gin.H{"data": dbNovel})
+	var result model.Novel
+	h.DB.Preload("Genres").First(&result, dbNovelID)
+	statusCode := http.StatusCreated
+	if !isNew {
+		statusCode = http.StatusOK
+	}
+	c.JSON(statusCode, gin.H{"data": result})
 }

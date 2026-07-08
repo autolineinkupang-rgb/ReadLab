@@ -17,13 +17,16 @@ func NewLeaderboardHandler(db *gorm.DB) *LeaderboardHandler {
 }
 
 func (h *LeaderboardHandler) Get(c *gin.Context) {
-	sort := c.DefaultQuery("sort", "ticket_count")
+	sort := c.DefaultQuery("sort", "xp")
 
 	var users []model.User
-	query := h.DB.Where("tickets > 0")
+	query := h.DB
 
-	if sort == "ticket_count" {
-		query = query.Order("tickets DESC")
+	switch sort {
+	case "ticket_count":
+		query = query.Where("tickets > 0").Order("tickets DESC")
+	default:
+		query = query.Where("xp > 0").Order("xp DESC")
 	}
 
 	if err := query.Limit(100).Find(&users).Error; err != nil {

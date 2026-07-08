@@ -426,6 +426,7 @@ func main() {
 		&model.News{},
 		&model.ReadingHistory{},
 		&model.NovelFollow{},
+		&model.Share{},
 	); err != nil {
 		log.Fatalf("failed to migrate: %v", err)
 	}
@@ -516,7 +517,6 @@ func seedUsers(db *gorm.DB) {
 		Tickets  float64
 		IsAdmin  bool
 	}{
-		{"admin", "admin@wtrlab.com", "admin123", 99999, true},
 		{"Mega_bells", "mega@example.com", "password", 3569.76, false},
 		{"StandardCrystal", "crystal@example.com", "password", 2907.17, false},
 		{"Alpha2", "alpha2@example.com", "password", 2693.07, false},

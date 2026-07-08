@@ -1,0 +1,74 @@
+- generic [active] [ref=f12e1]:
+  - complementary [ref=f12e2]:
+    - link "ReadLab" [ref=f12e4] [cursor=pointer]:
+      - /url: /en
+    - generic [ref=f12e6]:
+      - textbox "Search novels..." [ref=f12e7]
+      - button [ref=f12e8]:
+        - img [ref=f12e9]
+    - navigation [ref=f12e11]:
+      - generic [ref=f12e12]:
+        - paragraph [ref=f12e13]: Browse
+        - link "Finder" [ref=f12e14] [cursor=pointer]:
+          - /url: /en/novel-finder
+        - link "Novels" [ref=f12e15] [cursor=pointer]:
+          - /url: /en/novel-list
+        - link "Ranking" [ref=f12e16] [cursor=pointer]:
+          - /url: /en/ranking/daily
+        - link "Leaderboard" [ref=f12e17] [cursor=pointer]:
+          - /url: /en/leaderboard
+        - link "Library" [ref=f12e18] [cursor=pointer]:
+          - /url: /en/library
+      - generic [ref=f12e19]:
+        - paragraph [ref=f12e20]: Discover
+        - link "Trending" [ref=f12e21] [cursor=pointer]:
+          - /url: /en/trending
+        - link "Recommendations" [ref=f12e22] [cursor=pointer]:
+          - /url: /en/recommendation
+      - generic [ref=f12e23]:
+        - paragraph [ref=f12e24]: Community
+        - link "News" [ref=f12e25] [cursor=pointer]:
+          - /url: /en/news
+        - link "Stats" [ref=f12e26] [cursor=pointer]:
+          - /url: /en/public-stats
+        - link "Request Series" [ref=f12e27] [cursor=pointer]:
+          - /url: /en/profile/request-serie
+        - link "Vote Series" [ref=f12e28] [cursor=pointer]:
+          - /url: /en/profile/vote-serie
+  - generic [ref=f12e31]:
+    - main [ref=f12e32]:
+      - generic [ref=f12e33]: Checking...
+    - contentinfo [ref=f12e34]:
+      - generic [ref=f12e35]:
+        - generic [ref=f12e36]:
+          - link "Intro" [ref=f12e37] [cursor=pointer]:
+            - /url: /en
+          - link "About Us" [ref=f12e38] [cursor=pointer]:
+            - /url: /en/about-us
+          - link "Contact Us" [ref=f12e39] [cursor=pointer]:
+            - /url: /en/contact-us
+          - link "Trending" [ref=f12e40] [cursor=pointer]:
+            - /url: /en/trending
+          - link "Recommendations" [ref=f12e41] [cursor=pointer]:
+            - /url: /en/recommendation
+          - link "News" [ref=f12e42] [cursor=pointer]:
+            - /url: /en/news
+          - link "Changelog" [ref=f12e43] [cursor=pointer]:
+            - /url: /en/news?type=changelog
+          - link "DMCA" [ref=f12e44] [cursor=pointer]:
+            - /url: /en/dmca
+          - link "Cookie Policy" [ref=f12e45] [cursor=pointer]:
+            - /url: /en/cookie-policy
+          - link "Privacy Policy" [ref=f12e46] [cursor=pointer]:
+            - /url: /en/privacy-policy
+          - link "Terms of Use" [ref=f12e47] [cursor=pointer]:
+            - /url: /en/terms-of-use
+          - link "Stats" [ref=f12e48] [cursor=pointer]:
+            - /url: /en/public-stats
+          - link "Request Series" [ref=f12e49] [cursor=pointer]:
+            - /url: /en/profile/request-serie
+          - link "Vote Series" [ref=f12e50] [cursor=pointer]:
+            - /url: /en/profile/vote-serie
+        - paragraph [ref=f12e51]: Copyright © 2026 - ReadLab v1.0.0
+  - button "Open Next.js Dev Tools" [ref=f12e57] [cursor=pointer]:
+    - img [ref=f12e58]

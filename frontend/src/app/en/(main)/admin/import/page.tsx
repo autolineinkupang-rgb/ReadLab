@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { importer, adminNovels, scraper, lncrawl } from "@/lib/api";
 import Card from "@/components/ui/Card";
+import ImportProgress, { ProgressStep } from "@/components/admin/ImportProgress";
 
 export default function AdminImportPage() {
   const [query, setQuery] = useState("");
@@ -17,11 +18,63 @@ export default function AdminImportPage() {
   const [scraping, setScraping] = useState(false);
   const [scrapeResult, setScrapeResult] = useState<any>(null);
   const [scrapeWithContent, setScrapeWithContent] = useState(true);
+  const [scrapeChapterRange, setScrapeChapterRange] = useState("");
   const [scrapeImporting, setScrapeImporting] = useState(false);
   const [lncrawlURL, setLncrawlURL] = useState("");
   const [lncrawlMax, setLncrawlMax] = useState(0);
+  const [lncrawlChapterRange, setLncrawlChapterRange] = useState("");
   const [lncrawling, setLncrawling] = useState(false);
   const [lncrawlStatus, setLncrawlStatus] = useState("");
+
+  const [scrapeSteps, setScrapeSteps] = useState<ProgressStep[]>([]);
+  const [scrapeImportSteps, setScrapeImportSteps] = useState<ProgressStep[]>([]);
+  const [lncrawlSteps, setLncrawlSteps] = useState<ProgressStep[]>([]);
+  const scrapeTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const importTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lncrawlTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  function startStepSimulation(
+    labels: string[],
+    setter: (steps: ProgressStep[]) => void,
+    timerRef: React.MutableRefObject<ReturnType<typeof setInterval> | null>,
+    intervalMs = 2000,
+  ) {
+    stopStepSimulation(timerRef);
+    setter(labels.map((l, i) => ({ label: l, status: i === 0 ? "active" : "pending" as const })));
+    let idx = 0;
+    timerRef.current = setInterval(() => {
+      idx++;
+      if (idx >= labels.length) {
+        stopStepSimulation(timerRef);
+        return;
+      }
+      setter(labels.map((l, i) => ({
+        label: l,
+        status: i < idx ? "done" as const : i === idx ? "active" as const : "pending" as const,
+      })));
+    }, intervalMs);
+  }
+
+  function completeStepSimulation(
+    labels: string[],
+    setter: (steps: ProgressStep[]) => void,
+    timerRef: React.MutableRefObject<ReturnType<typeof setInterval> | null>,
+  ) {
+    stopStepSimulation(timerRef);
+    setter(labels.map((l) => ({ label: l, status: "done" as const })));
+  }
+
+  function stopStepSimulation(timerRef: React.MutableRefObject<ReturnType<typeof setInterval> | null>) {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+  }
+
+  useEffect(() => {
+    return () => {
+      stopStepSimulation(scrapeTimerRef);
+      stopStepSimulation(importTimerRef);
+      stopStepSimulation(lncrawlTimerRef);
+    };
+  }, []);
   const [manualForm, setManualForm] = useState({
     title: "", alt_title: "", author: "", status: "ongoing",
     description: "", cover_url: "", source_url: "",
@@ -52,12 +105,24 @@ export default function AdminImportPage() {
     setError("");
     setImportResult(null);
     setLncrawlStatus("");
+    const rangeLabel = lncrawlChapterRange.trim() ? ` (${lncrawlChapterRange.trim()})` : "";
+    const lncrawlLabels = [
+      "Connecting to source...",
+      "Fetching novel info...",
+      `Crawling chapters${rangeLabel}...`,
+      "Downloading content...",
+      "Importing to database...",
+    ];
+    startStepSimulation(lncrawlLabels, setLncrawlSteps, lncrawlTimerRef, 3000);
     try {
-      const res = await lncrawl.crawl(lncrawlURL.trim(), lncrawlMax || undefined);
+      const res = await lncrawl.crawl(lncrawlURL.trim(), lncrawlMax || undefined, lncrawlChapterRange.trim() || undefined);
       setImportResult({ id: res.data.ID, title: res.data.Title });
       setLncrawlStatus(`Imported novel with ${res.data.Chapters?.length || 0} chapters`);
+      completeStepSimulation(lncrawlLabels, setLncrawlSteps, lncrawlTimerRef);
     } catch (e: any) {
       setError(e.message || "lncrawl failed. See server logs.");
+      stopStepSimulation(lncrawlTimerRef);
+      setLncrawlSteps([]);
     } finally {
       setLncrawling(false);
     }
@@ -101,11 +166,21 @@ export default function AdminImportPage() {
     setScraping(true);
     setError("");
     setScrapeResult(null);
+    startStepSimulation(
+      ["Fetching page metadata...", "Extracting novel info...", "Parsing chapter list..."],
+      setScrapeSteps, scrapeTimerRef, 1500,
+    );
     try {
       const res = await scraper.scrape(scrapeURL.trim());
       setScrapeResult(res.data);
+      completeStepSimulation(
+        ["Fetching page metadata...", "Extracting novel info...", "Parsing chapter list..."],
+        setScrapeSteps, scrapeTimerRef,
+      );
     } catch (e: any) {
       setError(e.message || "Scrape failed.");
+      stopStepSimulation(scrapeTimerRef);
+      setScrapeSteps([]);
     } finally {
       setScraping(false);
     }
@@ -115,12 +190,20 @@ export default function AdminImportPage() {
     if (!scrapeURL.trim() || !scrapeResult) return;
     setScrapeImporting(true);
     setError("");
+    const rangeLabel = scrapeChapterRange.trim() ? ` (${scrapeChapterRange.trim()})` : "";
+    const importLabels = scrapeWithContent
+      ? [`Fetching chapters${rangeLabel}...`, "Downloading chapter content...", "Saving to database..."]
+      : [`Fetching chapters${rangeLabel}...`, "Saving to database..."];
+    startStepSimulation(importLabels, setScrapeImportSteps, importTimerRef, 2500);
     try {
-      const res = await scraper.import(scrapeURL.trim(), scrapeWithContent);
+      const res = await scraper.import(scrapeURL.trim(), scrapeWithContent, scrapeChapterRange.trim() || undefined);
       setImportResult({ id: res.data.ID, title: res.data.Title });
       setScrapeResult(null);
+      completeStepSimulation(importLabels, setScrapeImportSteps, importTimerRef);
     } catch (e: any) {
       setError(e.message || "Scrape import failed.");
+      stopStepSimulation(importTimerRef);
+      setScrapeImportSteps([]);
     } finally {
       setScrapeImporting(false);
     }
@@ -292,6 +375,17 @@ export default function AdminImportPage() {
             </button>
           </div>
 
+          {scraping && scrapeSteps.length > 0 && (
+            <ImportProgress steps={scrapeSteps} />
+          )}
+
+          <input
+            value={scrapeChapterRange}
+            onChange={(e) => setScrapeChapterRange(e.target.value)}
+            placeholder="Chapter range (e.g. 1-10, 11-30 — leave empty for all)"
+            className="w-full bg-card-hover border border-line-light rounded-lg px-3 py-2 text-sm text-gray-200 outline-none"
+          />
+
           {scrapeResult && (
             <div className="space-y-2 pt-2 border-t border-line-light">
               <div className="flex gap-3">
@@ -329,12 +423,15 @@ export default function AdminImportPage() {
                   {scrapeImporting ? "Importing..." : "Import to Database"}
                 </button>
                 <button
-                  onClick={() => setScrapeResult(null)}
+                  onClick={() => { setScrapeResult(null); stopStepSimulation(scrapeTimerRef); setScrapeSteps([]); }}
                   className="px-4 py-2 bg-card-hover text-gray-300 text-sm rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
               </div>
+              {scrapeImporting && scrapeImportSteps.length > 0 && (
+                <ImportProgress steps={scrapeImportSteps} />
+              )}
               {scrapeResult.Chapters?.length > 0 && (
                 <div className="max-h-32 overflow-y-auto">
                   <p className="text-xs text-gray-500 mb-1">Chapters preview:</p>
@@ -359,6 +456,12 @@ export default function AdminImportPage() {
           {lncrawlStatus && (
             <p className="text-xs text-green-400">{lncrawlStatus}</p>
           )}
+          <input
+            value={lncrawlChapterRange}
+            onChange={(e) => setLncrawlChapterRange(e.target.value)}
+            placeholder="Chapter range (e.g. 1-10, 11-30 — leave empty for all)"
+            className="w-full bg-card-hover border border-line-light rounded-lg px-3 py-2 text-sm text-gray-200 outline-none"
+          />
           <div className="flex gap-2 flex-col sm:flex-row">
             <input
               value={lncrawlURL}
@@ -387,10 +490,8 @@ export default function AdminImportPage() {
               </button>
             </div>
           </div>
-          {lncrawling && (
-            <p className="text-xs text-accent animate-pulse">
-              Crawling may take a while depending on chapter count and source site...
-            </p>
+          {lncrawling && lncrawlSteps.length > 0 && (
+            <ImportProgress steps={lncrawlSteps} />
           )}
         </Card>
 

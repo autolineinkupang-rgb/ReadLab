@@ -119,6 +119,7 @@ func (h *AdminChapterHandler) Create(c *gin.Context) {
 		return
 	}
 
+	h.DB.Model(&model.Novel{}).Where("id = ?", novelID).UpdateColumn("chapters", gorm.Expr("chapters + 1"))
 	h.DB.First(&chapter, chapter.ID)
 
 	c.JSON(http.StatusCreated, gin.H{"chapter": toChapterResponse(chapter)})
@@ -226,6 +227,7 @@ func (h *AdminChapterHandler) Delete(c *gin.Context) {
 	}
 
 	h.DB.Delete(&chapter)
+	h.DB.Model(&model.Novel{}).Where("id = ?", chapter.NovelID).UpdateColumn("chapters", gorm.Expr("GREATEST(chapters - 1, 0)"))
 
 	c.JSON(http.StatusOK, gin.H{"message": "chapter deleted"})
 }
