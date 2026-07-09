@@ -1,5 +1,30 @@
 const API_BASE = "/api";
 
+function getCSRFToken(): string {
+  const match = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : "";
+}
+
+async function fetcherFormData<T>(endpoint: string, formData: FormData): Promise<T> {
+  const csrfToken = getCSRFToken();
+  const headers: Record<string, string> = {};
+  if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
+
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    method: "POST",
+    credentials: "include",
+    headers,
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(error.error || `HTTP ${res.status}`);
+  }
+
+  return res.json();
+}
+
 interface FetcherOptions extends RequestInit {
   params?: Record<string, string | number | undefined>;
 }
@@ -20,13 +45,23 @@ async function fetcher<T>(endpoint: string, options: FetcherOptions = {}): Promi
     if (qs) url += `?${qs}`;
   }
 
+  const method = (init.method || "GET").toUpperCase();
+  const isMutation = method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE";
+  const csrfToken = isMutation ? getCSRFToken() : "";
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(init.headers as Record<string, string> | undefined),
+  };
+
+  if (isMutation && csrfToken) {
+    headers["X-CSRF-Token"] = csrfToken;
+  }
+
   const res = await fetch(url, {
     ...init,
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...init.headers,
-    },
+    headers,
   });
 
   if (!res.ok) {
@@ -51,6 +86,27 @@ export const auth = {
     }),
   me: () => fetcher<any>("/auth/me"),
   logout: () => fetcher<{ message: string }>("/auth/logout", { method: "POST" }),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    fetcher<{ message: string }>("/auth/password", {
+      method: "PUT",
+      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+    }),
+  forgotPassword: (email: string) =>
+    fetcher<{ message: string; reset_link?: string }>("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+  resetPassword: (token: string, newPassword: string) =>
+    fetcher<{ message: string }>("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, new_password: newPassword }),
+    }),
+};
+
+// Rewards
+export const rewards = {
+  daily: () => fetcher<{ message: string; tickets: number; rewarded: number }>("/rewards/daily", { method: "POST" }),
+  status: () => fetcher<{ daily_reward: { can_claim: boolean; reward: number; next_claim_at?: string } }>("/rewards/status"),
 };
 
 // Novels
@@ -70,6 +126,28 @@ export const chapters = {
   get: (id: number | string) => fetcher<any>(`/chapters/${id}`),
   getByNovel: (novelId: number | string, num: number) =>
     fetcher<any>(`/novels/${novelId}/chapters/${num}`),
+  importMd: (novelId: number | string, file: File, mode: "preview" | "save") => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("mode", mode);
+    return fetcherFormData<any>(`/admin/novels/${novelId}/chapters/import-md`, formData);
+  },
+};
+
+// Notifications
+export const notifications = {
+  list: () => fetcher<{ data: any[]; unread_count: number }>("/notifications"),
+  unreadCount: () => fetcher<{ unread_count: number }>("/notifications/unread-count"),
+  markRead: (id: number | "all") => fetcher<{ message: string }>(`/notifications/${id}/read`, { method: "PUT" }),
+};
+
+// Tickets / Purchase
+export const tickets = {
+  purchase: (amount: number) =>
+    fetcher<{ message: string; amount: number }>("/tickets/purchase", {
+      method: "POST",
+      body: JSON.stringify({ amount }),
+    }),
 };
 
 // Ranking
@@ -86,12 +164,18 @@ export const updates = {
 export const search = {
   query: (q: string, params?: { page?: number; limit?: number }) =>
     fetcher<{ data: any[]; page: number; limit: number; total: number }>("/search", { params: { q, ...params } as any }),
+  autocomplete: (q: string) =>
+    fetcher<{ data: { id: number; slug: string; title: string }[] }>("/search/autocomplete", { params: { q } as any }),
 };
 
 // Genres
 export const genres = {
   list: () => fetcher<{ data: any[] }>("/genres"),
 };
+
+// Config
+export const upgradeCosts = () =>
+  fetcher<{ edit_reset: number; gate_bypass: number; replace_review: number }>("/config/upgrade-costs");
 
 // Leaderboard
 export const leaderboard = {
@@ -128,6 +212,16 @@ export const requests = {
 // Library (protected)
 export const library = {
   get: () => fetcher<{ follows: any[]; history: any[] }>("/library"),
+};
+
+// Follow (protected)
+export const follow = {
+  create: (novelId: number) =>
+    fetcher<{ message: string }>(`/novels/${novelId}/follow`, { method: "POST" }),
+  delete: (novelId: number) =>
+    fetcher<{ message: string }>(`/novels/${novelId}/follow`, { method: "DELETE" }),
+  check: (novelId: number) =>
+    fetcher<{ following: boolean }>(`/novels/${novelId}/follow`),
 };
 
 // Author
@@ -239,6 +333,34 @@ export const translateApi = {
 		}),
 };
 
+// AI Translation settings
+export interface AITranslateSettings {
+	provider: string;
+	model: string;
+	endpoint: string;
+	key: string;
+	has_key: boolean;
+	target_language: string;
+	instruction: string;
+}
+
+export const aiSettings = {
+	get: () => fetcher<AITranslateSettings>("/user/ai-settings"),
+	update: (data: { provider: string; model: string; endpoint: string; key?: string; target_language?: string; instruction?: string }) =>
+		fetcher<{ message: string }>("/user/ai-settings", {
+			method: "PUT",
+			body: JSON.stringify(data),
+		}),
+};
+
+export const translateAi = {
+	translate: (text: string, target?: string, source?: string) =>
+		fetcher<{ data: string }>("/translate/ai", {
+			method: "POST",
+			body: JSON.stringify({ text, target, source }),
+		}),
+};
+
 // Admin requests (protected)
 export const adminRequests = {
 	list: (params?: { page?: number; limit?: number; status?: string }) =>
@@ -268,6 +390,16 @@ export const adminNews = {
     fetcher<{ message: string }>("/admin/news/" + id, { method: "DELETE" }),
 };
 
+// Admin ticket config
+export const adminTicketConfig = {
+  list: () => fetcher<{ data: { id: number; key: string; value: number; label: string }[] }>("/admin/config/tickets"),
+  update: (key: string, value: number) =>
+    fetcher<{ message: string }>("/admin/config/tickets", {
+      method: "PUT",
+      body: JSON.stringify({ key, value }),
+    }),
+};
+
 // Admin users (protected)
 export const adminUsers = {
 	list: (params?: { page?: number; limit?: number; role?: string; q?: string }) =>
@@ -291,14 +423,46 @@ export const adminUsers = {
 		fetcher<{ total_users: number; total_novels: number; total_chapters: number; total_admins: number; max_admins: number }>("/admin/stats"),
 };
 
+export interface ApiError extends Error {
+  upgrade_available?: boolean;
+  upgrade_cost?: number;
+  upgrade_type?: string;
+}
+
+async function reviewFetcher<T>(endpoint: string, options: RequestInit & { params?: Record<string, string | number | undefined> }): Promise<T> {
+  const { params, ...init } = options;
+  let url = `/api${endpoint}`;
+  const res = await fetch(url, {
+    ...init,
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...init.headers },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    const err = new Error(body.error || `HTTP ${res.status}`) as ApiError;
+    if (body.upgrade_available) {
+      err.upgrade_available = true;
+      err.upgrade_cost = body.upgrade_cost;
+      err.upgrade_type = body.upgrade_type;
+    }
+    throw err;
+  }
+  return res.json();
+}
+
 // Reviews
 export const reviews = {
   list: (novelId: number) =>
     fetcher<{ data: ReviewResponse[]; rating_summary: RatingSummary }>(`/novels/${novelId}/reviews`),
-  create: (novelId: number, rating: number, content: string) =>
-    fetcher<{ data: ReviewResponse }>(`/novels/${novelId}/reviews`, {
+  create: (novelId: number, rating: number, content: string, upgrade?: boolean, parent_id?: number) =>
+    reviewFetcher<{ data: ReviewResponse; xp_earned?: number }>(`/novels/${novelId}/reviews`, {
       method: "POST",
-      body: JSON.stringify({ rating, content }),
+      body: JSON.stringify({ rating, content, parent_id, upgrade }),
+    }),
+  update: (novelId: number, reviewId: number, rating: number, content: string, upgrade?: boolean) =>
+    reviewFetcher<{ data: ReviewResponse }>(`/novels/${novelId}/reviews/${reviewId}`, {
+      method: "PUT",
+      body: JSON.stringify({ rating, content, upgrade }),
     }),
 };
 
@@ -322,7 +486,7 @@ export const reading = {
       method: "POST",
     }),
   progress: (novelId: number) =>
-    fetcher<{ chapter_count: number; can_review: boolean; my_review: ReviewResponse | null }>(
+    fetcher<{ chapter_count: number; can_review: boolean; my_review: ReviewResponse | null; last_chapter?: number; last_chapter_title?: string }>(
       `/novels/${novelId}/my-progress`
     ),
 };
@@ -332,6 +496,8 @@ export interface ReviewResponse {
   id: number;
   rating: number;
   content: string;
+  edit_count: number;
+  parent_id: number | null;
   created_at: string;
   user: {
     id: number;
@@ -339,6 +505,7 @@ export interface ReviewResponse {
     display_name: string;
     avatar_url: string;
   };
+  replies: ReviewResponse[];
 }
 
 export interface RatingSummary {
