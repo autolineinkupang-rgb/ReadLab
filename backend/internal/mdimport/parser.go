@@ -1,9 +1,26 @@
 package mdimport
 
 import (
+	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 )
+
+var filenameNumber = regexp.MustCompile(`\d+`)
+
+func naturalLess(a, b string) bool {
+	aNum := filenameNumber.FindString(a)
+	bNum := filenameNumber.FindString(b)
+	if aNum != "" && bNum != "" {
+		ai, errA := strconv.Atoi(aNum)
+		bi, errB := strconv.Atoi(bNum)
+		if errA == nil && errB == nil && ai != bi {
+			return ai < bi
+		}
+	}
+	return strings.Compare(a, b) < 0
+}
 
 type ParsedChapter struct {
 	Number      int    `json:"number"`
@@ -88,12 +105,6 @@ func ParseChapterMD(input, defaultTitle string) *ParsedChapter {
 	}
 }
 
-// naturalLess compares two strings for natural sort order.
-func naturalLess(a, b string) bool {
-	return strings.Compare(a, b) < 0
-}
-
-// SortFilenames sorts filenames naturally.
 func SortFilenames(names []string) {
 	sort.Slice(names, func(i, j int) bool {
 		return naturalLess(names[i], names[j])
