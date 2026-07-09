@@ -14,16 +14,10 @@ interface NewsDetail {
   CreatedAt: string;
 }
 
-const MOCK_DETAILS: Record<number, NewsDetail> = {
-  428: { ID: 428, Title: "🎉 16th Giveaway Winners 🎉", Content: "We are excited to announce the winners...\n\n🏆 Grand Prize: Mega_bells\n🥈 Second Place: StandardCrystal\n🥉 Third Place: Alpha2", Type: "news", CreatedAt: "2026-07-02" },
-  427: { ID: 427, Title: "🎉 Our 16th Giveaway is LIVE! 🎉", Content: "Our 16th Giveaway is now live!\n\nParticipate now for a chance to win amazing prizes!", Type: "news", CreatedAt: "2026-06-25" },
-  426: { ID: 426, Title: "Version 1.13.3 - New Source Management & Bug Fixes!", Content: "✨ New Features:\n- New Source Management system\n- Improved chapter loading performance\n\n🐛 Bug Fixes:\n- Fixed reading history\n- Fixed mobile pagination", Type: "changelog", CreatedAt: "2026-06-20" },
-};
-
 export default function NewsDetailPage() {
   const params = useParams();
   const id = parseInt((params?.id as string) || "0");
-  const [detail, setDetail] = useState<NewsDetail | null>(MOCK_DETAILS[id] || null);
+  const [detail, setDetail] = useState<NewsDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -5,10 +5,9 @@ import Link from "next/link";
 import NovelCard from "@/components/NovelCard";
 import { novels } from "@/lib/api";
 import { Novel } from "@/types";
-import { MOCK_TRENDING } from "@/lib/mockData";
 
 export default function TrendingPage() {
-  const [data, setData] = useState<Novel[]>(MOCK_TRENDING);
+  const [data, setData] = useState<Novel[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

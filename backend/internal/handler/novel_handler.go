@@ -9,14 +9,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"wtr-lab-clone/backend/internal/model"
+	"wtr-lab-clone/backend/internal/service"
+	"wtr-lab-clone/backend/internal/ticket"
 )
 
 type NovelHandler struct {
-	DB *gorm.DB
+	DB       *gorm.DB
+	Config   *ticket.Config
+	NovelSvc *service.NovelService
 }
 
-func NewNovelHandler(db *gorm.DB) *NovelHandler {
-	return &NovelHandler{DB: db}
+func NewNovelHandler(db *gorm.DB, cfg *ticket.Config, novelSvc *service.NovelService) *NovelHandler {
+	return &NovelHandler{DB: db, Config: cfg, NovelSvc: novelSvc}
 }
 
 func (h *NovelHandler) List(c *gin.Context) {
@@ -242,7 +246,7 @@ func (h *NovelHandler) GetChapterByNum(c *gin.Context) {
 				return err
 			}
 			if txUser.Tickets < float64(chapter.TicketCost) {
-				return ErrInsufficientTickets
+				return ticket.ErrInsufficientTickets
 			}
 			if err := tx.Model(&txUser).Update("tickets", gorm.Expr("tickets - ?", chapter.TicketCost)).Error; err != nil {
 				return err
@@ -261,7 +265,7 @@ func (h *NovelHandler) GetChapterByNum(c *gin.Context) {
 			return nil
 		})
 		if err != nil {
-			if errors.Is(err, ErrInsufficientTickets) {
+			if errors.Is(err, ticket.ErrInsufficientTickets) {
 				c.JSON(http.StatusPaymentRequired, gin.H{"error": "insufficient tickets"})
 				return
 			}
@@ -280,8 +284,15 @@ func (h *NovelHandler) Random(c *gin.Context) {
 	}
 
 	var novels []model.Novel
+	var maxID uint
+	h.DB.Model(&model.Novel{}).Select("MAX(id)").Scan(&maxID)
+	if maxID == 0 {
+		c.JSON(http.StatusOK, gin.H{"data": []model.Novel{}})
+		return
+	}
+
 	if err := h.DB.Preload("Genres").
-		Order("RANDOM()").
+		Where("id >= FLOOR(RANDOM() * ?) + 1", maxID).
 		Limit(limit).
 		Find(&novels).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -371,7 +382,11 @@ func (h *NovelHandler) Create(c *gin.Context) {
 	}
 
 	if role == "writer" {
-		uid := userID.(uint)
+		uid, ok := userID.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id"})
+			return
+		}
 		novel.WriterID = &uid
 	}
 
@@ -408,6 +423,23 @@ func (h *NovelHandler) Create(c *gin.Context) {
 	}
 
 	h.DB.Preload("Genres").First(&novel, novel.ID)
+
+	uid := userID.(uint)
+	reward := h.Config.Get("novel_contribution")
+	h.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&model.User{}).Where("id = ?", uid).
+			Update("tickets", gorm.Expr("tickets + ?", reward)).Error; err != nil {
+			return err
+		}
+		return tx.Create(&model.TicketTransaction{
+			UserID:  uid,
+			Amount:  reward,
+			Type:    "reward",
+			RefType: "novel_contribution",
+			Note:    "Novel contribution reward",
+		}).Error
+	})
+
 	c.JSON(http.StatusCreated, gin.H{"data": novel})
 }
 
@@ -440,7 +472,12 @@ func (h *NovelHandler) Update(c *gin.Context) {
 
 	role, _ := c.Get("role")
 	userID, _ := c.Get("user_id")
-	if role != "admin" && (novel.WriterID == nil || *novel.WriterID != userID.(uint)) {
+	uid, ok := userID.(uint)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id"})
+		return
+	}
+	if role != "admin" && (novel.WriterID == nil || *novel.WriterID != uid) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "you do not have permission to edit this novel"})
 		return
 	}
@@ -523,7 +560,12 @@ func (h *NovelHandler) Delete(c *gin.Context) {
 
 	role, _ := c.Get("role")
 	userID, _ := c.Get("user_id")
-	if role != "admin" && (novel.WriterID == nil || *novel.WriterID != userID.(uint)) {
+	uid, ok := userID.(uint)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id"})
+		return
+	}
+	if role != "admin" && (novel.WriterID == nil || *novel.WriterID != uid) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "you do not permission to delete this novel"})
 		return
 	}

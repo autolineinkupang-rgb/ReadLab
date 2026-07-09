@@ -2,17 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { novels } from "@/lib/api";
-import { Novel } from "@/types";
-import { MOCK_NOVEL_LIST } from "@/lib/mockData";
-
-const genreList = [
-  "action","adult","adventure","comedy","drama","ecchi","erciyuan","fan-fiction","fantasy",
-  "game","gender-bender","harem","historical","horror","josei","martial-arts","mature",
-  "mecha","military","mystery","psychological","romance","school-life","sci-fi","seinen",
-  "shoujo","shoujo-ai","shounen","shounen-ai","slice-of-life","smut","sports","supernatural",
-  "tragedy","urban-life","wuxia","xianxia","xuanhuan","yaoi","yuri",
-];
+import { novels, genres } from "@/lib/api";
+import { Novel, Genre } from "@/types";
 
 const SORT_OPTIONS = [
   { value: "created_at", label: "Addition Date" },
@@ -25,10 +16,11 @@ const SORT_OPTIONS = [
 const STATUS_OPTIONS = ["All", "Ongoing", "Completed"];
 
 export default function NovelListPage() {
-  const [data, setData] = useState<Novel[]>(MOCK_NOVEL_LIST);
+  const [data, setData] = useState<Novel[]>([]);
+  const [genreList, setGenreList] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(7524);
+  const [totalPages, setTotalPages] = useState(1);
   const [sort, setSort] = useState("created_at");
   const [order, setOrder] = useState("desc");
   const [status, setStatus] = useState("");
@@ -43,22 +35,8 @@ export default function NovelListPage() {
       setData(res.data);
       setTotalPages(res.total_pages);
     } catch {
-      const filtered = MOCK_NOVEL_LIST.filter((n) => {
-        if (status && n.Status !== status) return false;
-        if (genre && !n.Genres.some((g) => g.Slug === genre)) return false;
-        return true;
-      });
-      const sorted = [...filtered].sort((a, b) => {
-        let cmp = 0;
-        if (sort === "title") cmp = a.Title.localeCompare(b.Title);
-        else if (sort === "views") cmp = a.Views - b.Views;
-        else if (sort === "readers") cmp = a.Readers - b.Readers;
-        else if (sort === "chapters") cmp = a.Chapters - b.Chapters;
-        else cmp = a.ID - b.ID;
-        return order === "desc" ? -cmp : cmp;
-      });
-      setData(sorted);
-      setTotalPages(Math.ceil(filtered.length / 20) || 1);
+      setData([]);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
@@ -67,6 +45,13 @@ export default function NovelListPage() {
   useEffect(() => {
     fetchData(1);
   }, [sort, order, status, genre]);
+
+  useEffect(() => {
+    genres.list().then((res) => {
+      const data = (res as { data?: Genre[] }).data;
+      if (data?.length) setGenreList(data.map((g: Genre) => g.Slug));
+    }).catch(() => {});
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">

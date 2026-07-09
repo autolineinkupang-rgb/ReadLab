@@ -2,7 +2,7 @@
 
 Base URL: `http://localhost:8080/api/v1`
 
-**Authentication:** JWT tokens are sent via HTTP-only cookie (`auth_token`) or `Authorization: Bearer <token>` header.
+**Authentication:** JWT tokens are sent via HTTP-only cookie (`auth_token`).
 
 ---
 
@@ -30,33 +30,24 @@ Response:
 
 ### `POST /auth/register`
 
-Create a new user account.
+Create a new user account. Password must be 8+ chars with uppercase, lowercase, digit, and special character.
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username": "newuser", "email": "user@example.com", "password": "secret123"}'
+  -d '{"username": "newuser", "email": "user@example.com", "password": "Secure@123"}'
 ```
 
 Response `201`:
 ```json
 {
-  "user": {
-    "ID": 6,
-    "Username": "newuser",
-    "Email": "user@example.com",
-    "DisplayName": "newuser",
-    "Tickets": 0,
-    "IsAdmin": false,
-    "CreatedAt": "2026-07-04T..."
-  },
-  "token": "eyJhbGciOi..."
+  "user": { "id": 6, "username": "newuser", "email": "user@example.com", "role": "member" }
 }
 ```
 
 ### `POST /auth/login`
 
-Authenticate and receive a JWT token (set as cookie + returned in body).
+Authenticate and receive a JWT token (set as cookie).
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/auth/login \
@@ -67,8 +58,7 @@ curl -X POST http://localhost:8080/api/v1/auth/login \
 Response:
 ```json
 {
-  "user": { "...": "..." },
-  "token": "eyJhbGciOi..."
+  "user": { "id": 1, "username": "admin", "email": "admin@example.com", "role": "admin" }
 }
 ```
 
@@ -80,23 +70,38 @@ Clear the auth cookie.
 
 Get the currently authenticated user's profile. **Auth required.**
 
-```bash
-curl http://localhost:8080/api/v1/auth/me \
-  -H "Cookie: auth_token=eyJhbGciOi..."
-```
-
 Response:
 ```json
 {
-  "ID": 1,
-  "Username": "admin",
-  "Email": "admin@example.com",
-  "DisplayName": "admin",
-  "Tickets": 99999,
-  "IsAdmin": true,
-  "CreatedAt": "2026-07-04T..."
+  "id": 1,
+  "username": "admin",
+  "email": "admin@example.com",
+  "display_name": "admin",
+  "avatar_url": "",
+  "tickets": 99999,
+  "xp": 1500,
+  "role": "admin",
+  "daily_reward": {
+    "can_claim": true,
+    "reward": 2
+  }
 }
 ```
+
+The `daily_reward` field includes the current config value from the server cache.
+
+### `PUT /auth/password`
+
+Change password. **Auth required.**
+
+```bash
+curl -X PUT http://localhost:8080/api/v1/auth/password \
+  -H "Content-Type: application/json" \
+  -H "Cookie: auth_token=..." \
+  -d '{"current_password": "oldPass1!", "new_password": "NewPass@123"}'
+```
+
+Validates current password, then applies the same strength rules (8+ chars, upper, lower, digit, special).
 
 ---
 
@@ -118,9 +123,12 @@ curl "http://localhost:8080/api/v1/novels?page=1&limit=20&sort=rating&order=desc
 | `limit` | int | `20` | Items per page (max 100) |
 | `q` | string | — | Text search (title, alt_title, description) |
 | `status` | string | — | `ongoing`, `completed`, `hiatus`, `dropped` |
-| `genre` | string | — | Single genre slug (legacy) |
 | `genres` | string | — | Comma-separated genre slugs |
 | `genre_mode` | string | `or` | `and` or `or` |
+| `tag` | string | — | Single tag slug |
+| `tags` | string | — | Comma-separated tag slugs |
+| `tag_mode` | string | `or` | `and` or `or` |
+| `exclude_tags` | string | — | Tags to exclude |
 | `min_chapters` | int | `0` | Minimum chapter count |
 | `min_rating` | float | `0` | Minimum rating |
 | `min_reviews` | int | `0` | Minimum rating_count |
@@ -137,7 +145,6 @@ Response:
       "AltTitle": "...",
       "Slug": "having-dinner-with-his-brother-...",
       "Author": "半条活鱼",
-      "AuthorSlug": "ban-tiao-huo-yu",
       "Status": "completed",
       "Views": 345678,
       "Rating": 3.5,
@@ -150,9 +157,7 @@ Response:
       "CoverURL": "",
       "CreatedAt": "...",
       "Genres": [
-        { "ID": 22, "Slug": "romance", "Name": "Romance" },
-        { "ID": 30, "Slug": "slice-of-life", "Name": "Slice of Life" },
-        { "ID": 35, "Slug": "urban-life", "Name": "Urban Life" }
+        { "ID": 22, "Slug": "romance", "Name": "Romance" }
       ]
     }
   ],
@@ -167,12 +172,6 @@ Response:
 
 Get a single novel by ID with genres.
 
-```bash
-curl http://localhost:8080/api/v1/novels/1
-```
-
-Returns a single novel object (same structure as array items above).
-
 ### `GET /novels/:id/chapters`
 
 Get paginated chapters for a novel.
@@ -181,65 +180,21 @@ Get paginated chapters for a novel.
 curl "http://localhost:8080/api/v1/novels/1/chapters?page=1&limit=50"
 ```
 
-Response:
-```json
-{
-  "data": [
-    { "ID": 1, "NovelID": 1, "Number": 1, "Title": "Chapter 1", "IsLocked": false, "TicketCost": 0 }
-  ],
-  "page": 1,
-  "limit": 50,
-  "total": 135
-}
-```
+### `GET /novels/:id/chapters/:num`
+
+Get a chapter by number. Supports optional auth for locked chapters.
 
 ### `POST /novels`
 
-Create a novel manually. **Auth required.**
-
-```bash
-curl -X POST http://localhost:8080/api/v1/novels \
-  -H "Content-Type: application/json" \
-  -H "Cookie: auth_token=..." \
-  -d '{
-    "title": "My New Novel",
-    "alt_title": "我的新小说",
-    "author": "Author Name",
-    "status": "ongoing",
-    "description": "A thrilling story...",
-    "cover_url": "https://example.com/cover.jpg",
-    "genre_ids": [1, 12, 22]
-  }'
-```
+Create a novel manually. **Writer or admin.**
 
 ### `PUT /novels/:id`
 
-Update a novel. **Auth required.** All fields optional; only provided fields are updated.
-
-```bash
-curl -X PUT http://localhost:8080/api/v1/novels/1 \
-  -H "Content-Type: application/json" \
-  -H "Cookie: auth_token=..." \
-  -d '{
-    "title": "Updated Title",
-    "status": "completed",
-    "genre_ids": [1, 5, 22]
-  }'
-```
+Update a novel. **Writer or admin.** All fields optional.
 
 ### `DELETE /novels/:id`
 
-Delete a novel and its genre associations. **Auth required.**
-
-```bash
-curl -X DELETE http://localhost:8080/api/v1/novels/1 \
-  -H "Cookie: auth_token=..."
-```
-
-Response:
-```json
-{ "message": "novel deleted" }
-```
+Delete a novel and its genre associations. **Writer or admin.**
 
 ### `GET /novels/trending`
 
@@ -255,88 +210,185 @@ Random novels. Query param: `?limit=10` (default 10, max 50).
 
 ---
 
-## Import (External API)
+## Reviews
 
-### `GET /novels/import/search`
+### `GET /novels/:id/reviews`
 
-Search for novels on NovelUpdates via the free Consumet API.
-
-```bash
-curl "http://localhost:8080/api/v1/novels/import/search?q=solo+leveling"
-```
+List reviews for a novel. Includes rating summary and nested replies.
 
 Response:
 ```json
 {
   "data": [
     {
-      "id": "solo-leveling",
-      "title": "Solo Leveling",
-      "url": "https://www.novelupdates.com/series/solo-leveling/",
-      "image": "https://cdn.novelupdates.com/images/..."
+      "id": 1,
+      "user_id": 1,
+      "novel_id": 1,
+      "rating": 4,
+      "content": "Great novel!",
+      "edit_count": 0,
+      "created_at": "...",
+      "updated_at": "...",
+      "user": { "id": 1, "username": "admin", "display_name": "admin" },
+      "replies": [
+        { "id": 2, "user_id": 2, "content": "I agree!", "user": { ... } }
+      ]
     }
-  ]
+  ],
+  "rating_summary": {
+    "average": 4.2,
+    "count": 15,
+    "distribution": { "1": 0, "2": 1, "3": 2, "4": 5, "5": 7 }
+  }
 }
 ```
 
-### `POST /novels/import`
+### `POST /novels/:id/reviews`
 
-Import a novel from NovelUpdates by source ID. **Auth required.**
+Create a review. **Auth required.**
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/novels/import \
+curl -X POST http://localhost:8080/api/v1/novels/1/reviews \
   -H "Content-Type: application/json" \
   -H "Cookie: auth_token=..." \
-  -d '{
-    "source_id": "solo-leveling",
-    "with_chapters": true
-  }'
+  -d '{"rating": 4, "content": "Great story!"}'
 ```
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `source_id` | string | Yes | NovelUpdates series ID (slug) |
-| `with_chapters` | bool | No | Import chapter list (default: `false`) |
+- Must have read 5+ chapters (or pay gate bypass)
+- One review per user per novel (or pay replace cost)
+- Rating: 0-5 (0 for replies)
 
-The import process:
-1. Fetches metadata from Consumet API (title, author, description, cover, genres, status, chapters)
-2. Auto-generates a URL slug from the title
-3. Matches or creates genre records
-4. Creates the novel record with genre associations
-5. Optionally creates chapter records
-6. Returns the created novel with genres
+**Upgrade errors** return 403 with upgrade metadata:
+```json
+{
+  "error": "you need to read at least 5 chapters before reviewing",
+  "chapter_count": 2,
+  "upgrade_available": true,
+  "upgrade_cost": 50,
+  "upgrade_type": "gate"
+}
+```
+
+Pass `{"upgrade": true}` in the request to confirm and pay.
+
+### `PUT /novels/:id/reviews/:reviewId`
+
+Update a review. **Auth required.**
+
+- Max 5 edits per review
+- After 5 edits, pass `{"upgrade": true}` to pay `edit_reset_cost` and reset count
+- To replace a different user's review, pass `{"upgrade": true}` to pay `replace_review_cost`
 
 ---
 
-## Requests
+## Rewards
 
-### `POST /requests`
+### `POST /rewards/daily`
 
-Submit a novel request/suggestion. **Auth required.**
+Claim daily login reward. **Auth required.** Once per day (Asia/Makassar timezone).
 
-```bash
-curl -X POST http://localhost:8080/api/v1/requests \
-  -H "Content-Type: application/json" \
-  -H "Cookie: auth_token=..." \
-  -d '{
-    "novel_title": "Solo Leveling",
-    "novel_url": "https://novelupdates.com/series/solo-leveling/",
-    "source": "novelupdates"
-  }'
+Response:
+```json
+{
+  "message": "daily reward claimed",
+  "tickets": 102,
+  "rewarded": 2
+}
 ```
 
-### `PUT /requests/:id`
-
-Review (approve/reject) a request. **Auth required.**
-
-```bash
-curl -X PUT http://localhost:8080/api/v1/requests/1 \
-  -H "Content-Type: application/json" \
-  -H "Cookie: auth_token=..." \
-  -d '{"status": "approved"}'
+If already claimed:
+```json
+{
+  "error": "daily reward already claimed",
+  "next_claim_in": "12h30m0s",
+  "next_claim_at": "2026-07-10T00:00:00+08:00"
+}
 ```
 
-Valid statuses: `approved`, `rejected`, `completed`
+### `GET /rewards/status`
+
+Check daily reward claim status. **Auth required.**
+
+Response:
+```json
+{
+  "daily_reward": {
+    "can_claim": true,
+    "reward": 2,
+    "next_claim_at": ""
+  }
+}
+```
+
+### `POST /admin/rewards/monthly`
+
+Distribute monthly XP leaderboard rewards. **Admin only.**
+
+Resets all user XP to 0. Awards tickets to top N users (default 10). Query params: `?period=2026-07&limit=10`.
+
+---
+
+## Ticket Config
+
+### `GET /config/upgrade-costs`
+
+Public endpoint returning current upgrade costs from server cache.
+
+```bash
+curl http://localhost:8080/api/v1/config/upgrade-costs
+```
+
+Response:
+```json
+{
+  "edit_reset": 20,
+  "gate_bypass": 50,
+  "replace_review": 100
+}
+```
+
+### `GET /admin/config/tickets`
+
+List all ticket configuration keys and values. **Admin only.**
+
+### `PUT /admin/config/tickets`
+
+Update a ticket config value. **Admin only.**
+
+```bash
+curl -X PUT http://localhost:8080/api/v1/admin/config/tickets \
+  -H "Content-Type: application/json" \
+  -H "Cookie: auth_token=..." \
+  -d '{"key": "daily_reward", "value": 5}'
+```
+
+Reloads the server cache on success. Changes take effect immediately.
+
+Config keys: `daily_reward`, `novel_contribution`, `monthly_leaderboard`, `edit_reset_cost`, `gate_bypass_cost`, `replace_review_cost`
+
+---
+
+## Import & Scraping
+
+### `GET /novels/import/search`
+
+Search for novels on NovelUpdates via the free Consumet API.
+
+### `POST /novels/import`
+
+Import a novel from NovelUpdates by source ID. **Admin only.**
+
+### `POST /novels/scrape`
+
+Scrape novel metadata from a URL (NovelUpdates, RoyalRoad, NovelBin). **Admin only.**
+
+### `POST /novels/scrape/import`
+
+Scrape and import chapters from a URL. **Admin only.**
+
+### `POST /novels/lncrawl`
+
+Crawl chapters via LN Crawl engine. **Admin only.**
 
 ---
 
@@ -345,6 +397,18 @@ Valid statuses: `approved`, `rejected`, `completed`
 ### `GET /chapters/:id`
 
 Get a single chapter by ID.
+
+### `POST /admin/novels/:id/chapters`
+
+Create a chapter. **Writer or admin.**
+
+### `PUT /admin/novels/:id/chapters/:chapterID`
+
+Update a chapter. **Writer or admin.**
+
+### `DELETE /admin/chapters/:id`
+
+Delete a chapter. **Admin only.**
 
 ---
 
@@ -368,16 +432,6 @@ List all genres.
 
 ```bash
 curl http://localhost:8080/api/v1/genres
-```
-
-Response:
-```json
-{
-  "data": [
-    { "ID": 1, "Slug": "action", "Name": "Action" },
-    { "ID": 2, "Slug": "adult", "Name": "Adult" }
-  ]
-}
 ```
 
 ---
@@ -406,6 +460,22 @@ Get authenticated user's followed novels and reading history. **Auth required.**
 
 ---
 
+## Reading
+
+### `POST /novels/:id/chapters/:num/read`
+
+Track a chapter read. **Auth required.**
+
+### `POST /novels/:id/chapters/:num/xp`
+
+Claim XP for reading a chapter. **Auth required.** One claim per chapter.
+
+### `GET /novels/:id/my-progress`
+
+Get user's reading progress for a novel. **Auth required.** Includes `chapter_count`, `can_review`, `my_review`.
+
+---
+
 ## Votes
 
 ### `POST /votes`
@@ -421,11 +491,27 @@ curl -X POST http://localhost:8080/api/v1/votes \
 
 ---
 
+## Requests
+
+### `POST /requests`
+
+Submit a novel request. **Auth required.**
+
+### `GET /requests`
+
+List user's requests. **Auth required.**
+
+### `PUT /requests/:id`
+
+Review (approve/reject) a request. **Admin only.** Status: `approved`, `rejected`, `completed`.
+
+---
+
 ## Leaderboard
 
 ### `GET /leaderboard`
 
-Top users by tickets. Query param: `?sort=tickets`.
+Top users by XP or tickets. Query param: `?sort=xp` (default) or `?sort=tickets`.
 
 ---
 
@@ -439,6 +525,18 @@ List news articles. Query params: `?type=news&page=1&limit=10`. Type: `news` or 
 
 Get a single news article.
 
+### `POST /admin/news`
+
+Create news article. **Admin only.**
+
+### `PUT /admin/news/:id`
+
+Update news. **Admin only.**
+
+### `DELETE /admin/news/:id`
+
+Delete news. **Admin only.**
+
 ---
 
 ## Stats
@@ -447,7 +545,6 @@ Get a single news article.
 
 Platform-wide statistics.
 
-Response:
 ```json
 {
   "total_novels": 12,
@@ -461,6 +558,83 @@ Response:
 
 ---
 
+## AI Translation
+
+### `GET /user/ai-settings`
+
+Get authenticated user's AI translation settings. **Auth required.**
+
+### `PUT /user/ai-settings`
+
+Update AI translation settings. **Auth required.**
+
+```bash
+curl -X PUT http://localhost:8080/api/v1/user/ai-settings \
+  -H "Content-Type: application/json" \
+  -H "Cookie: auth_token=..." \
+  -d '{
+    "provider": "openrouter",
+    "model": "google/gemini-2.0-flash-exp:free",
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "key": "sk-or-v1-...",
+    "target_language": "id-ID",
+    "instruction": "Use casual Indonesian"
+  }'
+```
+
+### `POST /translate/ai`
+
+Translate a chapter using the user's configured AI provider. **Auth required.**
+
+```bash
+curl -X POST http://localhost:8080/api/v1/translate/ai \
+  -H "Content-Type: application/json" \
+  -H "Cookie: auth_token=..." \
+  -d '{"chapter_id": 1}'
+```
+
+---
+
+## Admin
+
+### `GET /admin/users`
+
+List all users. **Admin only.**
+
+### `GET /admin/users/:id`
+
+Get user details. **Admin only.**
+
+### `PUT /admin/users/:id`
+
+Update user (role, tickets, xp, etc.). **Admin only.**
+
+### `DELETE /admin/users/:id`
+
+Delete a user. **Admin only.**
+
+### `POST /admin/users/admin`
+
+Create a new admin user. **Admin only.**
+
+### `GET /admin/stats`
+
+Platform statistics. **Admin only.**
+
+### `GET /admin/reviews`
+
+List all reviews. **Admin only.**
+
+### `DELETE /admin/reviews/:id`
+
+Delete a review. **Admin only.**
+
+### `GET /admin/requests`
+
+List all requests. **Admin only.**
+
+---
+
 ## Author & Profile
 
 ### `GET /author/:name/novels`
@@ -470,6 +644,22 @@ Get novels by author name.
 ### `GET /profile/:id`
 
 Get a user's public profile.
+
+---
+
+## Share
+
+### `POST /novels/:id/share`
+
+Share a novel (earns XP). **Auth required.**
+
+---
+
+## Translate (Legacy)
+
+### `POST /translate`
+
+Legacy translate endpoint using Google Translate (no auth needed).
 
 ---
 
@@ -489,5 +679,7 @@ Common HTTP status codes:
 | `201` | Created |
 | `400` | Bad request (missing/invalid params) |
 | `401` | Unauthorized (missing/invalid token) |
+| `403` | Forbidden (insufficient role) |
 | `404` | Not found |
+| `409` | Conflict (duplicate, already claimed) |
 | `500` | Internal server error |

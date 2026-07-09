@@ -78,7 +78,12 @@ func (h *AdminChapterHandler) Create(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "novel not found"})
 			return
 		}
-		if novel.WriterID == nil || *novel.WriterID != userID.(uint) {
+		uid, ok := userID.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id"})
+			return
+		}
+		if novel.WriterID == nil || *novel.WriterID != uid {
 			c.JSON(http.StatusForbidden, gin.H{"error": "you do not own this novel"})
 			return
 		}
@@ -151,7 +156,12 @@ func (h *AdminChapterHandler) Update(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "novel not found"})
 			return
 		}
-		if novel.WriterID == nil || *novel.WriterID != userID.(uint) {
+		uid, ok := userID.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id"})
+			return
+		}
+		if novel.WriterID == nil || *novel.WriterID != uid {
 			c.JSON(http.StatusForbidden, gin.H{"error": "you do not own this novel"})
 			return
 		}
@@ -220,7 +230,12 @@ func (h *AdminChapterHandler) Delete(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "novel not found"})
 			return
 		}
-		if novel.WriterID == nil || *novel.WriterID != userID.(uint) {
+		uid, ok := userID.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id"})
+			return
+		}
+		if novel.WriterID == nil || *novel.WriterID != uid {
 			c.JSON(http.StatusForbidden, gin.H{"error": "you do not own this novel"})
 			return
 		}

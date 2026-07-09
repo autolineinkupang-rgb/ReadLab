@@ -8,12 +8,17 @@ import { SearchIcon, CloseIcon, MenuIcon } from "@/components/ui/Icons";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { useAuth } from "@/lib/AuthContext";
+import { rewards, search as searchApi } from "@/lib/api";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function Navbar() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [suggestions, setSuggestions] = useState<{ id: number; slug: string; title: string }[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchAbortRef = useRef<AbortController | null>(null);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showWriter, setShowWriter] = useState(false);
   const [showMore, setShowMore] = useState(false);
@@ -30,6 +35,24 @@ export default function Navbar() {
   useEffect(() => {
     if (showSearch && searchRef.current) searchRef.current.focus();
   }, [showSearch]);
+
+  useEffect(() => {
+    if (searchAbortRef.current) searchAbortRef.current.abort();
+    setShowSuggestions(false);
+    if (search.trim().length < 2) { setSuggestions([]); return; }
+    const controller = new AbortController();
+    searchAbortRef.current = controller;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await searchApi.autocomplete(search.trim());
+        if (!controller.signal.aborted) {
+          setSuggestions(res.data);
+          setShowSuggestions(true);
+        }
+      } catch { /* ignore */ }
+    }, 300);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [search]);
 
   useEffect(() => {
     setOpen(false);
@@ -250,21 +273,37 @@ export default function Navbar() {
           {/* Tablet search toggle */}
           <div className="hidden md:flex lg:hidden items-center">
             {showSearch ? (
-              <form onSubmit={handleSearch} className="w-full">
-                <div className="relative">
-                  <input
-                    ref={searchRef}
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onBlur={() => { setTimeout(() => { if (!search) setShowSearch(false); }, 200); }}
-                    placeholder="Search novels..."
-                    className="w-full bg-card-hover border border-line-light rounded-lg pl-4 pr-10 py-2 text-sm text-gray-200 outline-none focus:border-accent transition-colors"
-                  />
-                  <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-accent-light transition-colors">
-                    <SearchIcon className="w-4 h-4" />
-                  </button>
-                </div>
-              </form>
+              <div className="relative w-full">
+                <form onSubmit={handleSearch}>
+                  <div className="relative">
+                    <input
+                      ref={searchRef}
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      onBlur={() => { setTimeout(() => { if (!search) setShowSearch(false); }, 200); }}
+                      placeholder="Search novels..."
+                      className="w-full bg-card-hover border border-line-light rounded-lg pl-4 pr-10 py-2 text-sm text-gray-200 outline-none focus:border-accent transition-colors"
+                    />
+                    <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-accent-light transition-colors">
+                      <SearchIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                </form>
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute top-full mt-1 w-full bg-card border border-line-light rounded-lg shadow-xl z-50 overflow-hidden">
+                    {suggestions.map((s) => (
+                      <Link
+                        key={s.id}
+                        href={`/en/novel/${s.id}/${s.slug}`}
+                        onMouseDown={(e) => { e.preventDefault(); setSearch(""); setShowSuggestions(false); setShowSearch(false); }}
+                        className="block text-sm text-gray-300 hover:text-white hover:bg-card-hover px-3 py-2 transition-colors truncate"
+                      >
+                        {s.title}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             ) : (
               <button
                 onClick={() => setShowSearch(true)}
@@ -287,6 +326,7 @@ export default function Navbar() {
               <SearchIcon className="w-5 h-5" />
             </button>
 
+            <NotificationBell />
             <UserMenu />
 
             {/* Hamburger */}
@@ -302,7 +342,7 @@ export default function Navbar() {
 
         {/* Mobile search bar */}
         {showSearch && (
-          <div className="md:hidden pb-3">
+          <div className="relative md:hidden pb-3">
             <form onSubmit={handleSearch}>
               <div className="relative">
                 <input
@@ -316,6 +356,20 @@ export default function Navbar() {
                 </button>
               </div>
             </form>
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-line-light rounded-lg shadow-xl z-50 overflow-hidden">
+                {suggestions.map((s) => (
+                  <Link
+                    key={s.id}
+                    href={`/en/novel/${s.id}/${s.slug}`}
+                    onMouseDown={(e) => { e.preventDefault(); setSearch(""); setShowSuggestions(false); setShowSearch(false); }}
+                    className="block text-sm text-gray-300 hover:text-white hover:bg-card-hover px-3 py-2 transition-colors truncate"
+                  >
+                    {s.title}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -423,9 +477,22 @@ export default function Navbar() {
 }
 
 function UserMenu() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, refresh } = useAuth();
   const [open, setOpen] = useState(false);
+  const [claiming, setClaiming] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  const claimDaily = async () => {
+    setClaiming(true);
+    try {
+      await rewards.daily();
+      await refresh();
+    } catch {
+      // silently ignore
+    } finally {
+      setClaiming(false);
+    }
+  };
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -470,6 +537,15 @@ function UserMenu() {
             <p className="text-sm font-medium text-gray-200">{user.display_name || user.username}</p>
             <p className="text-xs text-gray-500">{user.email}</p>
             <p className="text-xs text-accent mt-1">{user.tickets.toLocaleString()} Tickets</p>
+            {user.daily_reward?.can_claim && (
+              <button
+                onClick={claimDaily}
+                disabled={claiming}
+                className="mt-1.5 w-full text-xs bg-accent hover:bg-accent/80 text-white py-1 rounded-md transition-colors disabled:opacity-50"
+              >
+                {claiming ? "Claiming..." : `Claim ${user.daily_reward.reward} Tickets`}
+              </button>
+            )}
             {user.role === "admin" && (
               <span className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-accent mt-1">Admin</span>
             )}
@@ -501,7 +577,20 @@ function UserMenu() {
 }
 
 function MobileUserMenu({ closeMenu }: { closeMenu: () => void }) {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, refresh } = useAuth();
+  const [claiming, setClaiming] = useState(false);
+
+  const claimDaily = async () => {
+    setClaiming(true);
+    try {
+      await rewards.daily();
+      await refresh();
+    } catch {
+      // silently ignore
+    } finally {
+      setClaiming(false);
+    }
+  };
 
   if (loading) return <div className="w-full h-10 rounded-lg bg-card-hover animate-pulse" />;
 
@@ -524,6 +613,15 @@ function MobileUserMenu({ closeMenu }: { closeMenu: () => void }) {
         <div>
           <p className="text-sm font-medium text-gray-200">{user.display_name || user.username}</p>
           <p className="text-xs text-gray-500">{user.tickets.toLocaleString()} Tickets</p>
+          {user.daily_reward?.can_claim && (
+            <button
+              onClick={claimDaily}
+              disabled={claiming}
+              className="mt-1 w-full text-xs bg-accent hover:bg-accent/80 text-white py-1 rounded-md transition-colors disabled:opacity-50"
+            >
+              {claiming ? "Claiming..." : `Claim ${user.daily_reward.reward} Tickets`}
+            </button>
+          )}
           {user.role === "admin" && <span className="text-[10px] text-accent">Admin</span>}
         </div>
       </div>

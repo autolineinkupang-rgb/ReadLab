@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import NovelCard from "@/components/NovelCard";
 import SectionHeader from "@/components/SectionHeader";
 import NovelCardSmall from "@/components/NovelCardSmall";
@@ -6,9 +9,119 @@ import UpdateItem from "@/components/UpdateItem";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import GenreTag from "@/components/ui/GenreTag";
-import { MOCK_NEW_NOVELS, MOCK_RANKING, MOCK_UPDATES, MOCK_RANDOM, MOCK_SPENDERS } from "@/lib/mockData";
+import { novels, leaderboard, news, stats, updates } from "@/lib/api";
+
+interface NovelItem {
+  ID: number;
+  Title: string;
+  Slug: string;
+  Rating: number;
+  Chapters: number;
+  Views: number;
+  CoverURL: string;
+  Genres: { Slug: string; Name: string }[];
+}
+
+interface UpdateData {
+  novel_id: number;
+  novel_title: string;
+  novel_slug: string;
+  chapter_id: number;
+  chapter_number: number;
+  chapter_title: string;
+}
+
+interface NewsData {
+  id: number;
+  title: string;
+  type?: string;
+}
+
+interface SpenderData {
+  user_id: number;
+  username: string;
+  total: number;
+}
 
 export default function Home() {
+  const [newNovels, setNewNovels] = useState<NovelItem[]>([]);
+  const [trending, setTrending] = useState<NovelItem[]>([]);
+  const [recommendations, setRecommendations] = useState<NovelItem[]>([]);
+  const [recentUpdates, setRecentUpdates] = useState<UpdateData[]>([]);
+  const [topSpenders, setTopSpenders] = useState<SpenderData[]>([]);
+  const [siteStats, setSiteStats] = useState<{ total_novels: number; total_chapters: number; total_users: number } | null>(null);
+  const [newsItems, setNewsItems] = useState<NewsData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [novelsRes, trendingRes, recsRes, updatesRes, spendersRes, statsRes, newsRes] = await Promise.all([
+          novels.list({ sort: "created_at", limit: 10 }),
+          novels.list({ sort: "views", limit: 5 }),
+          novels.list({ sort: "rating", limit: 6 }),
+          updates.recent(),
+          leaderboard.get("tickets"),
+          stats.get(),
+          news.list({ limit: 3 }),
+        ]);
+        const novelsData: NovelItem[] = (novelsRes?.data || []).map((n: any) => ({
+          ID: n.ID ?? n.id,
+          Title: n.Title ?? n.title,
+          Slug: n.Slug ?? n.slug,
+          Rating: n.Rating ?? n.rating ?? 0,
+          Chapters: n.Chapters ?? n.chapters ?? 0,
+          Views: n.Views ?? n.views ?? 0,
+          CoverURL: n.CoverURL ?? n.cover_url ?? "",
+          Genres: n.Genres ?? n.genres ?? [],
+        }));
+        setNewNovels(novelsData);
+        setTrending(
+          (trendingRes.data || []).slice(0, 5).map((n: any) => ({
+            ID: n.ID ?? n.id,
+            Title: n.Title ?? n.title,
+            Slug: n.Slug ?? n.slug,
+            Rating: n.Rating ?? n.rating ?? 0,
+            Chapters: n.Chapters ?? n.chapters ?? 0,
+            Views: n.Views ?? n.views ?? 0,
+            CoverURL: n.CoverURL ?? n.cover_url ?? "",
+            Genres: n.Genres ?? n.genres ?? [],
+          }))
+        );
+        setRecommendations(
+          (recsRes.data || []).slice(0, 6).map((n: any) => ({
+            ID: n.ID ?? n.id,
+            Title: n.Title ?? n.title,
+            Slug: n.Slug ?? n.slug,
+            Rating: n.Rating ?? n.rating ?? 0,
+            Chapters: n.Chapters ?? n.chapters ?? 0,
+            Views: n.Views ?? n.views ?? 0,
+            CoverURL: n.CoverURL ?? n.cover_url ?? "",
+            Genres: n.Genres ?? n.genres ?? [],
+          }))
+        );
+        setRecentUpdates(updatesRes.data || []);
+        setTopSpenders(spendersRes.data || []);
+        setSiteStats({ total_novels: statsRes.total_novels, total_chapters: statsRes.total_chapters, total_users: statsRes.total_users });
+        setNewsItems(newsRes.data || []);
+      } catch {
+        // silently fail
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
+  const heroStats = siteStats
+    ? [
+        { value: `${siteStats.total_novels.toLocaleString()}+`, label: "Novels" },
+        { value: `${siteStats.total_chapters.toLocaleString()}+`, label: "Chapters" },
+        { value: `${siteStats.total_users.toLocaleString()}+`, label: "Readers" },
+        { value: "Free", label: "to Read" },
+      ]
+    : [];
+
   return (
     <div>
       {/* Hero Section */}
@@ -33,19 +146,16 @@ export default function Home() {
               Sign Up Free
             </Link>
           </div>
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
-            {[
-              { value: "5,000+", label: "Novels" },
-              { value: "200,000+", label: "Chapters" },
-              { value: "50,000+", label: "Readers" },
-              { value: "Free", label: "to Read" },
-            ].map((stat) => (
-              <div key={stat.label} className="p-4 rounded-xl bg-white/5 border border-line backdrop-blur-sm">
-                <p className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-accent to-accent-light bg-clip-text text-transparent">{stat.value}</p>
-                <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
-              </div>
-            ))}
-          </div>
+          {!loading && siteStats && (
+            <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
+              {heroStats.map((stat) => (
+                <div key={stat.label} className="p-4 rounded-xl bg-white/5 border border-line backdrop-blur-sm">
+                  <p className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-accent to-accent-light bg-clip-text text-transparent">{stat.value}</p>
+                  <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -112,22 +222,64 @@ export default function Home() {
       {/* New Novels */}
       <section className="max-w-7xl mx-auto px-4 py-6">
         <SectionHeader title="New Novels" href="/en/novel-list" />
-        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-          {MOCK_NEW_NOVELS.map((novel) => (
-            <NovelCard key={novel.href} {...novel} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="w-44 flex-shrink-0 animate-pulse">
+                <div className="aspect-[3/4] rounded-lg bg-card-hover border border-line-light" />
+                <div className="mt-2 space-y-1.5">
+                  <div className="h-3 bg-card-hover rounded w-3/4" />
+                  <div className="h-3 bg-card-hover rounded w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : newNovels.length > 0 ? (
+          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            {newNovels.map((novel) => (
+              <NovelCard
+                key={novel.ID}
+                title={novel.Title}
+                genre={novel.Genres?.[0]?.Slug || "unknown"}
+                chapters={novel.Chapters}
+                rating={novel.Rating ? novel.Rating.toFixed(1) : undefined}
+                href={`/en/novel/${novel.Slug}`}
+              />
+            ))}
+          </div>
+        ) : null}
       </section>
 
       {/* Novel Ranking + Community/Trending Row */}
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-8 py-6">
         <div className="lg:col-span-2">
           <SectionHeader title="Novel Ranking" href="/en/ranking/daily" tabs={[{ label: "Daily", active: true }, { label: "Weekly" }, { label: "Monthly" }]} />
-          <Card className="space-y-1">
-            {MOCK_RANKING.map((novel) => (
-              <NovelCardSmall key={novel.rank} {...novel} />
-            ))}
-          </Card>
+          {loading ? (
+            <Card className="space-y-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-start gap-3 p-2 animate-pulse">
+                  <div className="w-6 h-5 bg-card-hover rounded" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-4 bg-card-hover rounded w-full" />
+                    <div className="h-3 bg-card-hover rounded w-1/3" />
+                  </div>
+                </div>
+              ))}
+            </Card>
+          ) : trending.length > 0 ? (
+            <Card className="space-y-1">
+              {trending.map((novel, i) => (
+                <NovelCardSmall
+                  key={novel.ID}
+                  rank={i + 1}
+                  title={novel.Title}
+                  views={novel.Views.toLocaleString()}
+                  rating={novel.Rating.toFixed(1)}
+                  href={`/en/novel/${novel.Slug}`}
+                />
+              ))}
+            </Card>
+          ) : null}
           <div className="flex gap-3 mt-4">
             <Link href="/en/profile/vote-serie" className="flex-1 text-center text-sm py-2.5 rounded-lg bg-card-hover hover:bg-line-light text-gray-300 transition-colors">
               Vote Novels
@@ -175,11 +327,33 @@ export default function Home() {
       {/* Recommendations */}
       <section className="max-w-7xl mx-auto px-4 py-6">
         <SectionHeader title="Recommendations" href="/en/recommendation" />
-        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-          {MOCK_NEW_NOVELS.slice(0, 6).map((novel, i) => (
-            <NovelCard key={i} {...novel} compact />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="w-36 flex-shrink-0 animate-pulse">
+                <div className="aspect-[3/4] rounded-lg bg-card-hover border border-line-light" />
+                <div className="mt-2 space-y-1.5">
+                  <div className="h-4 bg-card-hover rounded w-3/4" />
+                  <div className="h-3 bg-card-hover rounded w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : recommendations.length > 0 ? (
+          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            {recommendations.map((novel) => (
+              <NovelCard
+                key={novel.ID}
+                title={novel.Title}
+                genre={novel.Genres?.[0]?.Slug || "novel"}
+                chapters={novel.Chapters}
+                rating={novel.Rating ? novel.Rating.toFixed(1) : undefined}
+                href={`/en/novel/${novel.Slug}`}
+                compact
+              />
+            ))}
+          </div>
+        ) : null}
         <Card className="mt-4 p-5">
           <div className="flex gap-4">
             <div className="w-20 sm:w-28 aspect-[3/4] rounded-lg bg-card-hover border border-line-light flex-shrink-0 flex items-center justify-center">
@@ -231,42 +405,75 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-3 gap-6 py-6">
         <div className="lg:col-span-2">
           <SectionHeader title="Recent Updates" />
-          <Card className="max-h-[600px] overflow-y-auto">
-            {MOCK_UPDATES.map((item, i) => (
-              <UpdateItem key={i} {...item} />
-            ))}
-            <button className="w-full text-center text-sm text-accent hover:text-accent-light py-3 transition-colors">
-              Load More
-            </button>
-          </Card>
+          {loading ? (
+            <Card className="max-h-[600px] overflow-y-auto">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex gap-3 py-2 border-b border-line animate-pulse">
+                  <div className="w-10 h-14 rounded bg-card-hover flex-shrink-0" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-4 bg-card-hover rounded w-3/4" />
+                    <div className="h-3 bg-card-hover rounded w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </Card>
+          ) : recentUpdates.length > 0 ? (
+            <Card className="max-h-[600px] overflow-y-auto">
+              {recentUpdates.map((item, i) => (
+                <UpdateItem
+                  key={item.chapter_id ?? i}
+                  title={item.novel_title}
+                  chapter={`#${item.chapter_number} ${item.chapter_title || ""}`}
+                  chapterHref={`/en/novel/${item.novel_slug}/chapter-${item.chapter_number}`}
+                  novelHref={`/en/novel/${item.novel_slug}`}
+                  hasImage
+                />
+              ))}
+              <button className="w-full text-center text-sm text-accent hover:text-accent-light py-3 transition-colors">
+                Load More
+              </button>
+            </Card>
+          ) : null}
         </div>
 
         <div className="space-y-6">
           <div>
             <SectionHeader title="Latest News" href="/en/news" />
-            <Card className="space-y-3">
-              <Link href="/en/news/428" className="block text-sm text-gray-200 hover:text-accent-light transition-colors">
-                {"\uD83C\uDF89"} 16th Giveaway Winners {"\uD83C\uDF89"}
-              </Link>
-              <Link href="/en/news/427" className="block text-sm text-gray-200 hover:text-accent-light transition-colors">
-                {"\uD83C\uDF89"} Our 16th Giveaway is LIVE! {"\uD83C\uDF89"}
-              </Link>
-              <Link href="/en/news/426" className="block text-sm text-gray-200 hover:text-accent-light transition-colors">
-                Version 1.13.3 - New Source Management & Bug Fixes!
-              </Link>
-            </Card>
+            {loading ? (
+              <Card className="space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-5 bg-card-hover rounded animate-pulse" />
+                ))}
+              </Card>
+            ) : newsItems.length > 0 ? (
+              <Card className="space-y-3">
+                {newsItems.map((item, idx) => (
+                  <Link key={item.id ?? idx} href={item.id ? `/en/news/${item.id}` : "#"} className="block text-sm text-gray-200 hover:text-accent-light transition-colors">
+                    {item.type === "giveaway" ? "\uD83C\uDF89 " : ""}{item.title}
+                  </Link>
+                ))}
+              </Card>
+            ) : null}
           </div>
 
           <div>
             <SectionHeader title="Daily Top Spenders" href="/en/leaderboard" />
-            <Card className="space-y-3">
-              {MOCK_SPENDERS.map((spender, i) => (
-                <Link key={i} href={spender.href} className="flex items-center justify-between group">
-                  <span className="text-sm text-gray-200 group-hover:text-accent-light transition-colors">{spender.name}</span>
-                  <span className="text-xs text-gray-500">{spender.tickets} Tickets</span>
-                </Link>
-              ))}
-            </Card>
+            {loading ? (
+              <Card className="space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-5 bg-card-hover rounded animate-pulse" />
+                ))}
+              </Card>
+            ) : topSpenders.length > 0 ? (
+              <Card className="space-y-3">
+                {topSpenders.map((spender) => (
+                  <Link key={spender.user_id} href={`/en/profile/${spender.user_id}`} className="flex items-center justify-between group">
+                    <span className="text-sm text-gray-200 group-hover:text-accent-light transition-colors">{spender.username}</span>
+                    <span className="text-xs text-gray-500">{(spender.total ?? 0).toLocaleString()} Tickets</span>
+                  </Link>
+                ))}
+              </Card>
+            ) : null}
           </div>
         </div>
       </div>
@@ -274,11 +481,34 @@ export default function Home() {
       {/* Random Novels */}
       <section className="max-w-7xl mx-auto px-4 py-6 pb-16">
         <SectionHeader title="Random Novels" href="/en/random-novels" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {MOCK_RANDOM.map((novel, i) => (
-            <NovelCard key={i} {...novel} compact />
-          ))}
-        </div>
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="aspect-[3/4] rounded-lg bg-card-hover border border-line-light" />
+                <div className="mt-2 space-y-1.5">
+                  <div className="h-4 bg-card-hover rounded w-3/4" />
+                  <div className="h-3 bg-card-hover rounded w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+        {!loading && newNovels.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {[...newNovels].sort(() => 0.5 - Math.random()).slice(0, 6).map((novel) => (
+              <NovelCard
+                key={novel.ID}
+                title={novel.Title}
+                genre={novel.Genres?.[0]?.Slug || "novel"}
+                chapters={novel.Chapters}
+                rating={novel.Rating ? novel.Rating.toFixed(1) : undefined}
+                href={`/en/novel/${novel.Slug}`}
+                compact
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Footer CTA */}

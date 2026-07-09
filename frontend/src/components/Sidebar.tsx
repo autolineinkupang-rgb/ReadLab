@@ -2,19 +2,41 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { navSections as sections } from "@/lib/navigation";
 import { SearchIcon } from "@/components/ui/Icons";
 import { useAuth } from "@/lib/AuthContext";
+import { search as searchApi } from "@/lib/api";
 
 export default function Sidebar() {
   const [search, setSearch] = useState("");
+  const [suggestions, setSuggestions] = useState<{ id: number; slug: string; title: string }[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchAbortRef = useRef<AbortController | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => { setHydrated(true); }, []);
+
+  useEffect(() => {
+    if (searchAbortRef.current) searchAbortRef.current.abort();
+    setShowSuggestions(false);
+    if (search.trim().length < 2) { setSuggestions([]); return; }
+    const controller = new AbortController();
+    searchAbortRef.current = controller;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await searchApi.autocomplete(search.trim());
+        if (!controller.signal.aborted) {
+          setSuggestions(res.data);
+          setShowSuggestions(true);
+        }
+      } catch { /* ignore */ }
+    }, 300);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [search]);
 
   const isActive = (href: string) => hydrated ? (pathname?.startsWith(href) ?? false) : false;
 
@@ -37,7 +59,7 @@ export default function Sidebar() {
         </Link>
       </div>
 
-      <form onSubmit={handleSearch} className="px-4 pb-4">
+      <form onSubmit={handleSearch} className="relative px-4 pb-4">
         <div className="relative">
           <input
             value={search}
@@ -52,6 +74,20 @@ export default function Sidebar() {
             <SearchIcon className="w-4 h-4" />
           </button>
         </div>
+        {showSuggestions && suggestions.length > 0 && (
+          <div className="absolute top-full left-4 right-4 mt-1 bg-card border border-line-light rounded-lg shadow-xl z-50 overflow-hidden">
+            {suggestions.map((s) => (
+              <Link
+                key={s.id}
+                href={`/en/novel/${s.id}/${s.slug}`}
+                onMouseDown={(e) => { e.preventDefault(); setSearch(""); setShowSuggestions(false); }}
+                className="block text-sm text-gray-300 hover:text-white hover:bg-card-hover px-3 py-2 transition-colors truncate"
+              >
+                {s.title}
+              </Link>
+            ))}
+          </div>
+        )}
       </form>
 
       <nav className="flex-1 overflow-y-auto px-3 pb-4 space-y-6">

@@ -7,7 +7,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import CharacterCount from "@tiptap/extension-character-count";
 import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from "react";
 import DOMPurify from "isomorphic-dompurify";
-import { cleanImportedHtml, txtToHtml, docxToHtml, ALLOWED_TAGS } from "@/lib/htmlImport";
+import { cleanImportedHtml, txtToHtml, docxToHtml, ALLOWED_TAGS, ALLOWED_ATTR } from "@/lib/htmlImport";
 
 export interface ChapterContentEditorHandle {
   importText: (text: string) => void;
@@ -41,7 +41,7 @@ const ChapterContentEditor = forwardRef<ChapterContentEditorHandle, ChapterConte
       editorProps: {
         transformPastedHTML(html) {
           const cleaned = cleanImportedHtml(html);
-          return DOMPurify.sanitize(cleaned, { ALLOWED_TAGS });
+          return DOMPurify.sanitize(cleaned, { ALLOWED_TAGS, ALLOWED_ATTR });
         },
         handleDrop(view, event, _slice, moved) {
           if (moved) return false;
@@ -53,7 +53,7 @@ const ChapterContentEditor = forwardRef<ChapterContentEditorHandle, ChapterConte
           const pos = coords ? coords.pos : view.state.selection.from;
 
           const insertHtml = (html: string) => {
-            const clean = DOMPurify.sanitize(cleanImportedHtml(html), { ALLOWED_TAGS });
+            const clean = DOMPurify.sanitize(cleanImportedHtml(html), { ALLOWED_TAGS, ALLOWED_ATTR });
             const { tr } = view.state;
             const node = view.state.schema.text(clean);
             view.dispatch(tr.insert(pos, node));

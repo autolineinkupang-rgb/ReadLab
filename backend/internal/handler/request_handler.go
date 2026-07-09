@@ -56,8 +56,13 @@ func (h *RequestHandler) Create(c *gin.Context) {
 		return
 	}
 
+	uid, ok := userID.(uint)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id"})
+		return
+	}
 	request := model.Request{
-		UserID:     userID.(uint),
+		UserID:     uid,
 		NovelTitle: req.NovelTitle,
 		NovelURL:   req.NovelURL,
 		Source:     req.Source,

@@ -49,8 +49,13 @@ func (h *ReadingHandler) TrackRead(c *gin.Context) {
 		var priorReads int64
 		h.DB.Model(&model.ReadingHistory{}).Where("user_id = ? AND novel_id = ?", userID, novelID).Count(&priorReads)
 
+		uid, ok := userID.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id"})
+			return
+		}
 		entry := model.ReadingHistory{
-			UserID:    userID.(uint),
+			UserID:    uid,
 			NovelID:   uint(novelID),
 			ChapterID: chapter.ID,
 		}
@@ -148,9 +153,24 @@ func (h *ReadingHandler) Progress(c *gin.Context) {
 		myReviewResp = &resp
 	}
 
+	var lastChapterNumber *int
+	var lastChapterTitle string
+	var lastRead model.ReadingHistory
+	lastReadResult := h.DB.Where("user_id = ? AND novel_id = ?", userID, novelID).
+		Preload("Chapter").
+		Order("updated_at DESC").
+		First(&lastRead)
+	if lastReadResult.Error == nil {
+		n := lastRead.Chapter.Number
+		lastChapterNumber = &n
+		lastChapterTitle = lastRead.Chapter.Title
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"chapter_count": chapterCount,
-		"can_review":    chapterCount >= 5,
-		"my_review":     myReviewResp,
+		"chapter_count":      chapterCount,
+		"can_review":         chapterCount >= 5,
+		"my_review":          myReviewResp,
+		"last_chapter":       lastChapterNumber,
+		"last_chapter_title": lastChapterTitle,
 	})
 }

@@ -1,0 +1,9 @@
+services:
+  backend:
+    build:
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+    entrypoint: ["/go/bin/air"]
+    environment:
+      - GOMODCACHE=/go/pkg/mod

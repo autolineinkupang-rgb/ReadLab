@@ -1,4 +1,5 @@
 export const ALLOWED_TAGS = ["p", "h2", "h3", "strong", "em", "u", "s", "ul", "ol", "li", "blockquote", "hr", "br"];
+export const ALLOWED_ATTR = ["href", "target", "rel", "class", "id"];
 
 function mapTag(tagName: string): string | null {
   switch (tagName.toLowerCase()) {

@@ -8,9 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"wtr-lab-clone/backend/internal/model"
+	"wtr-lab-clone/backend/internal/ticket"
 )
-
-var ErrInsufficientTickets = errors.New("insufficient tickets")
 
 type ChapterHandler struct {
 	DB *gorm.DB
@@ -64,7 +63,7 @@ func (h *ChapterHandler) Get(c *gin.Context) {
 			}
 
 			if txUser.Tickets < float64(chapter.TicketCost) {
-				return ErrInsufficientTickets
+				return ticket.ErrInsufficientTickets
 			}
 
 			if err := tx.Model(&txUser).Update("tickets", gorm.Expr("tickets - ?", chapter.TicketCost)).Error; err != nil {
@@ -86,7 +85,7 @@ func (h *ChapterHandler) Get(c *gin.Context) {
 			return nil
 		})
 		if err != nil {
-			if errors.Is(err, ErrInsufficientTickets) {
+			if errors.Is(err, ticket.ErrInsufficientTickets) {
 				c.JSON(http.StatusPaymentRequired, gin.H{"error": "insufficient tickets"})
 				return
 			}

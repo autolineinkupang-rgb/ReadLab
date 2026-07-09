@@ -6,12 +6,11 @@ import { useParams } from "next/navigation";
 import NovelCard from "@/components/NovelCard";
 import { author } from "@/lib/api";
 import { Novel } from "@/types";
-import { MOCK_AUTHOR_NOVELS } from "@/lib/mockData";
 
 export default function AuthorPage() {
   const params = useParams();
   const authorName = decodeURIComponent((params?.name as string) || "");
-  const [novels, setNovels] = useState<Novel[]>(MOCK_AUTHOR_NOVELS);
+  const [novels, setNovels] = useState<Novel[]>([]);
   const [sort, setSort] = useState("newest");
 
   useEffect(() => {

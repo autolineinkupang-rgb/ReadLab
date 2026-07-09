@@ -18,7 +18,7 @@ type TranslateHandler struct {
 
 func NewTranslateHandler() *TranslateHandler {
 	return &TranslateHandler{
-		client: &http.Client{Timeout: 15 * time.Second},
+		client: &http.Client{Timeout: 30 * time.Second},
 	}
 }
 
@@ -28,15 +28,15 @@ type translateRequest struct {
 	Source string `json:"source"`
 }
 
-type translateResponse struct {
-	TranslatedText string `json:"translated_text"`
-}
-
 type libreRequest struct {
 	Q      string `json:"q"`
 	Source string `json:"source"`
 	Target string `json:"target"`
 	Format string `json:"format"`
+}
+
+type libreResponse struct {
+	TranslatedText string `json:"translatedText"`
 }
 
 func (h *TranslateHandler) Translate(c *gin.Context) {
@@ -68,7 +68,7 @@ func (h *TranslateHandler) Translate(c *gin.Context) {
 		Format: "text",
 	})
 
-	resp, err := h.client.Post("https://libretranslate.com/translate", "application/json", bytes.NewReader(body))
+	resp, err := h.client.Post("http://localhost:5000/translate", "application/json", bytes.NewReader(body))
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": fmt.Sprintf("translate service unavailable: %v", err)})
 		return
@@ -77,11 +77,11 @@ func (h *TranslateHandler) Translate(c *gin.Context) {
 
 	respBody, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode != http.StatusOK {
-		c.JSON(http.StatusBadGateway, gin.H{"error": fmt.Sprintf("translate returned %d", resp.StatusCode)})
+		c.JSON(http.StatusBadGateway, gin.H{"error": fmt.Sprintf("translate returned %d: %s", resp.StatusCode, string(respBody))})
 		return
 	}
 
-	var result translateResponse
+	var result libreResponse
 	if err := json.Unmarshal(respBody, &result); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to parse translate response"})
 		return

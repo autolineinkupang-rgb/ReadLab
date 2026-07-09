@@ -207,7 +207,7 @@ export default function AdminChaptersPage() {
   function renderPreview(html: string) {
     if (!html) return null;
     const allowed = ["p", "h2", "h3", "strong", "em", "u", "s", "ul", "ol", "li", "blockquote", "hr", "br"];
-    const clean = DOMPurify.sanitize(html, { ALLOWED_TAGS: allowed });
+    const clean = DOMPurify.sanitize(html, { ALLOWED_TAGS: allowed, ALLOWED_ATTR: ["href", "target", "rel", "class", "id"] });
     return <div className="chapter-content text-gray-300 text-sm" dangerouslySetInnerHTML={{ __html: clean }} />;
   }
 

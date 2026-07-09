@@ -6,13 +6,15 @@ import NovelCard from "@/components/NovelCard";
 import SectionHeader from "@/components/SectionHeader";
 import NovelCardSmall from "@/components/NovelCardSmall";
 import UpdateItem from "@/components/UpdateItem";
-import { novels, updates as updatesApi, news as newsApi, leaderboard } from "@/lib/api";
+import { novels, updates as updatesApi, news as newsApi, leaderboard, library as libraryApi } from "@/lib/api";
 import { stripHtml } from "@/lib/utils";
 import Card from "@/components/ui/Card";
 import GenreTag from "@/components/ui/GenreTag";
 import { Novel } from "@/types";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function Home() {
+  const { user } = useAuth();
   const [recentUpdates, setRecentUpdates] = useState<any[]>([]);
   const [newNovels, setNewNovels] = useState<any[]>([]);
   const [ranking, setRanking] = useState<any[]>([]);
@@ -20,6 +22,7 @@ export default function Home() {
   const [randomNovels, setRandomNovels] = useState<Novel[]>([]);
   const [newsItems, setNewsItems] = useState<any[]>([]);
   const [topSpenders, setTopSpenders] = useState<any[]>([]);
+  const [readingHistory, setReadingHistory] = useState<any[]>([]);
 
   useEffect(() => {
     updatesApi.recent(6)
@@ -59,7 +62,13 @@ export default function Home() {
     leaderboard.get("tickets")
       .then((res) => { if (res.data?.length) setTopSpenders(res.data.slice(0, 3)); })
       .catch(() => {});
-  }, []);
+
+    if (user) {
+      libraryApi.get().then((res) => {
+        if (res.history?.length) setReadingHistory(res.history);
+      }).catch(() => {});
+    }
+  }, [user]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-10">
@@ -72,9 +81,41 @@ export default function Home() {
       </div>
 
       {/* Login Prompt */}
-      <div className="text-center text-sm text-gray-500">
-        Login to keep track of where you left off in the novel.
-      </div>
+      {!user && (
+        <div className="text-center text-sm text-gray-500">
+          Login to keep track of where you left off in the novel.
+        </div>
+      )}
+
+      {/* Continue Reading */}
+      {user && readingHistory.length > 0 && (
+        <section>
+          <SectionHeader title="Continue Reading" />
+          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            {readingHistory.slice(0, 6).map((h: any) => (
+              <Link
+                key={h.ID}
+                href={`/en/novel/${h.Novel.ID}/${h.Novel.Slug}/chapter-${h.Chapter.Number}`}
+                className="flex-shrink-0 w-36 sm:w-40 group"
+              >
+                <div className="aspect-[3/4] rounded-xl bg-card-hover border border-line-light overflow-hidden mb-2">
+                  {h.Novel.CoverURL ? (
+                    <img src={h.Novel.CoverURL} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-600">
+                      <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm text-gray-200 font-medium line-clamp-1 group-hover:text-accent-light transition-colors">{h.Novel.Title}</p>
+                <p className="text-xs text-gray-500 mt-0.5">Chapter {h.Chapter.Number}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* New Novels */}
       <section>

@@ -11,5 +11,10 @@ FROM alpine:3.20
 RUN apk --no-cache add ca-certificates
 COPY --from=builder /server /server
 COPY --from=builder /seed /seed
+RUN adduser -D appuser
+USER appuser
 EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD wget -qO- http://localhost:8080/api/v1/health || exit 1
+STOPSIGNAL SIGTERM
 CMD ["/server"]

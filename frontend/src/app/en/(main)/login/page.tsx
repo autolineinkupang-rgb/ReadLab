@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -166,6 +167,14 @@ function LoginForm() {
             {loading ? "Please wait..." : mode === "login" ? "Login" : "Create Account"}
           </button>
         </form>
+
+        {mode === "login" && (
+          <p className="text-center text-xs mt-3">
+            <Link href="/en/forgot-password" className="text-gray-500 hover:text-violet-400 transition-colors">
+              Forgot Password?
+            </Link>
+          </p>
+        )}
 
         <p className="text-center text-xs text-gray-600 mt-4">
           {mode === "login"

@@ -16,23 +16,10 @@ interface User {
   XP: number;
 }
 
-const MOCK_USERS: User[] = [
-  { ID: 1, Username: "Mega_bells", DisplayName: "Mega_bells", Tickets: 3569.76, XP: 5000 },
-  { ID: 2, Username: "StandardCrystal", DisplayName: "StandardCrystal", Tickets: 2907.17, XP: 3200 },
-  { ID: 3, Username: "Alpha2", DisplayName: "Alpha2", Tickets: 2693.07, XP: 2800 },
-  { ID: 4, Username: "WhisperWind", DisplayName: "WhisperWind", Tickets: 1845.50, XP: 1500 },
-  { ID: 5, Username: "NightOwl", DisplayName: "NightOwl", Tickets: 1623.80, XP: 1200 },
-  { ID: 6, Username: "SilverFox", DisplayName: "SilverFox", Tickets: 1412.25, XP: 900 },
-  { ID: 7, Username: "CrimsonTide", DisplayName: "CrimsonTide", Tickets: 1234.00, XP: 700 },
-  { ID: 8, Username: "GoldenEagle", DisplayName: "GoldenEagle", Tickets: 1112.90, XP: 500 },
-  { ID: 9, Username: "StormChaser", DisplayName: "StormChaser", Tickets: 987.65, XP: 300 },
-  { ID: 10, Username: "MoonlitPath", DisplayName: "MoonlitPath", Tickets: 876.54, XP: 100 },
-];
-
 const medalColors = ["text-yellow-400", "text-gray-300", "text-amber-600"];
 
 export default function LeaderboardPage() {
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const [users, setUsers] = useState<User[]>([]);
   const [sortBy, setSortBy] = useState("xp");
 
   useEffect(() => {

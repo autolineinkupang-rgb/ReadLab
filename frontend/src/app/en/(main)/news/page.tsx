@@ -13,20 +13,8 @@ interface NewsItem {
   Slug: string;
 }
 
-const MOCK_NEWS: NewsItem[] = [
-  { ID: 428, Title: "🎉 16th Giveaway Winners 🎉", Type: "news", CreatedAt: "2026-07-02", Slug: "16th-giveaway-winners" },
-  { ID: 427, Title: "🎉 Our 16th Giveaway is LIVE! 🎉", Type: "news", CreatedAt: "2026-06-25", Slug: "16th-giveaway-live" },
-  { ID: 426, Title: "Version 1.13.3 - New Source Management & Bug Fixes!", Type: "changelog", CreatedAt: "2026-06-20", Slug: "v1-13-3" },
-  { ID: 425, Title: "🔥 New Feature: Community Folders", Type: "changelog", CreatedAt: "2026-06-15", Slug: "community-folders" },
-  { ID: 424, Title: "🏆 15th Giveaway Results", Type: "news", CreatedAt: "2026-06-10", Slug: "15th-giveaway-results" },
-  { ID: 423, Title: "Version 1.13.2 - Performance Improvements", Type: "changelog", CreatedAt: "2026-06-05", Slug: "v1-13-2" },
-  { ID: 422, Title: "📢 Site Maintenance Scheduled", Type: "news", CreatedAt: "2026-06-01", Slug: "maintenance-scheduled" },
-  { ID: 421, Title: "Version 1.13.1 - Bug Fixes", Type: "changelog", CreatedAt: "2026-05-28", Slug: "v1-13-1" },
-  { ID: 420, Title: "🎉 Site Hits 1 Million Visitors!", Type: "news", CreatedAt: "2026-05-20", Slug: "1-million-visitors" },
-];
-
 export default function NewsListPage() {
-  const [items, setItems] = useState<NewsItem[]>(MOCK_NEWS);
+  const [items, setItems] = useState<NewsItem[]>([]);
   const [filterType, setFilterType] = useState("all");
 
   useEffect(() => {

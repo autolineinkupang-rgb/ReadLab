@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { novels } from "@/lib/api";
 import { Novel } from "@/types";
-import { MOCK_RANKING_FULL } from "@/lib/mockData";
 
 const periods = [
   { key: "daily", label: "Daily" },
@@ -17,7 +16,7 @@ const periods = [
 export default function RankingPage() {
   const params = useParams();
   const currentPeriod = (params?.period as string) || "daily";
-  const [data, setData] = useState<Novel[]>(MOCK_RANKING_FULL);
+  const [data, setData] = useState<Novel[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -27,7 +26,7 @@ export default function RankingPage() {
         const res = await novels.list({ sort: "views", order: "desc", limit: 50 });
         setData(res.data);
       } catch {
-        setData(MOCK_RANKING_FULL);
+        setData([]);
       }
       setLoading(false);
     };

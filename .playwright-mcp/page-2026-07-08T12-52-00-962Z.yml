@@ -1,0 +1,45 @@
+- generic [active] [ref=f21e1]:
+  - generic [ref=f21e3]:
+    - generic [ref=f21e4]:
+      - complementary "Skip links" [ref=f21e5]:
+        - link "Skip to main content" [ref=f21e6] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f21e7]: Skip to main content
+        - button "Keyboard shortcuts" [ref=f21e8]:
+          - generic [ref=f21e9]: Keyboard shortcuts
+        - link "Accessibility Help external, opens new window" [ref=f21e10] [cursor=pointer]:
+          - /url: https://cloud.google.com/docs/accessibility?hl=en_US
+          - generic [ref=f21e11]:
+            - text: Accessibility Help
+            - generic "external, opens new window" [ref=f21e12]:
+              - img "external, opens new window" [ref=f21e13]:
+                - img [ref=f21e14]
+        - link "Accessibility Feedback external, opens new window" [ref=f21e16] [cursor=pointer]:
+          - /url: https://support.google.com/accessibility/contact/feedback?hl=en_US
+          - generic [ref=f21e17]:
+            - text: Accessibility Feedback
+            - generic "external, opens new window" [ref=f21e18]:
+              - img "external, opens new window" [ref=f21e19]:
+                - img [ref=f21e20]
+      - banner [ref=f21e23]:
+        - generic [ref=f21e24]:
+          - navigation [ref=f21e27]:
+            - button "Navigation menu (.)" [ref=f21e28] [cursor=pointer]:
+              - img [ref=f21e30]
+          - link "Google Cloud Platform Home" [ref=f21e32] [cursor=pointer]:
+            - /url: /
+            - generic:
+              - img
+        - link "Sign into Google Cloud Platform" [ref=f21e36]:
+          - button "Sign into Google Cloud Platform" [ref=f21e37]: SIGN IN
+    - main [ref=f21e58]:
+      - progressbar [ref=f21e66]:
+        - img [ref=f21e68]
+        - generic [ref=f21e71]:
+          - img [ref=f21e73]
+          - img [ref=f21e76]
+          - img [ref=f21e79]
+  - iframe [ref=f21e83]:
+    
+  - iframe [ref=f21e84]:
+    

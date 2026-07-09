@@ -5,7 +5,6 @@ import Link from "next/link";
 import { novels, genres as genresApi } from "@/lib/api";
 import { formatViews, statusColor } from "@/lib/utils";
 import { Novel, Genre } from "@/types";
-import { FALLBACK_NOVELS } from "@/lib/mockData";
 
 type SortField = "created_at" | "rating" | "chapters" | "views" | "title" | "readers" | "reviews";
 type Order = "desc" | "asc";
@@ -61,52 +60,9 @@ const REVIEW_OPTIONS = [
   { value: 1000, label: "1000+" },
 ];
 
-const TAG_CATEGORIES = [
-  "Protagonist Archetype",
-  "Adaptation",
-  "Power System",
-  "Setting",
-  "Theme",
-] as const;
+const TAG_CATEGORIES: string[] = [];
 
-const TAGS: { name: string; category: string }[] = [
-  { name: "Male Protagonist", category: "Protagonist Archetype" },
-  { name: "Female Protagonist", category: "Protagonist Archetype" },
-  { name: "Smart Protagonist", category: "Protagonist Archetype" },
-  { name: "Cold Protagonist", category: "Protagonist Archetype" },
-  { name: "Overpowered Protagonist", category: "Protagonist Archetype" },
-  { name: "Antihero", category: "Protagonist Archetype" },
-  { name: "Naruto", category: "Adaptation" },
-  { name: "Douluo Dalu", category: "Adaptation" },
-  { name: "Honkai", category: "Adaptation" },
-  { name: "One Piece", category: "Adaptation" },
-  { name: "Pokemon", category: "Adaptation" },
-  { name: "Marvel", category: "Adaptation" },
-  { name: "System", category: "Power System" },
-  { name: "Cultivation", category: "Power System" },
-  { name: "Level Up", category: "Power System" },
-  { name: "Magic", category: "Power System" },
-  { name: "Superpowers", category: "Power System" },
-  { name: "Game World", category: "Setting" },
-  { name: "Modern World", category: "Setting" },
-  { name: "Ancient World", category: "Setting" },
-  { name: "Apocalypse", category: "Setting" },
-  { name: "Magic School", category: "Setting" },
-  { name: "Transmigration", category: "Theme" },
-  { name: "Reincarnation", category: "Theme" },
-  { name: "Revenge", category: "Theme" },
-  { name: "Face Slapping", category: "Theme" },
-  { name: "Love Triangle", category: "Theme" },
-  { name: "Slow Burn", category: "Theme" },
-];
-
-const FALLBACK_GENRES = [
-  "action","adult","adventure","comedy","drama","ecchi","erciyuan","fan-fiction","fantasy",
-  "game","gender-bender","harem","historical","horror","josei","martial-arts","mature",
-  "mecha","military","mystery","psychological","romance","school-life","sci-fi","seinen",
-  "shoujo","shoujo-ai","shounen","shounen-ai","slice-of-life","smut","sports","supernatural",
-  "tragedy","urban-life","wuxia","xianxia","xuanhuan","yaoi","yuri",
-];
+const TAGS: { name: string; category: string }[] = [];
 
 const ITEMS_PER_PAGE = 20;
 
@@ -145,9 +101,7 @@ export default function NovelFinderPage() {
       const data = (res as { data?: Genre[] }).data;
       const list: { slug: string; name: string }[] = data?.map((g: Genre) => ({ slug: g.Slug, name: g.Name })) || [];
       if (list.length > 0) setGenreOptions(list);
-    }).catch(() => {
-      setGenreOptions(FALLBACK_GENRES.map((s) => ({ slug: s, name: s.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) })));
-    });
+    }).catch(() => {});
   }, []);
 
   function toggleGenre(slug: string) {
@@ -207,12 +161,8 @@ export default function NovelFinderPage() {
       setData(filtered);
       setTotalPages(res.total_pages || Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1);
     } catch {
-      const unique = FALLBACK_NOVELS.filter(
-        (novel, idx, self) => idx === self.findIndex((n) => n.ID === novel.ID)
-      );
-      const filtered = clientSideFilter(unique);
-      setData(filtered);
-      setTotalPages(Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1);
+      setData([]);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }

@@ -33,8 +33,13 @@ func (h *VoteHandler) Create(c *gin.Context) {
 		return
 	}
 
+	uid, ok := userID.(uint)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id"})
+		return
+	}
 	vote := model.Vote{
-		UserID:  userID.(uint),
+		UserID:  uid,
 		NovelID: req.NovelID,
 	}
 

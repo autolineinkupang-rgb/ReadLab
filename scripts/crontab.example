@@ -1,0 +1,2 @@
+# Run database backup daily at 03:00
+0 3 * * * cd /path/to/ReadLab && ./scripts/db-backup.sh >> /var/log/readlab-backup.log 2>&1

@@ -12,6 +12,10 @@ export interface UserData {
   tickets: number;
   xp: number;
   role: "admin" | "writer" | "member";
+  daily_reward?: {
+    can_claim: boolean;
+    reward: number;
+  };
 }
 
 interface AuthContextType {

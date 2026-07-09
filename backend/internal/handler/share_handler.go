@@ -52,8 +52,13 @@ func (h *ShareHandler) Create(c *gin.Context) {
 		return
 	}
 
+	uid, ok := userID.(uint)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id"})
+		return
+	}
 	share := model.Share{
-		UserID:   userID.(uint),
+		UserID:   uid,
 		NovelID:  uint(novelID),
 		Platform: req.Platform,
 	}

@@ -5,10 +5,9 @@ import Link from "next/link";
 import NovelCard from "@/components/NovelCard";
 import { novels } from "@/lib/api";
 import { Novel } from "@/types";
-import { MOCK_RANDOM_NOVELS } from "@/lib/mockData";
 
 export default function RandomNovelsPage() {
-  const [data, setData] = useState<Novel[]>(MOCK_RANDOM_NOVELS);
+  const [data, setData] = useState<Novel[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchRandom = () => {

@@ -4,8 +4,24 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import DOMPurify from "isomorphic-dompurify";
 import { stripHtml } from "@/lib/utils";
-import { reading, translateApi } from "@/lib/api";
+import { reading, translateApi, translateAi, aiSettings as aiSettingsApi } from "@/lib/api";
 import { useAuth } from "@/lib/AuthContext";
+
+function loadSetting<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const val = localStorage.getItem("reader:" + key);
+    return val !== null ? JSON.parse(val) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveSetting(key: string, value: unknown) {
+  try {
+    localStorage.setItem("reader:" + key, JSON.stringify(value));
+  } catch {}
+}
 import { translateHtmlPreservingStructure } from "@/lib/htmlTranslate";
 
 const XP_PER_CHAPTER = 10;
@@ -76,23 +92,25 @@ const navItems = [
 
 export default function ChapterReader({ chapter, novel, chapters, loading, chapterLoading, error, prevHref, nextHref, novelHref, onAddToLibrary, inLibrary }: ChapterReaderProps) {
   const [activeTab, setActiveTab] = useState("read");
-  const [fontSize, setFontSize] = useState(18);
-  const [lineHeight, setLineHeight] = useState(1.7);
-  const [fontFamily, setFontFamily] = useState<FontFamily>("sans");
-  const [readerBgKey, setReaderBgKey] = useState("cream");
-  const [siteThemeKey, setSiteThemeKey] = useState("dark");
-  const [translationMode, setTranslationMode] = useState("web");
-  const [speechSpeed, setSpeechSpeed] = useState(1.0);
+  const [fontSize, setFontSize] = useState(() => loadSetting("fontSize", 18));
+  const [lineHeight, setLineHeight] = useState(() => loadSetting("lineHeight", 1.7));
+  const [fontFamily, setFontFamily] = useState<FontFamily>(() => loadSetting("fontFamily", "sans"));
+  const [readerBgKey, setReaderBgKey] = useState(() => loadSetting("readerBgKey", "cream"));
+  const [siteThemeKey, setSiteThemeKey] = useState(() => loadSetting("siteThemeKey", "dark"));
+  const [translationMode, setTranslationMode] = useState(() => loadSetting("translationMode", "web"));
+  const [speechSpeed, setSpeechSpeed] = useState(() => loadSetting("speechSpeed", 1.0));
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [language, setLanguage] = useState("auto");
-  const [translationProvider, setTranslationProvider] = useState("google");
+  const [language, setLanguage] = useState(() => loadSetting("language", "auto"));
   const [showToc, setShowToc] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [translatedHtml, setTranslatedHtml] = useState<string | null>(null);
+  const [aiConfigured, setAiConfigured] = useState(false);
+  const [aiTargetLanguage, setAiTargetLanguage] = useState("id-ID");
+  const [aiInstruction, setAiInstruction] = useState("");
   const { user } = useAuth();
   const contentRef = useRef<HTMLDivElement>(null);
   const speechSynthRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const prevLangRef = useRef(language);
+  const prevTranslateRef = useRef({ lang: language, mode: translationMode });
 
   const readerBg = readerBgOptions.find((o) => o.key === readerBgKey) || readerBgOptions[0];
   const siteTheme = siteThemes[siteThemeKey];
@@ -105,6 +123,17 @@ export default function ChapterReader({ chapter, novel, chapters, loading, chapt
   const [xpEarned, setXpEarned] = useState(0);
   const [showXpCelebration, setShowXpCelebration] = useState(false);
   const xpIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    saveSetting("fontSize", fontSize);
+    saveSetting("lineHeight", lineHeight);
+    saveSetting("fontFamily", fontFamily);
+    saveSetting("readerBgKey", readerBgKey);
+    saveSetting("siteThemeKey", siteThemeKey);
+    saveSetting("translationMode", translationMode);
+    saveSetting("speechSpeed", speechSpeed);
+    saveSetting("language", language);
+  }, [fontSize, lineHeight, fontFamily, readerBgKey, siteThemeKey, translationMode, speechSpeed, language]);
 
   useEffect(() => {
     if (!chapter) return;
@@ -166,21 +195,48 @@ export default function ChapterReader({ chapter, novel, chapters, loading, chapt
   }, [isSpeaking, chapter?.content, speechSpeed, language]);
 
   const allowedTags = ["p", "h2", "h3", "strong", "em", "u", "s", "ul", "ol", "li", "blockquote", "hr", "br"];
-  const sanitizedHtml = DOMPurify.sanitize(chapter?.content || "", { ALLOWED_TAGS: allowedTags });
+  const allowedAttr = ["href", "target", "rel", "class", "id"];
+  const sanitizedHtml = DOMPurify.sanitize(chapter?.content || "", { ALLOWED_TAGS: allowedTags, ALLOWED_ATTR: allowedAttr });
   const displayHtml = translatedHtml || sanitizedHtml;
 
   useEffect(() => {
-    if (language === "auto" || language === prevLangRef.current) return;
-    prevLangRef.current = language;
-    if (!chapter?.content || language === "en-US") {
+    if (!user) return;
+    if (translationMode === "ai") {
+      aiSettingsApi.get().then((res) => {
+        setAiConfigured(res.has_key);
+        setAiTargetLanguage(res.target_language || "id-ID");
+        setAiInstruction(res.instruction || "");
+      }).catch(() => {});
+    }
+  }, [user, translationMode]);
+
+  const languageNames: Record<string, string> = {
+    "en-US": "English", "id-ID": "Indonesian", "ja-JP": "Japanese", "ko-KR": "Korean",
+    "zh-CN": "Chinese", "fr-FR": "French", "de-DE": "German", "es-ES": "Spanish",
+    "pt-PT": "Portuguese", "ru-RU": "Russian", "ar-SA": "Arabic", "hi-IN": "Hindi",
+    "th-TH": "Thai", "vi-VN": "Vietnamese",
+  };
+
+  useEffect(() => {
+    const activeLanguage = translationMode === "ai" ? aiTargetLanguage : language;
+    const same = activeLanguage === prevTranslateRef.current.lang && translationMode === prevTranslateRef.current.mode;
+    if (translationMode !== "ai" && language === "auto") return;
+    if (same) return;
+    if (activeLanguage === "en-US" || !chapter?.content) {
       setTranslatedHtml(null);
+      prevTranslateRef.current = { lang: activeLanguage, mode: translationMode };
       return;
     }
+    if (translationMode === "ai" && !aiConfigured) {
+      return;
+    }
+    prevTranslateRef.current = { lang: activeLanguage, mode: translationMode };
     setTranslating(true);
     let cancelled = false;
-    translateHtmlPreservingStructure(chapter.content, (text) =>
-      translateApi.translate(text, language).then((r) => r.data)
-    )
+    const translateFn = translationMode === "ai"
+      ? (text: string) => translateAi.translate(text).then((r) => r.data)
+      : (text: string) => translateApi.translate(text, language).then((r) => r.data);
+    translateHtmlPreservingStructure(chapter.content, translateFn)
       .then((html) => {
         if (!cancelled) setTranslatedHtml(html);
       })
@@ -191,7 +247,7 @@ export default function ChapterReader({ chapter, novel, chapters, loading, chapt
         if (!cancelled) setTranslating(false);
       });
     return () => { cancelled = true; };
-  }, [language, chapter?.content]);
+  }, [language, aiTargetLanguage, chapter?.content, translationMode, aiConfigured]);
 
   function handleMoreClick(key: string) {
     switch (key) {
@@ -328,9 +384,9 @@ export default function ChapterReader({ chapter, novel, chapters, loading, chapt
                   ))}
                 </div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium" style={{ color: siteTheme.muted }}>Reader Language</span>
-                <div className="flex gap-2">
+              {translationMode !== "ai" ? (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium" style={{ color: siteTheme.muted }}>Reader Language</span>
                   <select value={language} onChange={(e) => setLanguage(e.target.value)} className="text-xs rounded-lg px-2 py-1.5 border bg-transparent" style={{ borderColor: siteTheme.border, color: siteTheme.text }}>
                     <option value="auto">Auto Detect</option>
                     <option value="en-US">English</option>
@@ -338,14 +394,23 @@ export default function ChapterReader({ chapter, novel, chapters, loading, chapt
                     <option value="ja-JP">Japanese</option>
                     <option value="ko-KR">Korean</option>
                     <option value="zh-CN">Chinese</option>
-                  </select>
-                  <select value={translationProvider} onChange={(e) => setTranslationProvider(e.target.value)} className="text-xs rounded-lg px-2 py-1.5 border bg-transparent" style={{ borderColor: siteTheme.border, color: siteTheme.text }}>
-                    <option value="google">Google</option>
-                    <option value="deepl">DeepL</option>
-                    <option value="microsoft">Microsoft</option>
+                    <option value="fr-FR">French</option>
+                    <option value="de-DE">German</option>
+                    <option value="es-ES">Spanish</option>
+                    <option value="pt-PT">Portuguese</option>
+                    <option value="ru-RU">Russian</option>
+                    <option value="ar-SA">Arabic</option>
+                    <option value="hi-IN">Hindi</option>
+                    <option value="th-TH">Thai</option>
+                    <option value="vi-VN">Vietnamese</option>
                   </select>
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium" style={{ color: siteTheme.muted }}>Reader Language</span>
+                  <span className="text-xs font-medium" style={{ color: "#6dd5ed" }}>{languageNames[aiTargetLanguage] || aiTargetLanguage}</span>
+                </div>
+              )}
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium" style={{ color: siteTheme.muted }}>Site Theme</span>
                 <div className="flex gap-2">
@@ -462,8 +527,14 @@ export default function ChapterReader({ chapter, novel, chapters, loading, chapt
             ))}
           </div>
           {translationMode === "ai" && (
-            <div className="mt-2 p-3 rounded-lg text-xs" style={{ backgroundColor: "#1e1e3a", color: "#fbbf24", border: "1px solid #3a3a5a" }}>
-              <strong>AI Translation:</strong> Guests can preview the first 10 chapters for free. After that, please register a free account or use another translation service (Web/Web+).
+            <div className="mt-2 p-3 rounded-lg text-xs" style={{ backgroundColor: "#1e1e3a", color: aiConfigured ? "#22c55e" : "#fbbf24", border: "1px solid #3a3a5a" }}>
+              {aiConfigured
+                ? <><strong>AI Translation:</strong> Using your personal AI API key. Target: <span className="font-semibold">{languageNames[aiTargetLanguage] || aiTargetLanguage}</span>
+                    {aiInstruction && <span className="block mt-0.5 opacity-70">Style: "{aiInstruction}"</span>}</>
+                : <><strong>AI Translation:</strong> Set up your API key in{" "}
+                    <a href={`/en/profile/${user?.id}`} className="underline hover:text-violet-400">Profile Settings</a>
+                    {" "}to use AI translation. <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="underline hover:text-violet-400">Get a free key here</a>.</>
+              }
             </div>
           )}
         </div>
@@ -514,7 +585,8 @@ export default function ChapterReader({ chapter, novel, chapters, loading, chapt
         <main ref={contentRef} className="flex-1 pb-36 transition-colors min-w-0">
           <article className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
             {/* Novel Cover & Info */}
-            {novel?.coverUrl && (
+  
+          {novel?.coverUrl && (
               <div className="flex gap-4 sm:gap-6 mb-6 p-4 rounded-xl" style={{ backgroundColor: siteTheme.card, border: `1px solid ${siteTheme.border}` }}>
                 <img
                   src={novel?.coverUrl}
@@ -566,7 +638,7 @@ export default function ChapterReader({ chapter, novel, chapters, loading, chapt
             {translating && (
               <div className="mb-4 p-3 rounded-lg text-xs flex items-center gap-2" style={{ backgroundColor: siteTheme.card, color: siteTheme.muted, border: `1px solid ${siteTheme.border}` }}>
                 <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-                Translating to {language}...
+                Translating to {translationMode === "ai" ? (languageNames[aiTargetLanguage] || aiTargetLanguage) : language}...
               </div>
             )}
 

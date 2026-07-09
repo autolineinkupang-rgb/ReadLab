@@ -1,0 +1,123 @@
+- generic [ref=f27e4]:
+  - generic [ref=f27e7]:
+    - img "Google" [ref=f27e10]
+    - generic [ref=f27e11]:
+      - generic [ref=f27e13]:
+        - heading "Login" [level=1] [ref=f27e14]
+        - paragraph [ref=f27e15]: dengan Akun Google Anda untuk melanjutkan ke Google Cloud Platform. Akun ini akan tersedia untuk aplikasi Google lainnya di browser.
+      - generic [ref=f27e18]:
+        - generic [ref=f27e21]:
+          - generic [ref=f27e26]:
+            - textbox "Email atau nomor telepon" [active] [ref=f27e27]
+            - generic:
+              - generic: Email atau nomor telepon
+          - paragraph [ref=f27e28]:
+            - link "Lupa email?" [ref=f27e29] [cursor=pointer]:
+              - /url: /signin/usernamerecovery?continue=https://console.cloud.google.com/apis/credentials&dsh=S1093136322:1783515130655100&flowEntry=ServiceLogin&flowName=WebLiteSignIn&followup=https://console.cloud.google.com/apis/credentials&ifkv=AcDsRvy0N7ya1sAKBsxYjRvmJ_EH6QH5SZuCc3LujAp3eGtDiRO95FHAONJ_cy-CjaNWCH9izA2JVA&osid=1&service=cloudconsole
+        - paragraph [ref=f27e32]:
+          - text: Bukan komputer Anda? Gunakan jendela penjelajahan rahasia untuk login.
+          - link "Pelajari lebih lanjut cara menggunakan Mode tamu (eksternal, terbuka di jendela baru)" [ref=f27e33] [cursor=pointer]:
+            - /url: https://support.google.com/accounts?p=signin_privatebrowsing&hl=id
+            - text: Pelajari lebih lanjut cara menggunakan Mode tamu
+        - generic [ref=f27e35]:
+          - button "Berikutnya" [ref=f27e37]
+          - link "Buat akun" [ref=f27e39] [cursor=pointer]:
+            - /url: /lifecycle/flows/signup?continue=https://console.cloud.google.com/apis/credentials&dsh=S1093136322:1783515130655100&flowEntry=SignUp&flowName=GlifWebSignIn&followup=https://console.cloud.google.com/apis/credentials&ifkv=AcDsRvy0N7ya1sAKBsxYjRvmJ_EH6QH5SZuCc3LujAp3eGtDiRO95FHAONJ_cy-CjaNWCH9izA2JVA&nogm=1&osid=1&service=cloudconsole
+  - contentinfo [ref=f27e40]:
+    - combobox [ref=f27e43] [cursor=pointer]:
+      - option "Afrikaans"
+      - option "azərbaycan"
+      - option "bosanski"
+      - option "català"
+      - option "Čeština"
+      - option "Cymraeg"
+      - option "Dansk"
+      - option "Deutsch"
+      - option "eesti"
+      - option "English (United Kingdom)"
+      - option "English (United States)"
+      - option "Español (España)"
+      - option "Español (Latinoamérica)"
+      - option "euskara"
+      - option "Filipino"
+      - option "Français (Canada)"
+      - option "Français (France)"
+      - option "Gaeilge"
+      - option "galego"
+      - option "Hrvatski"
+      - option "Indonesia" [selected]
+      - option "isiZulu"
+      - option "íslenska"
+      - option "Italiano"
+      - option "Kiswahili"
+      - option "latviešu"
+      - option "lietuvių"
+      - option "magyar"
+      - option "Melayu"
+      - option "Nederlands"
+      - option "norsk"
+      - option "o‘zbek"
+      - option "polski"
+      - option "Português (Brasil)"
+      - option "Português (Portugal)"
+      - option "română"
+      - option "shqip"
+      - option "Slovenčina"
+      - option "slovenščina"
+      - option "srpski (latinica)"
+      - option "Suomi"
+      - option "Svenska"
+      - option "Tiếng Việt"
+      - option "Türkçe"
+      - option "Ελληνικά"
+      - option "беларуская"
+      - option "български"
+      - option "кыргызча"
+      - option "қазақ тілі"
+      - option "македонски"
+      - option "монгол"
+      - option "Русский"
+      - option "српски (ћирилица)"
+      - option "Українська"
+      - option "ქართული"
+      - option "հայերեն"
+      - option "‫עברית‬‎"
+      - option "‫اردو‬‎"
+      - option "‫العربية‬‎"
+      - option "‫فارسی‬‎"
+      - option "አማርኛ"
+      - option "नेपाली"
+      - option "मराठी"
+      - option "हिन्दी"
+      - option "অসমীয়া"
+      - option "বাংলা"
+      - option "ਪੰਜਾਬੀ"
+      - option "ગુજરાતી"
+      - option "ଓଡ଼ିଆ"
+      - option "தமிழ்"
+      - option "తెలుగు"
+      - option "ಕನ್ನಡ"
+      - option "മലയാളം"
+      - option "සිංහල"
+      - option "ไทย"
+      - option "ລາວ"
+      - option "မြန်မာ"
+      - option "ខ្មែរ"
+      - option "한국어"
+      - option "中文（香港）"
+      - option "日本語"
+      - option "简体中文"
+      - option "繁體中文"
+    - list [ref=f27e44]:
+      - listitem [ref=f27e45]:
+        - link "Buka Pusat Bantuan Akun Google (eksternal, terbuka di jendela baru)" [ref=f27e46] [cursor=pointer]:
+          - /url: https://support.google.com/accounts?hl=id&p=account_iph
+          - text: Bantuan
+      - listitem [ref=f27e47]:
+        - link "Kebijakan Privasi (eksternal, terbuka di jendela baru)" [ref=f27e48] [cursor=pointer]:
+          - /url: https://accounts.google.com/TOS?loc=ID&hl=id&privacy=true
+          - text: Privasi
+      - listitem [ref=f27e49]:
+        - link "Persyaratan Layanan Google (eksternal, terbuka di jendela baru)" [ref=f27e50] [cursor=pointer]:
+          - /url: https://accounts.google.com/TOS?loc=ID&hl=id
+          - text: Persyaratan

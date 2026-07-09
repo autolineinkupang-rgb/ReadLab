@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -48,6 +49,16 @@ func AuthRequired(jwtSecret string, db *gorm.DB) gin.HandlerFunc {
 		if !ok {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token claims"})
 			return
+		}
+
+		// Check token blacklist
+		if jti, ok := claims["jti"].(string); ok && jti != "" {
+			var count int64
+			db.Model(&model.TokenBlacklist{}).Where("jti = ?", jti).Count(&count)
+			if count > 0 {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "token revoked"})
+				return
+			}
 		}
 
 		userID, ok := claims["user_id"].(float64)
@@ -110,6 +121,16 @@ func OptionalAuth(jwtSecret string, db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		// Check token blacklist
+		if jti, ok := claims["jti"].(string); ok && jti != "" {
+			var count int64
+			db.Model(&model.TokenBlacklist{}).Where("jti = ?", jti).Count(&count)
+			if count > 0 {
+				c.Next()
+				return
+			}
+		}
+
 		userID, ok := claims["user_id"].(float64)
 		if ok {
 			c.Set("user_id", uint(userID))
@@ -127,4 +148,14 @@ func OptionalAuth(jwtSecret string, db *gorm.DB) gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+// Periodic cleanup goroutine for expired blacklist entries
+func StartBlacklistCleanup(db *gorm.DB) {
+	go func() {
+		for {
+			time.Sleep(1 * time.Hour)
+			db.Where("expires_at < ?", time.Now()).Delete(&model.TokenBlacklist{})
+		}
+	}()
 }

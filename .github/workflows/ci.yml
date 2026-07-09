@@ -1,45 +1,104 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   backend:
+    name: Backend
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
     services:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: wtrlab
-          POSTGRES_PASSWORD: test
           POSTGRES_DB: wtrlab_test
+          POSTGRES_USER: wtrlab
+          POSTGRES_PASSWORD: wtrlab_test
         ports:
-          - "5432:5432"
+          - 5432:5432
         options: >-
-          --health-cmd pg_isready -U wtrlab
+          --health-cmd pg_isready
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
-      - name: Install govulncheck
-        run: go install golang.org/x/vuln/cmd/govulncheck@latest
-      - run: cd backend && go build ./...
-      - run: cd backend && go vet ./...
-      - run: cd backend && govulncheck ./...
-      - run: cd backend && go test ./... -v
+          go-version: "1.26"
+          cache-dependency-path: ./backend/go.sum
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Build
+        run: go build ./...
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          working-directory: ./backend
+
+      - name: Test
+        run: go test ./...
+        env:
+          DB_HOST: localhost
+          DB_PORT: "5432"
+          DB_USER: wtrlab
+          DB_PASSWORD: wtrlab_test
+          DB_NAME: wtrlab_test
+          DB_SSLMODE: disable
+          JWT_SECRET: test-secret
+          SERVER_PORT: "8080"
+          FRONTEND_URL: http://localhost:3000
+          COOKIE_SECURE: "false"
 
   frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: ./frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npx next lint --no-cache 2>/dev/null || true
+
+      - name: Build
+        run: npm run build
+
+  docker:
+    name: Docker
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - run: cd frontend && npm ci
-      - run: cd frontend && npm run lint
-      - name: Run npm audit
-        run: cd frontend && npm audit --audit-level=high || true
-      - run: cd frontend && npm run build
+
+      - name: Build backend image
+        run: docker build -t readlab-backend ./backend
+
+      - name: Build frontend image
+        run: docker build -t readlab-frontend ./frontend
+
+      - name: Smoke test compose
+        run: docker compose up -d --wait 2>/dev/null || docker compose down

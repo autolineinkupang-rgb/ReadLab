@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { novels, reviews, reading, shares, author as authorApi } from "@/lib/api";
+import { novels, reviews, reading, shares, follow as followApi, author as authorApi, upgradeCosts } from "@/lib/api";
 import { stripHtml, formatViews } from "@/lib/utils";
 import { Novel, Chapter } from "@/types";
 import { useAuth } from "@/lib/AuthContext";
@@ -27,9 +27,28 @@ export default function NovelDetailPage() {
   const [formContent, setFormContent] = useState("");
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+
+  const [costs, setCosts] = useState({ edit_reset: 20, gate_bypass: 50, replace_review: 100 });
+
+  const [editRating, setEditRating] = useState(0);
+  const [editHoverRating, setEditHoverRating] = useState(0);
+  const [editContent, setEditContent] = useState("");
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [editError, setEditError] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const [replyContent, setReplyContent] = useState("");
+  const [replySubmitting, setReplySubmitting] = useState(false);
+  const [replyError, setReplyError] = useState("");
+  const [replyToId, setReplyToId] = useState<number | null>(null);
+
+  const [upgradeInfo, setUpgradeInfo] = useState<{ cost: number; type: string; action: () => Promise<void> } | null>(null);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [authorNovels, setAuthorNovels] = useState<Novel[]>([]);
+  const [lastChapter, setLastChapter] = useState<number | null>(null);
   const [xpToast, setXpToast] = useState<{ show: boolean; message: string }>({ show: false, message: "" });
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
   const { user } = useAuth();
 
   const showXpToast = (msg: string) => {
@@ -85,6 +104,15 @@ export default function NovelDetailPage() {
   }, [id, params?.slug]);
 
   useEffect(() => {
+    upgradeCosts().then(setCosts).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!user || !id) return;
+    followApi.check(parseInt(id)).then((res) => setIsFollowing(res.following)).catch(() => {});
+  }, [user, id]);
+
+  useEffect(() => {
     if (!id) return;
     novels.chapters(id, { page: 1, limit: 200 })
       .then((res) => { setChapters(res.data); })
@@ -104,6 +132,9 @@ export default function NovelDetailPage() {
         if (progressRes) {
           setChapterCount(progressRes.chapter_count);
           setMyReview(progressRes.my_review);
+          if (progressRes.last_chapter) {
+            setLastChapter(progressRes.last_chapter);
+          }
         }
       })
       .catch(() => {})
@@ -201,14 +232,40 @@ export default function NovelDetailPage() {
             ))}
           </div>
 
-          {/* Start Reading & Share */}
+          {/* Follow & Start Reading & Share */}
           <div className="flex flex-wrap items-center gap-3 mt-6">
-            {firstChapter && (
+            {user && (
+              <button
+                onClick={async () => {
+                  if (followLoading) return;
+                  setFollowLoading(true);
+                  try {
+                    if (isFollowing) {
+                      await followApi.delete(novel.ID);
+                      setIsFollowing(false);
+                    } else {
+                      await followApi.create(novel.ID);
+                      setIsFollowing(true);
+                    }
+                  } catch {}
+                  setFollowLoading(false);
+                }}
+                disabled={followLoading}
+                className={`px-4 py-2.5 text-sm font-semibold rounded-lg transition-colors ${
+                  isFollowing
+                    ? "bg-card-hover text-gray-300 hover:bg-red-900/40 hover:text-red-400 border border-line-light"
+                    : "bg-violet-600 hover:bg-violet-700 text-white"
+                }`}
+              >
+                {isFollowing ? "Following" : "Follow"}
+              </button>
+            )}
+            {(lastChapter || firstChapter) && (
               <Link
-                href={`/en/novel/${novel.ID}/${novel.Slug}/chapter-${firstChapter.Number}`}
+                href={`/en/novel/${novel.ID}/${novel.Slug}/chapter-${lastChapter || firstChapter?.Number}`}
                 className="px-8 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg transition-colors"
               >
-                Start Reading
+                {lastChapter ? "Continue Reading" : "Start Reading"}
               </Link>
             )}
             <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
@@ -290,7 +347,7 @@ export default function NovelDetailPage() {
                 </div>
               } />
               <DetailItem label="Status" value={<span className="text-gray-200 capitalize">{novel.Status || "-"}</span>} />
-              <DetailItem label="Date Added" value={<span className="text-gray-200">July 3, 2026</span>} />
+              <DetailItem label="Date Added" value={<span className="text-gray-200">{novel.CreatedAt ? new Date(novel.CreatedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "-"}</span>} />
               {novel.Author && (
                 <DetailItem label="Author" value={
                   <Link href={`/en/author/${encodeURIComponent(novel.Author)}`} className="text-violet-400 hover:text-violet-300 transition-colors">
@@ -451,16 +508,161 @@ export default function NovelDetailPage() {
 
           {user ? (
             myReview ? (
-              <div className="bg-card border border-line rounded-xl p-6">
-                <p className="text-sm text-green-400 mb-2">You have reviewed this novel.</p>
-                <ReviewCard review={myReview} />
-              </div>
+              <>
+                <div className="bg-card border border-line rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm text-green-400">Your Review</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">Edits: {myReview.edit_count}/5</span>
+                      {myReview.edit_count < 5 ? (
+                        <button
+                          onClick={() => {
+                            setEditingId(myReview.id);
+                            setEditRating(myReview.rating);
+                            setEditContent(myReview.content);
+                            setEditHoverRating(0);
+                            setEditError("");
+                          }}
+                          className="text-xs px-3 py-1 bg-violet-600/20 hover:bg-violet-600/40 text-violet-300 rounded-md transition-colors"
+                        >
+                          Edit
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setUpgradeInfo({
+                            cost: costs.edit_reset,
+                            type: "edit",
+                            action: async () => {
+                              setEditSubmitting(true);
+                              try {
+                                const res = await reviews.update(parseInt(id), myReview.id, myReview.rating, myReview.content, true);
+                                setMyReview(res.data);
+                                setReviewsData((prev) => prev.map((r) => r.id === res.data.id ? res.data : r));
+                                setUpgradeInfo(null);
+                                setEditingId(myReview.id);
+                                setEditRating(myReview.rating);
+                                setEditContent(myReview.content);
+                                setEditHoverRating(0);
+                                setEditError("");
+                              } catch (err) {
+                                setEditError(err instanceof Error ? err.message : "Upgrade failed");
+                              } finally {
+                                setEditSubmitting(false);
+                              }
+                            },
+                          })}
+                          className="text-xs px-3 py-1 bg-amber-600/20 hover:bg-amber-600/40 text-amber-300 rounded-md transition-colors"
+                        >
+                          ⚡ Pay {costs.edit_reset} Tickets
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  {editingId === myReview.id ? (
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (editRating === 0) { setEditError("Please select a rating"); return; }
+                      if (editContent.trim().length < 10) { setEditError("Review must be at least 10 characters"); return; }
+                      setEditSubmitting(true);
+                      setEditError("");
+                      try {
+                        const res = await reviews.update(parseInt(id), myReview.id, editRating, editContent);
+                        setMyReview(res.data);
+                        setReviewsData((prev) => prev.map((r) => r.id === res.data.id ? res.data : r));
+                        setEditingId(null);
+                      } catch (err) {
+                        setEditError(err instanceof Error ? err.message : "Failed to update review");
+                      } finally {
+                        setEditSubmitting(false);
+                      }
+                    }}>
+                      <div className="flex items-center gap-1 mb-4">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button key={star} type="button"
+                            onClick={() => setEditRating(star)}
+                            onMouseEnter={() => setEditHoverRating(star)}
+                            onMouseLeave={() => setEditHoverRating(0)}
+                            className="p-0.5 transition-transform hover:scale-110"
+                          >
+                            <svg className={`w-7 h-7 ${(editHoverRating || editRating) >= star ? "text-yellow-400" : "text-gray-600"}`} fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          </button>
+                        ))}
+                        {editRating > 0 && (
+                          <span className="text-sm text-yellow-400 ml-2">
+                            {editRating === 1 ? "Poor" : editRating === 2 ? "Fair" : editRating === 3 ? "Good" : editRating === 4 ? "Very Good" : "Excellent"}
+                          </span>
+                        )}
+                      </div>
+                      <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)}
+                        placeholder="Edit your review..." rows={4} maxLength={2000}
+                        className="w-full bg-card-hover border border-line-light rounded-lg px-4 py-3 text-sm text-gray-200 outline-none focus:border-accent transition-colors resize-none"
+                      />
+                      <p className="text-xs text-gray-600 mt-1 text-right">{editContent.length}/2000</p>
+                      {editError && <p className="text-xs text-red-400 mt-2">{editError}</p>}
+                      <div className="flex gap-2 mt-3">
+                        <button type="submit" disabled={editSubmitting}
+                          className="px-6 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                        >{editSubmitting ? "Saving..." : "Save Changes"}</button>
+                        <button type="button" onClick={() => setEditingId(null)}
+                          className="px-4 py-2 bg-card-hover hover:bg-line-light text-gray-300 text-sm font-medium rounded-lg border border-line-light transition-colors"
+                        >Cancel</button>
+                      </div>
+                    </form>
+                  ) : (
+                    <ReviewCard review={myReview} upgradeCost={costs.edit_reset} onUpgradeEdit={() => setUpgradeInfo({
+                      cost: costs.edit_reset,
+                      type: "edit",
+                      action: async () => {
+                        setEditSubmitting(true);
+                        try {
+                          const res = await reviews.update(parseInt(id), myReview.id, myReview.rating, myReview.content, true);
+                          setMyReview(res.data);
+                          setReviewsData((prev) => prev.map((r) => r.id === res.data.id ? res.data : r));
+                          setUpgradeInfo(null);
+                          setEditingId(myReview.id);
+                          setEditRating(myReview.rating);
+                          setEditContent(myReview.content);
+                          setEditHoverRating(0);
+                          setEditError("");
+                        } catch (err) {
+                          setEditError(err instanceof Error ? err.message : "Upgrade failed");
+                        } finally {
+                          setEditSubmitting(false);
+                        }
+                      },
+                    })} />
+                  )}
+                </div>
+              </>
             ) : chapterCount < 5 ? (
               <div className="bg-card border border-line rounded-xl p-6 text-center">
                 <p className="text-sm text-gray-500">
                   Read <strong className="text-yellow-400">{chapterCount}/5</strong> chapters to unlock the review feature.
                   <span className="block mt-1 text-xs text-gray-600">Continue reading to share your thoughts!</span>
                 </p>
+                <button
+                  onClick={() => {
+                    setUpgradeInfo({
+                      cost: costs.gate_bypass, type: "gate",
+                      action: async () => {
+                        try {
+                          const res = await reviews.create(parseInt(id), formRating || 5, formContent || "Great novel!", true);
+                          setMyReview(res.data);
+                          setReviewsData((prev) => [res.data, ...prev]);
+                          setUpgradeInfo(null);
+                          if (res.xp_earned && res.xp_earned > 0) showXpToast(`+${res.xp_earned} XP from review!`);
+                        } catch (err) {
+                          setFormError(err instanceof Error ? err.message : "Upgrade failed");
+                        }
+                      },
+                    });
+                  }}
+                  className="mt-3 px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium rounded-lg transition-colors"
+                >
+                  ⚡ Skip with {costs.gate_bypass} Tickets
+                </button>
               </div>
             ) : (
               <div className="bg-card border border-line rounded-xl p-6">
@@ -475,8 +677,8 @@ export default function NovelDetailPage() {
                       const res = await reviews.create(parseInt(id), formRating, formContent);
                       setMyReview(res.data);
                       setReviewsData((prev) => [res.data, ...prev]);
-                      if ((res as any).xp_earned > 0) {
-                        showXpToast(`+${(res as any).xp_earned} XP from review!`);
+                      if (res.xp_earned && res.xp_earned > 0) {
+                        showXpToast(`+${res.xp_earned} XP from review!`);
                       }
                     if (ratingSummary) {
                       const newCount = ratingSummary.count + 1;
@@ -487,8 +689,31 @@ export default function NovelDetailPage() {
                     }
                     setFormRating(0);
                     setFormContent("");
-                  } catch (err) {
-                    setFormError(err instanceof Error ? err.message : "Failed to submit review");
+                  } catch (err: any) {
+                    if (err.upgrade_available) {
+                      setUpgradeInfo({
+                        cost: err.upgrade_cost,
+                        type: err.upgrade_type,
+                        action: async () => {
+                          setFormSubmitting(true);
+                          try {
+                            const res = await reviews.create(parseInt(id), formRating, formContent, true);
+                            setMyReview(res.data);
+                            setReviewsData((prev) => [res.data, ...prev]);
+                            setUpgradeInfo(null);
+                            setFormRating(0);
+                            setFormContent("");
+                            if (res.xp_earned && res.xp_earned > 0) showXpToast(`+${res.xp_earned} XP from review!`);
+                          } catch (e2: any) {
+                            setFormError(e2.message || "Upgrade failed");
+                          } finally {
+                            setFormSubmitting(false);
+                          }
+                        },
+                      });
+                    } else {
+                      setFormError(err instanceof Error ? err.message : "Failed to submit review");
+                    }
                   } finally {
                     setFormSubmitting(false);
                   }
@@ -552,7 +777,122 @@ export default function NovelDetailPage() {
               </div>
             ) : (
               reviewsData.map((review) => (
-                <ReviewCard key={review.id} review={review} />
+                <ReviewCard
+                  key={review.id}
+                  review={review}
+                  isOwn={user?.id === review.user.id}
+                  onEdit={() => {
+                    if (review.edit_count < 5) {
+                      setEditingId(review.id);
+                      setEditRating(review.rating);
+                      setEditContent(review.content);
+                      setEditHoverRating(0);
+                      setEditError("");
+                    }
+                  }}
+                  editingId={editingId}
+                  editRating={editRating}
+                  editHoverRating={editHoverRating}
+                  editContent={editContent}
+                  editSubmitting={editSubmitting}
+                  editError={editError}
+                  onEditRating={setEditRating}
+                  onEditHoverRating={setEditHoverRating}
+                  onEditContent={setEditContent}
+                  onCancelEdit={() => setEditingId(null)}
+                  onSaveEdit={async () => {
+                    if (editRating === 0) { setEditError("Please select a rating"); return; }
+                    if (editContent.trim().length < 10) { setEditError("Review must be at least 10 characters"); return; }
+                    setEditSubmitting(true);
+                    setEditError("");
+                    try {
+                      const res = await reviews.update(parseInt(id), review.id, editRating, editContent);
+                      setReviewsData((prev) => prev.map((r) => r.id === res.data.id ? res.data : r));
+                      if (myReview?.id === review.id) setMyReview(res.data);
+                      setEditingId(null);
+                    } catch (err: any) {
+                      if (err.upgrade_available) {
+                        setUpgradeInfo({
+                          cost: err.upgrade_cost,
+                          type: err.upgrade_type,
+                          action: async () => {
+                            setEditSubmitting(true);
+                            try {
+                              const res = await reviews.update(parseInt(id), review.id, editRating, editContent, true);
+                              setReviewsData((prev) => prev.map((r) => r.id === res.data.id ? res.data : r));
+                              if (myReview?.id === review.id) setMyReview(res.data);
+                              setEditingId(null);
+                              setUpgradeInfo(null);
+                            } catch (e2: any) {
+                              setEditError(e2.message || "Upgrade failed");
+                            } finally {
+                              setEditSubmitting(false);
+                            }
+                          },
+                        });
+                      } else {
+                        setEditError(err.message || "Failed to update review");
+                      }
+                    } finally {
+                      setEditSubmitting(false);
+                    }
+                  }}
+                  onUpgradeEdit={() => setUpgradeInfo({
+                    cost: costs.edit_reset,
+                    type: "edit",
+                    action: async () => {
+                      setEditSubmitting(true);
+                      try {
+                        const res = await reviews.update(parseInt(id), review.id, review.rating, review.content, true);
+                        setReviewsData((prev) => prev.map((r) => r.id === res.data.id ? res.data : r));
+                        if (myReview?.id === review.id) setMyReview(res.data);
+                        setUpgradeInfo(null);
+                        setTimeout(() => {
+                          setEditingId(review.id);
+                          setEditRating(review.rating);
+                          setEditContent(review.content);
+                          setEditHoverRating(0);
+                          setEditError("");
+                        }, 100);
+                      } catch (err: any) {
+                        setEditError(err.message || "Upgrade failed");
+                      } finally {
+                        setEditSubmitting(false);
+                      }
+                    },
+                  })}
+                  upgradeCost={costs.edit_reset}
+                  replyToId={replyToId}
+                  replyContent={replyContent}
+                  replySubmitting={replySubmitting}
+                  replyError={replyError}
+                  onReplyContent={setReplyContent}
+                  onStartReply={setReplyToId}
+                  onCancelReply={() => { setReplyToId(null); setReplyContent(""); setReplyError(""); }}
+                  onSubmitReply={async (parentId) => {
+                    if (replyContent.trim().length < 1) { setReplyError("Reply cannot be empty"); return; }
+                    setReplySubmitting(true);
+                    setReplyError("");
+                    try {
+                      const res = await reviews.create(parseInt(id), 0, replyContent, undefined, parentId);
+                      setReviewsData((prev) => prev.map((r) => {
+                        if (r.id === parentId) {
+                          return { ...r, replies: [...r.replies, res.data] };
+                        }
+                        return r;
+                      }));
+                      setReplyToId(null);
+                      setReplyContent("");
+                      if (res.xp_earned && res.xp_earned > 0) {
+                        showXpToast(`+${res.xp_earned} XP from reply!`);
+                      }
+                    } catch (err) {
+                      setReplyError(err instanceof Error ? err.message : "Failed to submit reply");
+                    } finally {
+                      setReplySubmitting(false);
+                    }
+                  }}
+                />
               ))
             )}
           </div>
@@ -571,6 +911,38 @@ export default function NovelDetailPage() {
           <div className="bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2">
             <span>✦</span>
             {xpToast.message}
+          </div>
+        </div>
+      )}
+
+      {/* Upgrade Dialog */}
+      {upgradeInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-card border border-line rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+            <h3 className="text-sm font-semibold text-white mb-3">Upgrade with Tickets</h3>
+            <p className="text-sm text-gray-300 mb-4">
+              {upgradeInfo.type === "edit"
+                ? `You've reached the maximum edit limit. Spend ${costs.edit_reset} Tickets to reset your edit count and get 5 more edits.`
+                : upgradeInfo.type === "gate"
+                ? `You need to read 5 chapters to review. Spend ${costs.gate_bypass} Tickets to skip this requirement.`
+                : `You've already reviewed this novel. Spend ${costs.replace_review} Tickets to replace your existing review.`}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={async () => {
+                  await upgradeInfo.action();
+                }}
+                className="flex-1 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                ⚡ Pay {upgradeInfo.cost} Tickets
+              </button>
+              <button
+                onClick={() => setUpgradeInfo(null)}
+                className="px-4 py-2 bg-card-hover hover:bg-line-light text-gray-300 text-sm font-medium rounded-lg border border-line-light transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -609,30 +981,179 @@ function GuestReviewBanner() {
   );
 }
 
-function ReviewCard({ review }: { review: ReviewResponse }) {
+function ReviewCard({
+  review, isOwn, onEdit, editingId, editRating, editHoverRating, editContent,
+  editSubmitting, editError, onEditRating, onEditHoverRating, onEditContent,
+  onCancelEdit, onSaveEdit, replyToId, replyContent, replySubmitting,
+  replyError, onReplyContent, onStartReply, onCancelReply, onSubmitReply,
+  onUpgradeEdit, upgradeCost,
+}: {
+  review: ReviewResponse;
+  isOwn?: boolean;
+  onEdit?: () => void;
+  editingId?: number | null;
+  editRating?: number;
+  editHoverRating?: number;
+  editContent?: string;
+  editSubmitting?: boolean;
+  editError?: string;
+  onEditRating?: (v: number) => void;
+  onEditHoverRating?: (v: number) => void;
+  onEditContent?: (v: string) => void;
+  onCancelEdit?: () => void;
+  onSaveEdit?: () => Promise<void>;
+  replyToId?: number | null;
+  replyContent?: string;
+  replySubmitting?: boolean;
+  replyError?: string;
+  onReplyContent?: (v: string) => void;
+  onStartReply?: (v: number | null) => void;
+  onCancelReply?: () => void;
+  onSubmitReply?: (parentId: number) => Promise<void>;
+  onUpgradeEdit?: () => void;
+  upgradeCost?: number;
+}) {
+  const isEditing = editingId === review.id;
+  const isReplying = replyToId === review.id;
+  const { user } = useAuth();
+
   return (
     <div className="bg-card border border-line rounded-xl p-4">
-      <div className="flex items-start gap-3">
-        <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center text-white text-sm font-bold shrink-0">
-          {(review.user.display_name || review.user.username)[0].toUpperCase()}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-medium text-gray-200">{review.user.display_name || review.user.username}</span>
-            <div className="flex items-center gap-0.5">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <svg
-                  key={star}
-                  className={`w-3.5 h-3.5 ${star <= review.rating ? "text-yellow-400" : "text-gray-600"}`}
+      {isEditing ? (
+        <form onSubmit={(e) => { e.preventDefault(); onSaveEdit?.(); }}>
+          <div className="flex items-center gap-1 mb-4">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button key={star} type="button"
+                onClick={() => onEditRating?.(star)}
+                onMouseEnter={() => onEditHoverRating?.(star)}
+                onMouseLeave={() => onEditHoverRating?.(0)}
+                className="p-0.5 transition-transform hover:scale-110"
+              >
+                <svg className={`w-7 h-7 ${(editHoverRating || editRating || 0) >= star ? "text-yellow-400" : "text-gray-600"}`}
                   fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
-              ))}
+              </button>
+            ))}
+            {(editRating || 0) > 0 && (
+              <span className="text-sm text-yellow-400 ml-2">
+                {(editRating || 0) === 1 ? "Poor" : (editRating || 0) === 2 ? "Fair" : (editRating || 0) === 3 ? "Good" : (editRating || 0) === 4 ? "Very Good" : "Excellent"}
+              </span>
+            )}
+          </div>
+          <textarea value={editContent || ""} onChange={(e) => onEditContent?.(e.target.value)}
+            placeholder="Edit your review..." rows={4} maxLength={2000}
+            className="w-full bg-card-hover border border-line-light rounded-lg px-4 py-3 text-sm text-gray-200 outline-none focus:border-accent transition-colors resize-none"
+          />
+          <p className="text-xs text-gray-600 mt-1 text-right">{(editContent || "").length}/2000</p>
+          {editError && <p className="text-xs text-red-400 mt-2">{editError}</p>}
+          <div className="flex gap-2 mt-3">
+            <button type="submit" disabled={editSubmitting}
+              className="px-6 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+            >{editSubmitting ? "Saving..." : "Save Changes"}</button>
+            <button type="button" onClick={onCancelEdit}
+              className="px-4 py-2 bg-card-hover hover:bg-line-light text-gray-300 text-sm font-medium rounded-lg border border-line-light transition-colors"
+            >Cancel</button>
+          </div>
+        </form>
+      ) : (
+        <div>
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center text-white text-sm font-bold shrink-0">
+              {(review.user.display_name || review.user.username)[0].toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm font-medium text-gray-200">{review.user.display_name || review.user.username}</span>
+                {review.rating > 0 && (
+                  <div className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <svg key={star}
+                        className={`w-3.5 h-3.5 ${star <= review.rating ? "text-yellow-400" : "text-gray-600"}`}
+                        fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                )}
+                {review.edit_count > 0 && (
+                  <span className="text-xs text-gray-600">(edited {review.edit_count}x)</span>
+                )}
+              </div>
+              <p className="text-sm text-gray-300 mt-2 leading-relaxed">{review.content}</p>
+              <div className="flex items-center gap-3 mt-2">
+                <p className="text-xs text-gray-600">{timeAgo(review.created_at)}</p>
+                {user && !isOwn && (
+                  <button onClick={() => onStartReply?.(review.id)}
+                    className="text-xs text-violet-400 hover:text-violet-300 transition-colors"
+                  >Reply</button>
+                )}
+                {isOwn && (
+                  review.edit_count < 5 ? (
+                    <button onClick={onEdit}
+                      className="text-xs text-violet-400 hover:text-violet-300 transition-colors"
+                    >Edit ({review.edit_count}/5)</button>
+                  ) : (
+                    <button onClick={onUpgradeEdit}
+                      className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
+                    >⚡ Pay {upgradeCost ?? 20} Tickets</button>
+                  )
+                )}
+              </div>
             </div>
           </div>
-          <p className="text-sm text-gray-300 mt-2 leading-relaxed">{review.content}</p>
-          <p className="text-xs text-gray-600 mt-2">{timeAgo(review.created_at)}</p>
+
+          {/* Nested replies */}
+          {review.replies && review.replies.length > 0 && (
+            <div className="ml-12 mt-3 space-y-2 border-l-2 border-line-light pl-4">
+              {review.replies.map((reply) => (
+                <ReplyCard key={reply.id} reply={reply} />
+              ))}
+            </div>
+          )}
+
+          {/* Reply form */}
+          {isReplying && (
+            <div className="ml-12 mt-3 border-l-2 border-line-light pl-4">
+              <form onSubmit={(e) => { e.preventDefault(); onSubmitReply?.(review.id); }}>
+                <textarea value={replyContent || ""} onChange={(e) => onReplyContent?.(e.target.value)}
+                  placeholder="Write a reply..." rows={3} maxLength={2000}
+                  className="w-full bg-card-hover border border-line-light rounded-lg px-4 py-3 text-sm text-gray-200 outline-none focus:border-accent transition-colors resize-none"
+                />
+                <p className="text-xs text-gray-600 mt-1 text-right">{(replyContent || "").length}/2000</p>
+                {replyError && <p className="text-xs text-red-400 mt-2">{replyError}</p>}
+                <div className="flex gap-2 mt-2">
+                  <button type="submit" disabled={replySubmitting}
+                    className="px-4 py-1.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-xs font-medium rounded-lg transition-colors"
+                  >{replySubmitting ? "Posting..." : "Reply"}</button>
+                  <button type="button" onClick={onCancelReply}
+                    className="px-4 py-1.5 bg-card-hover hover:bg-line-light text-gray-300 text-xs font-medium rounded-lg border border-line-light transition-colors"
+                  >Cancel</button>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
+      )}
+    </div>
+  );
+}
+
+function ReplyCard({ reply }: { reply: ReviewResponse }) {
+  return (
+    <div className="flex items-start gap-2">
+      <div className="w-7 h-7 rounded-full bg-accent/60 flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">
+        {(reply.user.display_name || reply.user.username)[0].toUpperCase()}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-gray-300">{reply.user.display_name || reply.user.username}</span>
+          {reply.edit_count > 0 && (
+            <span className="text-[10px] text-gray-600">(edited {reply.edit_count}x)</span>
+          )}
+        </div>
+        <p className="text-sm text-gray-400 mt-0.5 leading-relaxed">{reply.content}</p>
+        <p className="text-[10px] text-gray-600 mt-1">{timeAgo(reply.created_at)}</p>
       </div>
     </div>
   );
