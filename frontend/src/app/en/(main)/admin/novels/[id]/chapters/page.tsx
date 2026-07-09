@@ -9,6 +9,7 @@ import Card from "@/components/ui/Card";
 import ChapterContentEditor from "@/components/admin/ChapterContentEditor";
 import type { ChapterContentEditorHandle } from "@/components/admin/ChapterContentEditor";
 import { txtToHtml } from "@/lib/htmlImport";
+import ChapterMdImportModal from "@/components/ChapterMdImportModal";
 
 interface ChapterItem {
   id: number;
@@ -43,6 +44,7 @@ export default function AdminChaptersPage() {
   const [messageType, setMessageType] = useState<"success" | "error">("success");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<any>({});
+  const [showMdImport, setShowMdImport] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [previewMode, setPreviewMode] = useState<"add" | number | null>(null);
   const [addForm, setAddForm] = useState({
@@ -220,12 +222,20 @@ export default function AdminChaptersPage() {
             {novel ? novel.Title || novel.title || "Chapters" : "Chapters"}
           </h1>
         </div>
-        <button
-          onClick={() => { setShowAddForm(!showAddForm); setPreviewMode(null); }}
-          className="px-4 py-2 bg-accent hover:bg-accent-dark text-white text-sm rounded-lg transition-colors"
-        >
-          {showAddForm ? "Cancel" : "+ Add Chapter"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowMdImport(true)}
+            className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm rounded-lg transition-colors"
+          >
+            Import MD
+          </button>
+          <button
+            onClick={() => { setShowAddForm(!showAddForm); setPreviewMode(null); }}
+            className="px-4 py-2 bg-accent hover:bg-accent-dark text-white text-sm rounded-lg transition-colors"
+          >
+            {showAddForm ? "Cancel" : "+ Add Chapter"}
+          </button>
+        </div>
       </div>
 
       {message && (
@@ -496,6 +506,17 @@ export default function AdminChaptersPage() {
             </div>
           )}
         </div>
+      )}
+
+      {showMdImport && (
+        <ChapterMdImportModal
+          novelId={id}
+          onClose={() => setShowMdImport(false)}
+          onImported={() => {
+            setShowMdImport(false);
+            fetchChapters(page);
+          }}
+        />
       )}
     </div>
   );
