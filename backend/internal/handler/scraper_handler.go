@@ -255,7 +255,7 @@ func (h *ScraperHandler) Import(c *gin.Context) {
 	}
 
 	var result model.Novel
-	h.DB.Preload("Genres").First(&result, dbNovelID)
+	h.DB.Preload("Genres").Preload("Tags").First(&result, dbNovelID)
 	statusCode := http.StatusCreated
 	if !isNew {
 		statusCode = http.StatusOK

@@ -41,6 +41,7 @@ func migrateDB(db *gorm.DB) {
 
 	if err := db.AutoMigrate(
 		&model.Genre{},
+		&model.Tag{},
 		&model.Novel{},
 		&model.NovelGenre{},
 		&model.Chapter{},

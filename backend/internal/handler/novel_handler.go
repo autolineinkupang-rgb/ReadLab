@@ -45,7 +45,7 @@ func (h *NovelHandler) List(c *gin.Context) {
 		limit = 20
 	}
 
-	query := h.DB.Model(&model.Novel{}).Preload("Genres")
+	query := h.DB.Model(&model.Novel{}).Preload("Genres").Preload("Tags")
 
 	if q != "" {
 		like := "%" + q + "%"
@@ -146,7 +146,7 @@ func (h *NovelHandler) Get(c *gin.Context) {
 	}
 
 	var novel model.Novel
-	if err := h.DB.Preload("Genres").First(&novel, id).Error; err != nil {
+	if err := h.DB.Preload("Genres").Preload("Tags").First(&novel, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "novel not found"})
 		return
 	}
@@ -291,7 +291,7 @@ func (h *NovelHandler) Random(c *gin.Context) {
 		return
 	}
 
-	if err := h.DB.Preload("Genres").
+	if err := h.DB.Preload("Genres").Preload("Tags").
 		Where("id >= FLOOR(RANDOM() * ?) + 1", maxID).
 		Limit(limit).
 		Find(&novels).Error; err != nil {
@@ -304,7 +304,7 @@ func (h *NovelHandler) Random(c *gin.Context) {
 
 func (h *NovelHandler) Trending(c *gin.Context) {
 	var novels []model.Novel
-	if err := h.DB.Preload("Genres").
+	if err := h.DB.Preload("Genres").Preload("Tags").
 		Order("views DESC").
 		Limit(20).
 		Find(&novels).Error; err != nil {
@@ -317,7 +317,7 @@ func (h *NovelHandler) Trending(c *gin.Context) {
 
 func (h *NovelHandler) Recommendations(c *gin.Context) {
 	var novels []model.Novel
-	if err := h.DB.Preload("Genres").
+	if err := h.DB.Preload("Genres").Preload("Tags").
 		Order("rating DESC, views DESC").
 		Limit(12).
 		Find(&novels).Error; err != nil {
@@ -346,6 +346,7 @@ type CreateNovelRequest struct {
 	Rating      float64             `json:"rating"`
 	SourceURL   string              `json:"source_url"`
 	GenreIDs    []uint              `json:"genre_ids"`
+	TagIDs      []uint              `json:"tag_ids"`
 	Chapters    []CreateChapterItem `json:"chapters"`
 }
 
@@ -394,6 +395,10 @@ func (h *NovelHandler) Create(c *gin.Context) {
 	if len(req.GenreIDs) > 0 {
 		h.DB.Where("id IN ?", req.GenreIDs).Find(&genres)
 	}
+	var tags []model.Tag
+	if len(req.TagIDs) > 0 {
+		h.DB.Where("id IN ?", req.TagIDs).Find(&tags)
+	}
 
 	err := h.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&novel).Error; err != nil {
@@ -401,6 +406,11 @@ func (h *NovelHandler) Create(c *gin.Context) {
 		}
 		if len(genres) > 0 {
 			if err := tx.Model(&novel).Association("Genres").Append(genres); err != nil {
+				return err
+			}
+		}
+		if len(tags) > 0 {
+			if err := tx.Model(&novel).Association("Tags").Append(tags); err != nil {
 				return err
 			}
 		}
@@ -422,7 +432,7 @@ func (h *NovelHandler) Create(c *gin.Context) {
 		return
 	}
 
-	h.DB.Preload("Genres").First(&novel, novel.ID)
+	h.DB.Preload("Genres").Preload("Tags").First(&novel, novel.ID)
 
 	uid := userID.(uint)
 	reward := h.Config.Get("novel_contribution")
@@ -455,6 +465,7 @@ type UpdateNovelRequest struct {
 	Rating      *float64 `json:"rating"`
 	SourceURL   string   `json:"source_url"`
 	GenreIDs    []uint   `json:"genre_ids"`
+	TagIDs      []uint   `json:"tag_ids"`
 }
 
 func (h *NovelHandler) Update(c *gin.Context) {
@@ -465,7 +476,7 @@ func (h *NovelHandler) Update(c *gin.Context) {
 	}
 
 	var novel model.Novel
-	if err := h.DB.Preload("Genres").First(&novel, id).Error; err != nil {
+	if err := h.DB.Preload("Genres").Preload("Tags").First(&novel, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "novel not found"})
 		return
 	}
@@ -518,6 +529,9 @@ func (h *NovelHandler) Update(c *gin.Context) {
 	if req.Rating != nil {
 		updates["rating"] = *req.Rating
 	}
+	if req.SourceURL != "" {
+		updates["source_url"] = req.SourceURL
+	}
 
 	err = h.DB.Transaction(func(tx *gorm.DB) error {
 		if len(updates) > 0 {
@@ -534,6 +548,15 @@ func (h *NovelHandler) Update(c *gin.Context) {
 				return err
 			}
 		}
+		if req.TagIDs != nil {
+			var tags []model.Tag
+			if len(req.TagIDs) > 0 {
+				tx.Where("id IN ?", req.TagIDs).Find(&tags)
+			}
+			if err := tx.Model(&novel).Association("Tags").Replace(tags); err != nil {
+				return err
+			}
+		}
 		return nil
 	})
 	if err != nil {
@@ -541,7 +564,7 @@ func (h *NovelHandler) Update(c *gin.Context) {
 		return
 	}
 
-	h.DB.Preload("Genres").First(&novel, novel.ID)
+	h.DB.Preload("Genres").Preload("Tags").First(&novel, novel.ID)
 	c.JSON(http.StatusOK, gin.H{"data": novel})
 }
 

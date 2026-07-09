@@ -14,6 +14,62 @@ import (
 	"gorm.io/gorm"
 )
 
+var tags = []struct {
+	Slug string
+	Name string
+}{
+	{"male-protagonist", "Male Protagonist"},
+	{"female-protagonist", "Female Protagonist"},
+	{"transmigration", "Transmigration"},
+	{"reincarnation", "Reincarnation"},
+	{"system", "System"},
+	{"cultivation", "Cultivation"},
+	{"overpowered-protagonist", "Overpowered Protagonist"},
+	{"weak-to-strong", "Weak to Strong"},
+	{"harem", "Harem"},
+	{"love-triangle", "Love Triangle"},
+	{"ancient-world", "Ancient World"},
+	{"modern-world", "Modern World"},
+	{"game-world", "Game World"},
+	{"adaptation", "Adaptation"},
+	{"slow-burn", "Slow Burn"},
+	{"revenge", "Revenge"},
+	{"superpowers", "Superpowers"},
+	{"magic-school", "Magic School"},
+	{"military", "Military"},
+	{"smart-protagonist", "Smart Protagonist"},
+	{"antihero-protagonist", "Antihero Protagonist"},
+	{"apocalypse", "Apocalypse"},
+	{"survival", "Survival"},
+	{"post-apocalyptic", "Post-Apocalyptic"},
+	{"conspiracy", "Conspiracy"},
+	{"politics", "Politics"},
+	{"business", "Business"},
+	{"showbiz", "Showbiz"},
+	{"time-travel", "Time Travel"},
+	{"multiple-worlds", "Multiple Worlds"},
+	{"quick-transmigration", "Quick Transmigration"},
+	{"villain-protagonist", "Villain Protagonist"},
+	{"comedy", "Comedy"},
+	{"tragedy", "Tragedy"},
+	{"slice-of-life", "Slice of Life"},
+	{"school-life", "School Life"},
+	{"office-life", "Office Life"},
+	{"royalty", "Royalty"},
+	{"noblesse-oblige", "Noblesse Oblige"},
+	{"master-servant", "Master Servant"},
+	{"yandere", "Yandere"},
+	{"tsundere", "Tsundere"},
+	{"amnesia", "Amnesia"},
+	{"identity-hidden", "Identity Hidden"},
+	{"secret-identity", "Secret Identity"},
+	{"body-swap", "Body Swap"},
+	{"gender-bender", "Gender Bender"},
+	{"cross-dressing", "Cross Dressing"},
+	{"monster-protagonist", "Monster Protagonist"},
+	{"ghost-protagonist", "Ghost Protagonist"},
+}
+
 var genres = []struct {
 	Slug string
 	Name string
@@ -416,6 +472,7 @@ func main() {
 
 	if err := db.AutoMigrate(
 		&model.Genre{},
+		&model.Tag{},
 		&model.Novel{},
 		&model.NovelGenre{},
 		&model.Chapter{},
@@ -432,6 +489,7 @@ func main() {
 	}
 
 	seedGenres(db)
+	seedTags(db)
 	seedNovels(db)
 	seedUsers(db)
 	seedNews(db)
@@ -444,6 +502,13 @@ func seedGenres(db *gorm.DB) {
 		db.FirstOrCreate(&model.Genre{}, model.Genre{Slug: g.Slug, Name: g.Name})
 	}
 	fmt.Printf("seeded %d genres\n", len(genres))
+}
+
+func seedTags(db *gorm.DB) {
+	for _, t := range tags {
+		db.FirstOrCreate(&model.Tag{}, model.Tag{Slug: t.Slug, Name: t.Name})
+	}
+	fmt.Printf("seeded %d tags\n", len(tags))
 }
 
 func seedNovels(db *gorm.DB) {

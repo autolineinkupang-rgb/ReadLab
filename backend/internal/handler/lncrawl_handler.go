@@ -133,7 +133,7 @@ func (h *LncrawlHandler) Crawl(c *gin.Context) {
 	}
 
 	var novel model.Novel
-	h.DB.Preload("Genres").First(&novel, novelID)
+	h.DB.Preload("Genres").Preload("Tags").First(&novel, novelID)
 	statusCode := http.StatusCreated
 	if !isNew {
 		statusCode = http.StatusOK

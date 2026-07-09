@@ -230,6 +230,14 @@ export default function NovelDetailPage() {
                 {g.Name}
               </Link>
             ))}
+            {novel.Tags?.map((t) => (
+              <span
+                key={t.Slug}
+                className="text-xs px-2.5 py-1 rounded-full bg-emerald-900/40 text-emerald-300 border border-emerald-800/30"
+              >
+                {t.Name}
+              </span>
+            ))}
           </div>
 
           {/* Follow & Start Reading & Share */}
@@ -361,23 +369,40 @@ export default function NovelDetailPage() {
             </div>
           </div>
 
-          {novel.Genres.length > 0 && (
+          {(novel.Genres.length > 0 || (novel.Tags?.length ?? 0) > 0) && (
             <div className="bg-card border border-line rounded-xl p-6">
               <h3 className="text-sm font-semibold text-white mb-4">Genre & Tags</h3>
-              <div>
-                <p className="text-xs text-gray-500 mb-1.5">Genre{novel.Genres.length}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {novel.Genres.map((g) => (
-                    <Link
-                      key={g.Slug}
-                      href={`/en/novel-list?genre=${g.Slug}`}
-                      className="text-xs px-2.5 py-1 rounded-full bg-violet-900/40 text-violet-300 border border-violet-800/30 hover:bg-violet-800/50 transition-colors"
-                    >
-                      {g.Name}
-                    </Link>
-                  ))}
+              {novel.Genres.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-xs text-gray-500 mb-1.5">Genres</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {novel.Genres.map((g) => (
+                      <Link
+                        key={g.Slug}
+                        href={`/en/novel-list?genre=${g.Slug}`}
+                        className="text-xs px-2.5 py-1 rounded-full bg-violet-900/40 text-violet-300 border border-violet-800/30 hover:bg-violet-800/50 transition-colors"
+                      >
+                        {g.Name}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
+              {(novel.Tags?.length ?? 0) > 0 && (
+                <div>
+                  <p className="text-xs text-gray-500 mb-1.5">Tags</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {novel.Tags?.map((t) => (
+                      <span
+                        key={t.Slug}
+                        className="text-xs px-2.5 py-1 rounded-full bg-emerald-900/40 text-emerald-300 border border-emerald-800/30"
+                      >
+                        {t.Name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

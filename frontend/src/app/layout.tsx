@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://readlab.my.id"),
   title: "ReadLab - Read Light Novels in English Machine Translation",
   description: "Read English MTL (Machine Translation) Novels on ReadLab. All light novels here are translated from raw. Sign up to save your reading progress.",
   openGraph: {

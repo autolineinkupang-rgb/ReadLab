@@ -29,12 +29,15 @@ type Novel struct {
 	ReleasedBy  string  `gorm:"size:200"`
 	AddedAt     time.Time `gorm:"autoCreateTime"`
 
-	WriterID *uint  `gorm:"index"`
-	Writer   User   `gorm:"foreignKey:WriterID"`
-	Genres   []Genre `gorm:"many2many:novel_genres;"`
+	WriterID *uint    `gorm:"index"`
+	Writer   User     `gorm:"foreignKey:WriterID"`
+	Genres   []Genre  `gorm:"many2many:novel_genres;"`
+	Tags     []Tag    `gorm:"many2many:novel_tags;"`
 }
 
 type NovelGenre struct {
 	NovelID uint `gorm:"primaryKey"`
 	GenreID uint `gorm:"primaryKey"`
 }
+
+

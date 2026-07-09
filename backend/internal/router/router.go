@@ -72,6 +72,9 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 	genreHandler := handler.NewGenreHandler(db)
 	api.GET("/genres", genreHandler.List)
 
+	tagHandler := handler.NewTagHandler(db)
+	api.GET("/tags", tagHandler.List)
+
 	leaderboardHandler := handler.NewLeaderboardHandler(db)
 	api.GET("/leaderboard", leaderboardHandler.Get)
 
@@ -158,13 +161,14 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 		writerGroup.PUT("/novels/:id", novelHandler.Update)
 		writerGroup.DELETE("/novels/:id", novelHandler.Delete)
 
-		writerGroup.POST("/admin/novels/:id/chapters", adminChapterHandler.Create)
-		writerGroup.PUT("/admin/novels/:id/chapters/:chapterID", adminChapterHandler.Update)
-		writerGroup.GET("/admin/novels/:id/chapters", adminChapterHandler.List)
-		writerGroup.GET("/admin/chapters/:id", adminChapterHandler.Get)
+		writerGroup.POST("/writer/novels/:id/chapters", adminChapterHandler.Create)
+		writerGroup.PUT("/writer/novels/:id/chapters/:chapterID", adminChapterHandler.Update)
+		writerGroup.GET("/writer/novels/:id/chapters", adminChapterHandler.List)
+		writerGroup.GET("/writer/chapters/:id", adminChapterHandler.Get)
+		writerGroup.DELETE("/writer/chapters/:id", adminChapterHandler.Delete)
 
 		mdImportHandler := handler.NewMdImportHandler(db)
-		writerGroup.POST("/admin/novels/:id/chapters/import-md", mdImportHandler.Import)
+		writerGroup.POST("/writer/novels/:id/chapters/import-md", mdImportHandler.Import)
 	}
 
 	adminGroup := protected.Group("")
@@ -197,7 +201,6 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 		adminGroup.PUT("/admin/news/:id", adminHandler.UpdateNews)
 		adminGroup.DELETE("/admin/news/:id", adminHandler.DeleteNews)
 
-		adminGroup.DELETE("/admin/chapters/:id", adminChapterHandler.Delete)
 		adminGroup.POST("/admin/rewards/monthly", rewardHandler.DistributeMonthly)
 
 		ticketCfgHandler := handler.NewTicketConfigHandler(ticketCfg)

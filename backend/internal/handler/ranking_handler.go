@@ -26,7 +26,7 @@ func (h *RankingHandler) Get(c *gin.Context) {
 	period := c.Param("period")
 
 	var novels []model.Novel
-	query := h.DB.Preload("Genres").Order("views DESC").Limit(50)
+	query := h.DB.Preload("Genres").Preload("Tags").Order("views DESC").Limit(50)
 
 	if interval, ok := validPeriods[period]; ok {
 		query = query.Where("created_at > NOW() - CAST(? AS INTERVAL)", "1 "+interval)

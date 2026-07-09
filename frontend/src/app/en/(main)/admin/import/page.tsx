@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { importer, adminNovels, scraper, lncrawl } from "@/lib/api";
+import { importer, adminNovels, scraper, lncrawl, genres as genresApi, tagsApi } from "@/lib/api";
 import Card from "@/components/ui/Card";
 import ImportProgress, { ProgressStep } from "@/components/admin/ImportProgress";
 
@@ -67,6 +67,21 @@ export default function AdminImportPage() {
   function stopStepSimulation(timerRef: React.MutableRefObject<ReturnType<typeof setInterval> | null>) {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
   }
+
+  const [genreOptions, setGenreOptions] = useState<{ ID: number; Name: string }[]>([]);
+  const [tagOptions, setTagOptions] = useState<{ ID: number; Name: string; Slug: string }[]>([]);
+  const [manualGenreIds, setManualGenreIds] = useState<number[]>([]);
+  const [manualTagIds, setManualTagIds] = useState<number[]>([]);
+  const [manualSourceUrl, setManualSourceUrl] = useState("");
+
+  useEffect(() => {
+    genresApi.list().then((res: any) => {
+      if (res.data) setGenreOptions(res.data);
+    }).catch(() => {});
+    tagsApi.list().then((res: any) => {
+      if (res.data) setTagOptions(res.data);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -153,6 +168,8 @@ export default function AdminImportPage() {
         chars: manualForm.chars,
         ai_percent: manualForm.ai_percent,
         rating: manualForm.rating,
+        genre_ids: manualGenreIds,
+        tag_ids: manualTagIds,
         chapters,
       });
       setImportResult({ id: res.data.ID, title: res.data.Title });
@@ -343,6 +360,52 @@ export default function AdminImportPage() {
             <option value="hiatus">Hiatus</option>
             <option value="dropped">Dropped</option>
           </select>
+          {genreOptions.length > 0 && (
+            <div>
+              <p className="text-xs text-gray-500 mb-1">Genres</p>
+              <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
+                {genreOptions.map((g) => (
+                  <button
+                    key={g.ID}
+                    type="button"
+                    onClick={() => setManualGenreIds((prev) =>
+                      prev.includes(g.ID) ? prev.filter((id) => id !== g.ID) : [...prev, g.ID]
+                    )}
+                    className={`text-xs px-2 py-1 rounded-full border transition-colors ${
+                      manualGenreIds.includes(g.ID)
+                        ? "bg-accent text-white border-accent"
+                        : "bg-card-hover text-gray-400 border-line-light hover:text-white"
+                    }`}
+                  >
+                    {g.Name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {tagOptions.length > 0 && (
+            <div>
+              <p className="text-xs text-gray-500 mb-1">Tags</p>
+              <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
+                {tagOptions.map((t) => (
+                  <button
+                    key={t.ID}
+                    type="button"
+                    onClick={() => setManualTagIds((prev) =>
+                      prev.includes(t.ID) ? prev.filter((id) => id !== t.ID) : [...prev, t.ID]
+                    )}
+                    className={`text-xs px-2 py-1 rounded-full border transition-colors ${
+                      manualTagIds.includes(t.ID)
+                        ? "bg-emerald-700 text-white border-emerald-600"
+                        : "bg-card-hover text-gray-400 border-line-light hover:text-white"
+                    }`}
+                  >
+                    {t.Name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <button
             onClick={handleManualImport}
             disabled={!manualForm.title.trim()}

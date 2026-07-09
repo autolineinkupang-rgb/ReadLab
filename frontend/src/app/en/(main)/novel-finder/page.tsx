@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { novels, genres as genresApi } from "@/lib/api";
+import { novels, genres as genresApi, tagsApi } from "@/lib/api";
 import { formatViews, statusColor } from "@/lib/utils";
 import { Novel, Genre } from "@/types";
 
@@ -60,10 +60,6 @@ const REVIEW_OPTIONS = [
   { value: 1000, label: "1000+" },
 ];
 
-const TAG_CATEGORIES: string[] = [];
-
-const TAGS: { name: string; category: string }[] = [];
-
 const ITEMS_PER_PAGE = 20;
 
 export default function NovelFinderPage() {
@@ -89,6 +85,8 @@ export default function NovelFinderPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [genreOptions, setGenreOptions] = useState<{ slug: string; name: string }[]>([]);
+  const [tagList, setTagList] = useState<{ name: string; category: string }[]>([]);
+  const [tagCategories, setTagCategories] = useState<string[]>([]);
   const [tagOpen, setTagOpen] = useState(false);
   const [tagQuery, setTagQuery] = useState("");
   const [tagCategory, setTagCategory] = useState<string>("All");
@@ -101,6 +99,12 @@ export default function NovelFinderPage() {
       const data = (res as { data?: Genre[] }).data;
       const list: { slug: string; name: string }[] = data?.map((g: Genre) => ({ slug: g.Slug, name: g.Name })) || [];
       if (list.length > 0) setGenreOptions(list);
+    }).catch(() => {});
+    tagsApi.list().then((res: any) => {
+      const data: { ID: number; Name: string; Slug: string }[] = res.data || [];
+      const list = data.map((t) => ({ name: t.Name, category: "General" }));
+      setTagList(list);
+      setTagCategories([...new Set(list.map((t) => t.category))]);
     }).catch(() => {});
   }, []);
 
@@ -190,14 +194,14 @@ export default function NovelFinderPage() {
           : selectedGenres.some((g) => novelGenreSlugs.includes(g));
         if (!match) return false;
       }
-      const novelTags = novel.Tags || [];
+      const novelTagNames = (novel.Tags || []).map((t) => t.Name);
       if (tags.length > 0) {
         const match = tagMode === "and"
-          ? tags.every((t) => novelTags.includes(t))
-          : tags.some((t) => novelTags.includes(t));
+          ? tags.every((t) => novelTagNames.includes(t))
+          : tags.some((t) => novelTagNames.includes(t));
         if (!match) return false;
       }
-      if (excludedTags.length > 0 && excludedTags.some((t) => novelTags.includes(t))) {
+      if (excludedTags.length > 0 && excludedTags.some((t) => novelTagNames.includes(t))) {
         return false;
       }
       return true;
@@ -231,13 +235,13 @@ export default function NovelFinderPage() {
     (minRating > 0 ? 1 : 0) +
     (minReviews > 0 ? 1 : 0);
 
-  const filteredTags = TAGS.filter((tag) => {
+  const filteredTags = tagList.filter((tag) => {
     const matchesCategory = tagCategory === "All" || tag.category === tagCategory;
     const matchesQuery = tag.name.toLowerCase().includes(tagQuery.toLowerCase());
     return matchesCategory && matchesQuery;
   });
 
-  const filteredExTags = TAGS.filter((tag) => {
+  const filteredExTags = tagList.filter((tag) => {
     const matchesCategory = exTagCategory === "All" || tag.category === exTagCategory;
     const matchesQuery = tag.name.toLowerCase().includes(exTagQuery.toLowerCase());
     return matchesCategory && matchesQuery;
@@ -530,19 +534,19 @@ export default function NovelFinderPage() {
                   />
                   <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-line-light bg-card shadow-lg">
                     <div className="flex flex-wrap gap-2 border-b border-line p-3">
-                      {(["All", ...TAG_CATEGORIES] as const).map((cat) => (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={() => setTagCategory(cat)}
-                          className={`rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
-                            tagCategory === cat
-                              ? "bg-accent text-white"
-                              : "bg-card-hover text-gray-400 hover:text-white"
-                          }`}
-                        >
-                          {cat}
-                        </button>
+                      {(["All", ...tagCategories] as const).map((cat) => (
+                          <button
+                            key={cat}
+                            type="button"
+                            onClick={() => setTagCategory(cat)}
+                            className={`rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
+                              tagCategory === cat
+                                ? "bg-accent text-white"
+                                : "bg-card-hover text-gray-400 hover:text-white"
+                            }`}
+                          >
+                            {cat}
+                          </button>
                       ))}
                     </div>
                     <ul className="max-h-60 overflow-y-auto py-1">
@@ -630,19 +634,19 @@ export default function NovelFinderPage() {
                   />
                   <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-line-light bg-card shadow-lg">
                     <div className="flex flex-wrap gap-2 border-b border-line p-3">
-                      {(["All", ...TAG_CATEGORIES] as const).map((cat) => (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={() => setExTagCategory(cat)}
-                          className={`rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
-                            exTagCategory === cat
-                              ? "bg-accent text-white"
-                              : "bg-card-hover text-gray-400 hover:text-white"
-                          }`}
-                        >
-                          {cat}
-                        </button>
+                      {(["All", ...tagCategories] as const).map((cat) => (
+                          <button
+                            key={cat}
+                            type="button"
+                            onClick={() => setExTagCategory(cat)}
+                            className={`rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
+                              exTagCategory === cat
+                                ? "bg-accent text-white"
+                                : "bg-card-hover text-gray-400 hover:text-white"
+                            }`}
+                          >
+                            {cat}
+                          </button>
                       ))}
                     </div>
                     <ul className="max-h-60 overflow-y-auto py-1">

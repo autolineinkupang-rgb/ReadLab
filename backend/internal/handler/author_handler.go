@@ -20,7 +20,7 @@ func (h *AuthorHandler) Novels(c *gin.Context) {
 	authorName := c.Param("name")
 
 	var novels []model.Novel
-	if err := h.DB.Preload("Genres").
+	if err := h.DB.Preload("Genres").Preload("Tags").
 		Where("author = ?", authorName).
 		Order("created_at DESC").
 		Find(&novels).Error; err != nil {

@@ -25,7 +25,7 @@ export interface Novel {
   ReleasedBy?: string;
   Genres: Genre[];
   CreatedAt?: string;
-  Tags?: string[];
+  Tags?: { ID: number; Name: string; Slug: string }[];
   ReleaseStatus?: string;
   AddedMinutesAgo?: number;
   Votes?: number;

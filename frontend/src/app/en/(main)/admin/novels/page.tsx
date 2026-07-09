@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { novels, genres as genresApi, adminNovels } from "@/lib/api";
+import { novels, genres as genresApi, adminNovels, tagsApi } from "@/lib/api";
 import { parseMarkdownNovel, ParsedNovel } from "@/lib/novelMarkdownImport";
 import Card from "@/components/ui/Card";
 
@@ -17,6 +17,7 @@ interface NovelItem {
   Views: number;
   Rating: number;
   Genres: { ID: number; Slug: string; Name: string }[];
+  Tags?: { ID: number; Name: string; Slug: string }[];
 }
 
 export default function AdminNovelsPage() {
@@ -28,18 +29,23 @@ export default function AdminNovelsPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<any>({});
   const [genreOptions, setGenreOptions] = useState<{ ID: number; Name: string }[]>([]);
+  const [tagOptions, setTagOptions] = useState<{ ID: number; Name: string; Slug: string }[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [parsedNovel, setParsedNovel] = useState<ParsedNovel | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [addForm, setAddForm] = useState({
     title: "", alt_title: "", author: "", status: "ongoing",
-    description: "", cover_url: "", chars: "", ai_percent: "", rating: 0,
+    description: "", cover_url: "", source_url: "", chars: "", ai_percent: "", rating: 0,
     genre_ids: [] as number[],
+    tag_ids: [] as number[],
   });
 
   useEffect(() => {
     genresApi.list().then((res: any) => {
       if (res.data) setGenreOptions(res.data);
+    }).catch(() => {});
+    tagsApi.list().then((res: any) => {
+      if (res.data) setTagOptions(res.data);
     }).catch(() => {});
   }, []);
 
@@ -61,19 +67,21 @@ export default function AdminNovelsPage() {
     }
   }
 
-  function startEdit(n: NovelItem & { chars?: string; ai_percent?: string }) {
+  function startEdit(n: NovelItem & { chars?: string; ai_percent?: string; source_url?: string }) {
     setEditingId(n.ID);
     setEditForm({
       title: n.Title,
       alt_title: n.AltTitle || "",
       author: n.Author || "",
       status: n.Status,
-      description: "",
-      cover_url: "",
+      description: (n as any).Description || "",
+      cover_url: (n as any).CoverURL || "",
+      source_url: (n as any).source_url || "",
       chars: (n as any).chars || "",
       ai_percent: (n as any).ai_percent || "",
       rating: n.Rating,
       genre_ids: n.Genres.map((g) => g.ID),
+      tag_ids: (n.Tags || []).map((t) => t.ID),
     });
   }
 
@@ -112,7 +120,7 @@ export default function AdminNovelsPage() {
       setMessage("Novel created.");
       setShowAddForm(false);
       setParsedNovel(null);
-      setAddForm({ title: "", alt_title: "", author: "", status: "ongoing", description: "", cover_url: "", chars: "", ai_percent: "", rating: 0, genre_ids: [] });
+      setAddForm({ title: "", alt_title: "", author: "", status: "ongoing", description: "", cover_url: "", source_url: "", chars: "", ai_percent: "", rating: 0, genre_ids: [], tag_ids: [] });
       fetchNovels(page);
     } catch (e: any) {
       setMessage(`Create failed: ${e.message}`);
@@ -141,6 +149,24 @@ export default function AdminNovelsPage() {
       genre_ids: prev.genre_ids.includes(id)
         ? prev.genre_ids.filter((g: number) => g !== id)
         : [...prev.genre_ids, id],
+    }));
+  }
+
+  function toggleAddTag(id: number) {
+    setAddForm((prev: any) => ({
+      ...prev,
+      tag_ids: prev.tag_ids.includes(id)
+        ? prev.tag_ids.filter((t: number) => t !== id)
+        : [...prev.tag_ids, id],
+    }));
+  }
+
+  function toggleTag(id: number) {
+    setEditForm((prev: any) => ({
+      ...prev,
+      tag_ids: prev.tag_ids.includes(id)
+        ? prev.tag_ids.filter((t: number) => t !== id)
+        : [...prev.tag_ids, id],
     }));
   }
 
@@ -220,6 +246,12 @@ export default function AdminNovelsPage() {
             className="w-full bg-card-hover border border-line-light rounded-lg px-3 py-2 text-sm text-gray-200 outline-none"
             placeholder="Cover Image URL"
           />
+          <input
+            value={addForm.source_url}
+            onChange={(e) => setAddForm((p: any) => ({ ...p, source_url: e.target.value }))}
+            className="w-full bg-card-hover border border-line-light rounded-lg px-3 py-2 text-sm text-gray-200 outline-none"
+            placeholder="Source URL (NovelUpdates / RoyalRoad / etc.)"
+          />
           <div className="grid grid-cols-3 gap-3">
             <input
               value={addForm.chars}
@@ -273,6 +305,27 @@ export default function AdminNovelsPage() {
               ))}
             </div>
           </div>
+          {tagOptions.length > 0 && (
+            <div>
+              <p className="text-xs text-gray-500 mb-1">Tags</p>
+              <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
+                {tagOptions.map((t) => (
+                  <button
+                    key={t.ID}
+                    type="button"
+                    onClick={() => toggleAddTag(t.ID)}
+                    className={`text-xs px-2 py-1 rounded-full border transition-colors ${
+                      addForm.tag_ids.includes(t.ID)
+                        ? "bg-emerald-700 text-white border-emerald-600"
+                        : "bg-card-hover text-gray-400 border-line-light hover:text-white"
+                    }`}
+                  >
+                    {t.Name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           {parsedNovel && (
             <div className="border border-line-light rounded-lg p-3 space-y-2">
               <p className="text-xs text-gray-400 font-semibold">
@@ -322,11 +375,23 @@ export default function AdminNovelsPage() {
                       className="w-full bg-card-hover border border-line-light rounded-lg px-3 py-2 text-sm text-gray-200 outline-none"
                       placeholder="Alt Title"
                     />
+                    <textarea
+                      value={editForm.description}
+                      onChange={(e) => setEditForm((p: any) => ({ ...p, description: e.target.value }))}
+                      className="w-full bg-card-hover border border-line-light rounded-lg px-3 py-2 text-sm text-gray-200 outline-none resize-y min-h-[80px]"
+                      placeholder="Description"
+                    />
                     <input
                       value={editForm.cover_url}
                       onChange={(e) => setEditForm((p: any) => ({ ...p, cover_url: e.target.value }))}
                       className="w-full bg-card-hover border border-line-light rounded-lg px-3 py-2 text-sm text-gray-200 outline-none"
                       placeholder="Cover URL"
+                    />
+                    <input
+                      value={editForm.source_url}
+                      onChange={(e) => setEditForm((p: any) => ({ ...p, source_url: e.target.value }))}
+                      className="w-full bg-card-hover border border-line-light rounded-lg px-3 py-2 text-sm text-gray-200 outline-none"
+                      placeholder="Source URL"
                     />
                     <div className="grid grid-cols-3 gap-3">
                       <input
@@ -381,6 +446,27 @@ export default function AdminNovelsPage() {
                         ))}
                       </div>
                     </div>
+                    {tagOptions.length > 0 && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Tags</p>
+                        <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
+                          {tagOptions.map((t) => (
+                            <button
+                              key={t.ID}
+                              type="button"
+                              onClick={() => toggleTag(t.ID)}
+                              className={`text-xs px-2 py-1 rounded-full border transition-colors ${
+                                editForm.tag_ids?.includes(t.ID)
+                                  ? "bg-emerald-700 text-white border-emerald-600"
+                                  : "bg-card-hover text-gray-400 border-line-light hover:text-white"
+                              }`}
+                            >
+                              {t.Name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div className="flex gap-2">
                       <button onClick={() => saveEdit(n.ID)} className="px-4 py-2 bg-accent hover:bg-accent-dark text-white text-sm rounded-lg transition-colors">
                         Save
@@ -406,7 +492,7 @@ export default function AdminNovelsPage() {
                       </div>
                     </div>
                     <div className="flex gap-2 shrink-0">
-                      <Link href={`/en/admin/novels/${n.ID}/chapters`} className="px-3 py-1.5 bg-violet-900/50 hover:bg-violet-800/50 text-violet-400 text-xs rounded-lg transition-colors">
+                      <Link href={`/en/writer/novels/${n.ID}/chapters`} className="px-3 py-1.5 bg-violet-900/50 hover:bg-violet-800/50 text-violet-400 text-xs rounded-lg transition-colors">
                         Ch
                       </Link>
                       <button onClick={() => startEdit(n)} className="flex-1 sm:flex-none px-3 py-1.5 bg-card-hover hover:bg-line-light text-gray-300 text-xs rounded-lg transition-colors">

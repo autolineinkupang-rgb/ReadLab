@@ -4,7 +4,8 @@ import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import DOMPurify from "isomorphic-dompurify";
-import { novels, adminChapters } from "@/lib/api";
+import RequireRole from "@/components/RequireRole";
+import { novels, writerChapters } from "@/lib/api";
 import Card from "@/components/ui/Card";
 import ChapterContentEditor from "@/components/admin/ChapterContentEditor";
 import type { ChapterContentEditorHandle } from "@/components/admin/ChapterContentEditor";
@@ -30,7 +31,15 @@ function charCount(text: string): number {
   return text.length;
 }
 
-export default function AdminChaptersPage() {
+export default function WriterChaptersPageWrapper() {
+  return (
+    <RequireRole roles={["writer", "admin"]}>
+      <WriterChaptersPage />
+    </RequireRole>
+  );
+}
+
+function WriterChaptersPage() {
   const { id } = useParams<{ id: string }>();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const addEditorRef = useRef<ChapterContentEditorHandle>(null);
@@ -70,7 +79,7 @@ export default function AdminChaptersPage() {
     setLoading(true);
     setPage(p);
     try {
-      const res = await adminChapters.list(id, { page: p, limit: 50 });
+      const res = await writerChapters.list(id, { page: p, limit: 50 });
       setData(res.data || []);
       setTotalPages(res.total_pages || 1);
     } catch {
@@ -102,7 +111,7 @@ export default function AdminChaptersPage() {
       if (editForm.ticket_cost !== undefined) payload.ticket_cost = editForm.ticket_cost;
       if (editForm.number !== undefined) payload.number = parseInt(editForm.number) || undefined;
 
-      await adminChapters.update(id, chapterId, payload);
+      await writerChapters.update(id, chapterId, payload);
       showMessage("Chapter updated.");
       setEditingId(null);
       fetchChapters(page);
@@ -120,8 +129,8 @@ export default function AdminChaptersPage() {
 
     showMessage("");
     try {
-      await adminChapters.update(id, chapterId, { number: newNum });
-      await adminChapters.update(id, target.id, { number: currentNum });
+      await writerChapters.update(id, chapterId, { number: newNum });
+      await writerChapters.update(id, target.id, { number: currentNum });
       showMessage(`Chapter moved ${direction}.`);
       fetchChapters(page);
     } catch (e: any) {
@@ -133,7 +142,7 @@ export default function AdminChaptersPage() {
     if (!confirm("Delete this chapter? This cannot be undone.")) return;
     showMessage("");
     try {
-      await adminChapters.delete(chapterId);
+      await writerChapters.delete(chapterId);
       showMessage("Chapter deleted.");
       fetchChapters(page);
     } catch (e: any) {
@@ -145,7 +154,7 @@ export default function AdminChaptersPage() {
     if (!addForm.title.trim()) return;
     showMessage("");
     try {
-      await adminChapters.create(id, {
+      await writerChapters.create(id, {
         ...addForm,
         number: addForm.number ? parseInt(addForm.number) : undefined,
         ticket_cost: addForm.ticket_cost || 0,
@@ -163,7 +172,7 @@ export default function AdminChaptersPage() {
     if (!addForm.title.trim()) return;
     showMessage("");
     try {
-      await adminChapters.create(id, {
+      await writerChapters.create(id, {
         ...addForm,
         number: addForm.number ? parseInt(addForm.number) : undefined,
         ticket_cost: addForm.ticket_cost || 0,
@@ -217,7 +226,7 @@ export default function AdminChaptersPage() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <Link href="/en/admin/novels" className="text-xs text-gray-500 hover:text-accent transition-colors">&larr; Back to Novels</Link>
+          <Link href="/en/writer" className="text-xs text-gray-500 hover:text-accent transition-colors">&larr; Back to Dashboard</Link>
           <h1 className="text-2xl font-bold text-white mt-1">
             {novel ? novel.Title || novel.title || "Chapters" : "Chapters"}
           </h1>
