@@ -8,6 +8,7 @@ type Chapter struct {
 	Number    int    `gorm:"not null;index"`
 	Title     string `gorm:"size:500"`
 	Content   string `gorm:"type:text"`
+	ContentMD string `gorm:"type:text" json:"content_md"`
 	IsLocked  bool   `gorm:"default:false"`
 	TicketCost int    `gorm:"default:0"`
 
