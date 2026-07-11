@@ -12,6 +12,7 @@ interface NovelCardProps {
 }
 
 export default function NovelCard({ title, genre, chapters, rating, image, href, compact, progress }: NovelCardProps) {
+  const hasValidImage = !!image && /^https?:\/\//.test(image);
   return (
     <Link
       href={href}
@@ -19,7 +20,7 @@ export default function NovelCard({ title, genre, chapters, rating, image, href,
       data-testid={`novel-card-${title.substring(0, 20)}`}
     >
       <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-card-hover border border-line-light card-hover transition-all duration-300">
-        {image ? (
+        {hasValidImage ? (
           <img
             src={image}
             alt={title}

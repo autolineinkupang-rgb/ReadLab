@@ -16,6 +16,7 @@ import { Novel, LatestNewsItem } from "@/types";
 import { useAuth } from "@/lib/AuthContext";
 
 export default function Home() {
+  console.log("HOMEPAGE RENDER");
   const { user } = useAuth();
   const [recentUpdates, setRecentUpdates] = useState<any[]>([]);
   const [newNovels, setNewNovels] = useState<any[]>([]);
@@ -33,6 +34,19 @@ export default function Home() {
   const [loadingRandom, setLoadingRandom] = useState(true);
 
   useEffect(() => {
+    console.log("HOMEPAGE EFFECT FIRED");
+    // DEBUG: raw fetch directly to Go backend bypassing Next.js proxy
+    fetch("http://localhost:8080/api/v1/novels?sort=created_at&order=desc&limit=10", { credentials: "include" })
+      .then((r) => { console.log("DEBUG got response status=", r.status); return r.json(); })
+      .then((res) => {
+        console.log("DEBUG raw fetch res:", res);
+        if (res.data?.length) {
+          setNewNovels(res.data);
+          setLoadingNew(false);
+        }
+      })
+      .catch((e) => console.error("DEBUG fetch error:", e));
+
     updatesApi.recent(6)
       .then((res) => {
         if (res.data?.length) {
@@ -52,7 +66,7 @@ export default function Home() {
     novels.list({ sort: "created_at", order: "desc", limit: 10 })
       .then((res) => { if (res.data?.length) setNewNovels(res.data); })
       .catch(() => {})
-      .finally(() => setLoadingNew(false));
+      .finally(() => {});
 
     novels.list({ sort: "views", order: "desc", limit: 5 })
       .then((res) => { if (res.data?.length) setRanking(res.data); })
@@ -129,6 +143,7 @@ export default function Home() {
       {/* New Novels */}
       <section data-testid="new-novels-section">
         <SectionHeader title="New Novels" href="/en/novel-list" />
+        <p className="text-xs text-red-400 mb-2">DEBUG: loadingNew={String(loadingNew)} newNovels.length={newNovels.length}</p>
         {loadingNew ? (
           <NovelCardSkeletonRow count={6} />
         ) : newNovels.length === 0 ? (
