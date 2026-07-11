@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -62,6 +63,8 @@ func migrateDB(db *gorm.DB) {
 		slog.Error("failed to migrate", "error", err)
 	}
 
+	migrateCoverURLs(db)
+
 	db.Exec("CREATE EXTENSION IF NOT EXISTS pg_trgm")
 	db.Exec("CREATE INDEX IF NOT EXISTS idx_novels_created_at ON novels(created_at)")
 	db.Exec("CREATE INDEX IF NOT EXISTS idx_novels_views ON novels(views DESC)")
@@ -74,6 +77,26 @@ func migrateDB(db *gorm.DB) {
 	seedTicketConfigs(db)
 
 	slog.Info("database migration completed")
+}
+
+func migrateCoverURLs(db *gorm.DB) {
+	var novels []model.Novel
+	db.Where("cover_url LIKE '/home/%/.lncrawl/novels/%'").Find(&novels)
+	if len(novels) == 0 {
+		return
+	}
+	slog.Info("fixing lncrawl cover URLs", "count", len(novels))
+	prefix := "/.lncrawl/novels/"
+	for _, n := range novels {
+		idx := strings.Index(n.CoverURL, prefix)
+		if idx == -1 {
+			continue
+		}
+		suffix := n.CoverURL[idx+len(prefix):]
+		newURL := "/api/v1/covers/" + suffix
+		db.Model(&n).Update("cover_url", newURL)
+	}
+	slog.Info("lncrawl cover URL migration complete")
 }
 
 func seedTicketConfigs(db *gorm.DB) {

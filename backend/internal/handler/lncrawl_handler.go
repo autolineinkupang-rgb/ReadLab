@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -98,7 +99,7 @@ func (h *LncrawlHandler) Crawl(c *gin.Context) {
 			}
 		} else {
 			updates := map[string]interface{}{}
-			if existingNovel.CoverURL == "" && result.CoverURL != "" {
+			if result.CoverURL != "" && (existingNovel.CoverURL == "" || strings.HasPrefix(existingNovel.CoverURL, "/home/")) {
 				updates["cover_url"] = result.CoverURL
 			}
 			if len(updates) > 0 {

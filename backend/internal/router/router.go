@@ -1,6 +1,9 @@
 package router
 
 import (
+	"log/slog"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -216,6 +219,15 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 		impHandler := handler.NewImporterHandler(db)
 		impHandler.Search(c)
 	})
+
+	homeDir, err := os.UserHomeDir()
+	if err == nil {
+		coversDir := filepath.Join(homeDir, ".lncrawl", "novels")
+		if info, statErr := os.Stat(coversDir); statErr == nil && info.IsDir() {
+			api.Static("/covers", coversDir)
+			slog.Info("serving lncrawl cover images", "dir", coversDir)
+		}
+	}
 
 	return r
 }
