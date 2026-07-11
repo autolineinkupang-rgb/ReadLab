@@ -10,6 +10,14 @@ Full-stack web novel platform (ReadLab) with:
 ---
 
 
+### v1.1.0.1 — Repo hygiene cleanup
+**Date:** 2026-07-11
+
+**Fixed:**
+- Removed `.playwright-mcp/` debug artifacts from git tracking (added to `.gitignore`)
+- Removed `.gitconfig` and `.emergent/` agent-platform metadata from git tracking
+- Restored `.env.example` and `backend/.env.example` as setup documentation (placeholder values only, no real secrets)
+
 ### v1.1.0 — UI/UX Polish & Bug Fixes
 **Date:** 2026-01-11
 
