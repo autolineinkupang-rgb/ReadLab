@@ -4,3 +4,9 @@ frontend/.next/
 frontend/tsconfig.tsbuildinfo
 backend/bin/
 backend/tmp/
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials
