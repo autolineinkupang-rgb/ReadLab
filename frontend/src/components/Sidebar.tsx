@@ -66,6 +66,7 @@ export default function Sidebar() {
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search novels..."
             className="w-full bg-card-hover border border-line-light rounded-lg pl-4 pr-10 py-2 text-sm text-gray-200 outline-none focus:border-accent transition-colors"
+            suppressHydrationWarning
           />
           <button
             type="submit"
