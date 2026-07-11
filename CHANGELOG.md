@@ -9,6 +9,56 @@ Full-stack web novel platform (ReadLab) with:
 
 ---
 
+
+### v1.1.0 — UI/UX Polish & Bug Fixes
+**Date:** 2026-01-11
+
+**Fixed:**
+- **NovelCard** now actually renders the cover image passed via the `image` prop (was previously declared but unused — always showed placeholder icon)
+- **NovelCardSmall** now shows an optional thumbnail alongside the ranking
+- **UpdateItem** now displays actual cover thumbnails when available (was showing generic book icon)
+- **(main)/layout.tsx** — fixed flex parent chain so `flex-1`/`min-h-screen` behaves correctly with sidebar-off state; footer now consistently sticks to bottom
+- **HeroBanner** — replaced hardcoded "16th Giveaway" banner with a dynamic hero pulling the latest news item; falls back to a "Welcome to ReadLab" card when no news exists; dismissible per-item via localStorage
+- Reading progress bar (0–100 %) can now be rendered on any `NovelCard` via the new `progress` prop (enables "Continue Reading" cards to show completion visually)
+
+**Added:**
+- **`components/Skeleton.tsx`** — `Skeleton`, `NovelCardSkeleton`, `NovelCardSkeletonRow`, `UpdateItemSkeleton` for consistent loading states across the app
+- **`components/BackToTop.tsx`** — floating "back to top" pill button; appears after 400 px scroll; smooth-scrolls with animation
+- **`components/HeroBanner.tsx`** — dismissible dynamic hero banner (uses latest news or fallback welcome)
+- Homepage now renders skeleton loaders while data loads, and empty-state cards (with icon) when a section returns no data
+- Homepage sections use `.animate-stagger` for polished staggered entrance
+- Rank badge colors on ranking list: gold (#1), silver (#2), bronze (#3)
+- Every interactive novel card / small card / update item has a stable `data-testid` for QA
+- Focus-visible outlines on all navigation cards (accessibility)
+
+**Changed:**
+- **`globals.css`** — added `fadeIn`, `fadeInUp`, `animate-stagger` (8-child staggered entrance), `prefers-reduced-motion` overrides, custom scrollbar styling, text selection color, global focus-visible ring
+- **`Footer.tsx`** — copyright year is now dynamic (`new Date().getFullYear()`); version bumped to v1.1.0; added tagline
+- **Recent Updates** section: "Load More" button is now a real link to `/en/novel-list?sort=updated_at`
+- **Top Spenders** — added inline rank badge (#1/#2/#3) and 🎫 emoji for ticket count
+
+**Files added:**
+- `frontend/src/components/BackToTop.tsx`
+- `frontend/src/components/HeroBanner.tsx`
+- `frontend/src/components/Skeleton.tsx`
+
+**Files modified:**
+- `frontend/src/app/globals.css`
+- `frontend/src/app/en/(main)/layout.tsx`
+- `frontend/src/app/en/(main)/page.tsx`
+- `frontend/src/components/NovelCard.tsx`
+- `frontend/src/components/NovelCardSmall.tsx`
+- `frontend/src/components/UpdateItem.tsx`
+- `frontend/src/components/Footer.tsx`
+- `frontend/src/types.ts` (added `LatestNewsItem`)
+
+**Verification:**
+- `npx tsc --noEmit` → 0 errors
+- `npx next build` → all 30+ pages compile successfully
+- ESLint: no new errors introduced (baseline of 9 pre-existing `any` errors from original code preserved)
+
+---
+
 ## Build History
 
 ### Commit `f20ee9a` — Initial Project Scaffold

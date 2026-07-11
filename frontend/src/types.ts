@@ -52,3 +52,10 @@ export interface ProfileData {
   created_at: string;
 }
 
+export interface LatestNewsItem {
+  ID: number;
+  Title: string;
+  Type?: string;
+  CreatedAt?: string;
+}
+
