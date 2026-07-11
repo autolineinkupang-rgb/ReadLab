@@ -18,18 +18,21 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-line mt-16">
+    <footer className="border-t border-line mt-16" data-testid="site-footer">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-gray-500 mb-6">
-          <Link href="/en" className="hover:text-gray-300 transition-colors">Intro</Link>
+          <Link href="/en" className="hover:text-accent-light transition-colors">Home</Link>
           {footerLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="hover:text-gray-300 transition-colors">
+            <Link key={link.href} href={link.href} className="hover:text-accent-light transition-colors">
               {link.label}
             </Link>
           ))}
         </div>
         <p className="text-center text-sm text-gray-600">
-          Copyright © 2026 - ReadLab <span className="text-accent ml-2">v1.0.0</span>
+          Copyright © {new Date().getFullYear()} ReadLab<span className="text-accent ml-2">v1.1.0</span>
+        </p>
+        <p className="text-center text-xs text-gray-700 mt-2">
+          Made with ♥ for readers everywhere
         </p>
       </div>
     </footer>

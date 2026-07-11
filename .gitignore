@@ -4,3 +4,18 @@ frontend/.next/
 frontend/tsconfig.tsbuildinfo
 backend/bin/
 backend/tmp/
+.env.*
+*.env
+!.env.example
+!backend/.env.example
+credentials.json
+*.pem
+*.key
+.credentials
+
+# Playwright MCP debug artifacts (auto-generated during agent testing)
+.playwright-mcp/
+
+# Agent-platform local metadata (not part of project)
+.gitconfig
+.emergent/
