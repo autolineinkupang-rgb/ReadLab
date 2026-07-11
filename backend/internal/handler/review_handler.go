@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -254,7 +255,7 @@ func (h *ReviewHandler) Create(c *gin.Context) {
 	}
 
 	if req.ParentID == nil {
-		h.DB.Transaction(func(tx *gorm.DB) error {
+		if err := h.DB.Transaction(func(tx *gorm.DB) error {
 			var avg float64
 			var count int64
 			tx.Model(&model.Review{}).
@@ -269,7 +270,9 @@ func (h *ReviewHandler) Create(c *gin.Context) {
 					"Rating":      avg,
 					"RatingCount": count,
 				}).Error
-		})
+		}); err != nil {
+			slog.Error("failed to update novel rating after review", "error", err)
+		}
 	}
 
 	var user model.User
@@ -358,7 +361,7 @@ func (h *ReviewHandler) Update(c *gin.Context) {
 	}
 
 	if review.ParentID == nil && oldRating != req.Rating {
-		h.DB.Transaction(func(tx *gorm.DB) error {
+		if err := h.DB.Transaction(func(tx *gorm.DB) error {
 			var avg float64
 			var count int64
 			tx.Model(&model.Review{}).
@@ -373,7 +376,9 @@ func (h *ReviewHandler) Update(c *gin.Context) {
 					"Rating":      avg,
 					"RatingCount": count,
 				}).Error
-		})
+		}); err != nil {
+			slog.Error("failed to update novel rating after review update", "error", err)
+		}
 	}
 
 	h.DB.Preload("User").First(&review, review.ID)

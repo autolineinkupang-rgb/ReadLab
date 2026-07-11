@@ -288,6 +288,12 @@ func (h *AdminChapterHandler) List(c *gin.Context) {
 }
 
 func (h *AdminChapterHandler) Get(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid chapter id"})
@@ -298,6 +304,24 @@ func (h *AdminChapterHandler) Get(c *gin.Context) {
 	if err := h.DB.First(&chapter, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "chapter not found"})
 		return
+	}
+
+	role, _ := c.Get("role")
+	if role != "admin" {
+		var novel model.Novel
+		if err := h.DB.First(&novel, chapter.NovelID).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "novel not found"})
+			return
+		}
+		uid, ok := userID.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id"})
+			return
+		}
+		if novel.WriterID == nil || *novel.WriterID != uid {
+			c.JSON(http.StatusForbidden, gin.H{"error": "you do not own this novel"})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"chapter": toChapterResponse(chapter)})

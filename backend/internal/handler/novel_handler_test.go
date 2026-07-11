@@ -10,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"wtr-lab-clone/backend/internal/model"
+	"wtr-lab-clone/backend/internal/service"
+	"wtr-lab-clone/backend/internal/ticket"
 )
 
 func setupNovelTest(t *testing.T) (*gin.Engine, string, string) {
@@ -23,7 +25,7 @@ func setupNovelTest(t *testing.T) (*gin.Engine, string, string) {
 	adminToken, _ := generateTestToken(admin.ID, "test-secret")
 	userToken, _ := generateTestToken(user.ID, "test-secret")
 
-	h := NewNovelHandler(db)
+	h := NewNovelHandler(db, ticket.NewConfig(db), service.NewNovelService(db))
 	r := gin.New()
 	r.Use(func(c *gin.Context) {
 		tokenStr := c.GetHeader("Authorization")

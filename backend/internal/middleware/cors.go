@@ -13,7 +13,7 @@ func CORS(frontendURL string) gin.HandlerFunc {
 			c.Header("Access-Control-Allow-Origin", frontendURL)
 		}
 		c.Header("Access-Control-Allow-Credentials", "true")
-		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, X-CSRF-Token")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 
 		if c.Request.Method == "OPTIONS" {

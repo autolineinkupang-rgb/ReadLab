@@ -3,9 +3,15 @@ package mdimport
 import (
 	"archive/zip"
 	"bytes"
+	"fmt"
 	"io"
 	"path/filepath"
 	"strings"
+)
+
+const (
+	maxZipEntrySize  = 5 << 20 // 5 MB per entry
+	maxTotalDecompressed = 50 << 20 // 50 MB total
 )
 
 func ExtractMDsFromZip(data []byte) (map[string]string, error) {
@@ -16,6 +22,7 @@ func ExtractMDsFromZip(data []byte) (map[string]string, error) {
 
 	files := make(map[string]string)
 	var names []string
+	var totalDecompressed int64
 
 	for _, f := range reader.File {
 		if f.FileInfo().IsDir() {
@@ -32,14 +39,23 @@ func ExtractMDsFromZip(data []byte) (map[string]string, error) {
 			continue
 		}
 
+		if f.FileInfo().Size() > maxZipEntrySize {
+			return nil, fmt.Errorf("entry %s exceeds max size of 5 MB", f.Name)
+		}
+
 		rc, err := f.Open()
 		if err != nil {
 			continue
 		}
-		data, err := io.ReadAll(rc)
+		data, err := io.ReadAll(io.LimitReader(rc, maxZipEntrySize))
 		rc.Close()
 		if err != nil {
 			continue
+		}
+
+		totalDecompressed += int64(len(data))
+		if totalDecompressed > maxTotalDecompressed {
+			return nil, fmt.Errorf("total decompressed size exceeds max of 50 MB")
 		}
 
 		files[f.Name] = string(data)

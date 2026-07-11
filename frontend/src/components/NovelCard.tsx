@@ -12,7 +12,7 @@ interface NovelCardProps {
 }
 
 export default function NovelCard({ title, genre, chapters, rating, image, href, compact, progress }: NovelCardProps) {
-  const hasValidImage = !!image && /^https?:\/\//.test(image);
+  const hasValidImage = !!image && /^(https?:\/\/|\/api\/)/.test(image);
   return (
     <Link
       href={href}

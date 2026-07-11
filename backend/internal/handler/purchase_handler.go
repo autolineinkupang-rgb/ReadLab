@@ -27,7 +27,11 @@ func (h *PurchaseHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
-	uid := userID.(uint)
+	uid, ok := userID.(uint)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user identity"})
+		return
+	}
 
 	var req PurchaseRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

@@ -23,7 +23,11 @@ func (h *NotificationHandler) List(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
-	uid := userID.(uint)
+	uid, ok := userID.(uint)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user identity"})
+		return
+	}
 
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
@@ -60,7 +64,11 @@ func (h *NotificationHandler) MarkRead(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
-	uid := userID.(uint)
+	uid, ok := userID.(uint)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user identity"})
+		return
+	}
 
 	idStr := c.Param("id")
 
@@ -84,7 +92,12 @@ func (h *NotificationHandler) UnreadCount(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"unread_count": h.unreadCount(userID.(uint))})
+	uid, ok := userID.(uint)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user identity"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"unread_count": h.unreadCount(uid)})
 }
 
 func (h *NotificationHandler) unreadCount(userID uint) int64 {

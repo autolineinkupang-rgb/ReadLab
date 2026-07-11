@@ -11,7 +11,7 @@ interface UpdateItemProps {
 }
 
 export default function UpdateItem({ title, chapter, chapterHref, novelHref, image, hasImage, timeAgo }: UpdateItemProps) {
-  const hasValidImage = !!image && /^https?:\/\//.test(image);
+  const hasValidImage = !!image && /^(https?:\/\/|\/api\/)/.test(image);
   const showThumb = hasImage || hasValidImage;
   return (
     <div className="flex gap-3 py-2.5 border-b border-line last:border-0">

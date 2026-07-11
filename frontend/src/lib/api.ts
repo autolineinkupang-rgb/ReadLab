@@ -437,10 +437,17 @@ export interface ApiError extends Error {
 async function reviewFetcher<T>(endpoint: string, options: RequestInit & { params?: Record<string, string | number | undefined> }): Promise<T> {
   const { params, ...init } = options;
   let url = `/api${endpoint}`;
+  const method = (init.method || "GET").toUpperCase();
+  const isMutation = method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE";
+  const csrfToken = isMutation ? getCSRFToken() : "";
+  const headers: Record<string, string> = { "Content-Type": "application/json", ...init.headers as Record<string, string> };
+  if (isMutation && csrfToken) {
+    headers["X-CSRF-Token"] = csrfToken;
+  }
   const res = await fetch(url, {
     ...init,
     credentials: "include",
-    headers: { "Content-Type": "application/json", ...init.headers },
+    headers,
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));

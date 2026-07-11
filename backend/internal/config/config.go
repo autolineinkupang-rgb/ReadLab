@@ -1,6 +1,8 @@
 package config
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"log"
 	"os"
 
@@ -20,13 +22,19 @@ type Config struct {
 	CookieSecure bool
 }
 
+func generateSecret() string {
+	b := make([]byte, 32)
+	rand.Read(b)
+	return hex.EncodeToString(b)
+}
+
 func Load() *Config {
 	godotenv.Load()
 
 	isProduction := os.Getenv("APP_ENV") == "production"
 
-	jwtSecret := getEnv("JWT_SECRET", "")
-	dbPassword := getEnv("DB_PASSWORD", "")
+	jwtSecret := os.Getenv("JWT_SECRET")
+	dbPassword := os.Getenv("DB_PASSWORD")
 
 	if isProduction {
 		if jwtSecret == "" {
@@ -38,10 +46,14 @@ func Load() *Config {
 	}
 
 	if jwtSecret == "" {
-		jwtSecret = "dev-secret"
+		jwtSecret = generateSecret()
+		log.Println("[WARN] JWT_SECRET tidak diset — menggunakan secret random (sementara)." +
+			" Set JWT_SECRET di .env untuk persistensi antar restart.")
 	}
 	if dbPassword == "" {
 		dbPassword = "wtrlab_secret"
+		log.Println("[WARN] DB_PASSWORD tidak diset — menggunakan default 'wtrlab_secret'." +
+			" Set DB_PASSWORD di .env untuk keamanan.")
 	}
 
 	return &Config{

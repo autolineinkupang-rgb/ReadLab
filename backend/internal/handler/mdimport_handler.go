@@ -12,6 +12,8 @@ import (
 	"wtr-lab-clone/backend/internal/model"
 )
 
+const maxUploadSize = 10 << 20 // 10 MB
+
 type MdImportHandler struct {
 	DB *gorm.DB
 }
@@ -37,7 +39,11 @@ func (h *MdImportHandler) Import(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
-	uid := userID.(uint)
+	uid, ok := userID.(uint)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user identity"})
+		return
+	}
 
 	novelID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -56,6 +62,12 @@ func (h *MdImportHandler) Import(c *gin.Context) {
 		return
 	}
 
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxUploadSize)
+	if err := c.Request.ParseMultipartForm(maxUploadSize); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "file too large (max 10 MB)"})
+		return
+	}
+
 	file, header, err := c.Request.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "file required"})
@@ -63,7 +75,7 @@ func (h *MdImportHandler) Import(c *gin.Context) {
 	}
 	defer file.Close()
 
-	data, err := io.ReadAll(file)
+	data, err := io.ReadAll(io.LimitReader(file, maxUploadSize))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read file"})
 		return

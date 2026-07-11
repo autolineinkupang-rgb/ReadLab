@@ -10,6 +10,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-gonic/gin"
+
 	"wtr-lab-clone/backend/internal/config"
 	"wtr-lab-clone/backend/internal/middleware"
 	"wtr-lab-clone/backend/internal/model"
@@ -93,7 +95,7 @@ func migrateCoverURLs(db *gorm.DB) {
 			continue
 		}
 		suffix := n.CoverURL[idx+len(prefix):]
-		newURL := "/api/v1/covers/" + suffix
+		newURL := "/api/covers/" + suffix
 		db.Model(&n).Update("cover_url", newURL)
 	}
 	slog.Info("lncrawl cover URL migration complete")
@@ -135,6 +137,10 @@ func main() {
 	slog.Info("connection pool configured", "max_open", 25, "max_idle", 10, "max_lifetime", "30m")
 
 	migrateDB(db)
+
+	if os.Getenv("APP_ENV") == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	r := router.Setup(db, cfg.JWTSecret, cfg.FrontendURL, cfg.CookieSecure)
 

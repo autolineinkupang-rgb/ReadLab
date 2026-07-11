@@ -11,7 +11,7 @@ interface NovelCardSmallProps {
 
 export default function NovelCardSmall({ rank, title, views, rating, href, image }: NovelCardSmallProps) {
   const rankColor = rank === 1 ? "text-yellow-400" : rank === 2 ? "text-gray-300" : rank === 3 ? "text-orange-400" : "text-gray-600";
-  const hasValidImage = !!image && /^https?:\/\//.test(image);
+  const hasValidImage = !!image && /^(https?:\/\/|\/api\/)/.test(image);
   return (
     <Link
       href={href}

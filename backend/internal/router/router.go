@@ -224,7 +224,7 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 	if err == nil {
 		coversDir := filepath.Join(homeDir, ".lncrawl", "novels")
 		if info, statErr := os.Stat(coversDir); statErr == nil && info.IsDir() {
-			api.Static("/covers", coversDir)
+			r.Static("/api/covers", coversDir)
 			slog.Info("serving lncrawl cover images", "dir", coversDir)
 		}
 	}

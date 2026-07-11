@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -436,7 +437,7 @@ func (h *NovelHandler) Create(c *gin.Context) {
 
 	uid := userID.(uint)
 	reward := h.Config.Get("novel_contribution")
-	h.DB.Transaction(func(tx *gorm.DB) error {
+	if err := h.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Model(&model.User{}).Where("id = ?", uid).
 			Update("tickets", gorm.Expr("tickets + ?", reward)).Error; err != nil {
 			return err
@@ -448,7 +449,9 @@ func (h *NovelHandler) Create(c *gin.Context) {
 			RefType: "novel_contribution",
 			Note:    "Novel contribution reward",
 		}).Error
-	})
+	}); err != nil {
+		slog.Error("failed to award novel contribution tickets", "error", err)
+	}
 
 	c.JSON(http.StatusCreated, gin.H{"data": novel})
 }

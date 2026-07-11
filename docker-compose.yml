@@ -42,16 +42,18 @@ services:
       retries: 3
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://backend:8080
     ports:
       - "3000:3000"
-    environment:
-      NEXT_PUBLIC_API_URL: http://backend:8080
     restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/en/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -64,14 +66,14 @@ services:
       DB_PORT: "5432"
       DB_USER: wtrlab
       DB_NAME: wtrlab
-      DB_PASSWORD: wtrlab_secret
+      DB_PASSWORD: ${DB_PASSWORD}
       BACKUP_DIR: /backups
       RETENTION_DAYS: "7"
     volumes:
       - ./scripts/db-backup.sh:/usr/local/bin/db-backup.sh:ro
       - pgbackups:/backups
     entrypoint: ["/bin/sh", "-c"]
-    command: ["apk add --no-cache postgresql-client && exec db-backup.sh"]
+    command: ["exec db-backup.sh"]
     depends_on:
       db:
         condition: service_healthy

@@ -156,7 +156,7 @@ func parseOutput(stdout, homeDir string) (*Result, error) {
 	if novelID != "" {
 		coverPath := filepath.Join(lncrawlDir, "novels", novelID, "cover.jpg")
 		if _, err := os.Stat(coverPath); err == nil {
-			coverURL = "/api/v1/covers/" + novelID + "/cover.jpg"
+			coverURL = "/api/covers/" + novelID + "/cover.jpg"
 		}
 	}
 

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -323,9 +324,13 @@ func (h *AdminHandler) DeleteReview(c *gin.Context) {
 	}
 
 	novelID := review.NovelID
-	h.DB.Delete(&review)
+	if err := h.DB.Delete(&review).Error; err != nil {
+		slog.Error("failed to delete review", "error", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete review"})
+		return
+	}
 
-	h.DB.Transaction(func(tx *gorm.DB) error {
+	if err := h.DB.Transaction(func(tx *gorm.DB) error {
 		var avg float64
 		var count int64
 		tx.Model(&model.Review{}).
@@ -340,7 +345,9 @@ func (h *AdminHandler) DeleteReview(c *gin.Context) {
 				"Rating":      avg,
 				"RatingCount": count,
 			}).Error
-	})
+	}); err != nil {
+		slog.Error("failed to update novel rating after review delete", "error", err)
+	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "review deleted"})
 }

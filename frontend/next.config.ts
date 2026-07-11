@@ -22,6 +22,10 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
+        source: "/api/covers/:path*",
+        destination: `${API_URL}/api/covers/:path*`,
+      },
+      {
         source: "/api/:path*",
         destination: `${API_URL}/api/v1/:path*`,
       },

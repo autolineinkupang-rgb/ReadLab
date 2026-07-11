@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"wtr-lab-clone/backend/internal/model"
+	"wtr-lab-clone/backend/internal/service"
 )
 
 func setupAuthTest(t *testing.T) (*gorm.DB, *AuthHandler, *gin.Engine) {
@@ -17,7 +18,8 @@ func setupAuthTest(t *testing.T) (*gorm.DB, *AuthHandler, *gin.Engine) {
 	db := setupTestDB(t)
 	db.AutoMigrate(&model.User{})
 
-	h := NewAuthHandler(db, "test-secret", false)
+	authSvc := service.NewAuthService(db, "test-secret", false)
+	h := NewAuthHandler(db, "test-secret", false, nil, authSvc)
 	r := gin.New()
 	api := r.Group("/api/v1")
 	api.POST("/auth/register", h.Register)
@@ -32,7 +34,7 @@ func TestAuthRegister_Success(t *testing.T) {
 	body, _ := json.Marshal(RegisterRequest{
 		Username: "testuser",
 		Email:    "test@example.com",
-		Password: "password123",
+		Password: "Password123!",
 	})
 
 	req, _ := http.NewRequest("POST", "/api/v1/auth/register", bytes.NewReader(body))
@@ -58,7 +60,7 @@ func TestAuthRegister_DuplicateEmail(t *testing.T) {
 	body, _ := json.Marshal(RegisterRequest{
 		Username: "testuser",
 		Email:    "test@example.com",
-		Password: "password123",
+		Password: "Password123!",
 	})
 
 	req, _ := http.NewRequest("POST", "/api/v1/auth/register", bytes.NewReader(body))
@@ -74,7 +76,7 @@ func TestAuthRegister_DuplicateEmail(t *testing.T) {
 func TestAuthLogin_Success(t *testing.T) {
 	db, _, r := setupAuthTest(t)
 
-	hash, _ := bcryptHash("password123")
+	hash, _ := bcryptHash("Password123!")
 	db.Create(&model.User{
 		Username:     "testuser",
 		Email:        "test@example.com",
@@ -84,7 +86,7 @@ func TestAuthLogin_Success(t *testing.T) {
 
 	body, _ := json.Marshal(LoginRequest{
 		Email:    "test@example.com",
-		Password: "password123",
+		Password: "Password123!",
 	})
 
 	req, _ := http.NewRequest("POST", "/api/v1/auth/login", bytes.NewReader(body))
