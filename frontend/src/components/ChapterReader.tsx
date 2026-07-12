@@ -792,7 +792,7 @@ function XpProgressBar({
 }) {
   if (progress === 0 && earned === 0) return null;
 
-  const remaining = Math.ceil(60 * (1 - progress / 100));
+  const remaining = Math.ceil(XP_MIN_SECONDS * (1 - progress / 100));
   const isComplete = progress >= 100;
 
   return (
@@ -820,7 +820,7 @@ function XpProgressBar({
             {isComplete ? "✦ XP Earned" : "📖 Reading"}
           </span>
           <span className="text-xs font-semibold" style={{ color: isComplete ? "#10b981" : "#6dd5ed" }}>
-            {isComplete ? `+${earned} XP` : `+10 XP in ${remaining}s`}
+            {isComplete ? `+${earned} XP` : `+${XP_PER_CHAPTER} XP in ${remaining}s`}
           </span>
         </div>
         <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: siteTheme.border }}>

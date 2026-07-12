@@ -34,13 +34,15 @@ function AdminDashboard() {
   }, []);
 
   const links = [
-    { href: "/en/admin/users", label: "Users", desc: "Manage user roles and accounts", icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" },
+    { href: "/en/admin/users", label: "Users", desc: "View and delete users", icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" },
     { href: "/en/admin/novels", label: "Novels", desc: "Add, edit, or delete novels", icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" },
     { href: "/en/admin/requests", label: "Requests", desc: "Review novel requests from users", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
     { href: "/en/admin/import", label: "Import", desc: "Import novels from external sources", icon: "M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" },
-    { href: "/en/admin/novels", label: "Chapters", desc: "Manage chapter content for novels", icon: "M4 6h16M4 12h16M4 18h7" },
+    { href: "/en/admin/chapters", label: "Chapters", desc: "Manage chapter content for novels", icon: "M4 6h16M4 12h16M4 18h7" },
     { href: "/en/admin/reviews", label: "Reviews", desc: "Moderate user reviews", icon: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" },
     { href: "/en/admin/ticket-config", label: "Tickets", desc: "Configure ticket costs and rewards", icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
+    { href: "/en/admin/xp-config", label: "XP", desc: "Configure XP rewards", icon: "M13 10V3L4 14h7v7l9-11h-7z" },
+    { href: "/en/admin/bank", label: "Bank", desc: "View and claim tickets from the ticket bank", icon: "M3 6l3 1m0 0L3 9m3-2l3 1m-3-1V4m0 2l-3 1m3-1l3-1M3 6l3-1m-3 2l3 1m0 0l3-1M12 4l2 1m0 0l-2 1m2-1l2-1m-2 1l2 1m-2-1V3m0 2l-2 1m2-1l-2 1m-2 4l2 1m0 0l-2 1m2-1l2-1m-2 1l2 1m0 0l-2 1m2-1V9m0 2l-2 1m2-1l-2 1" },
   ];
 
   return (

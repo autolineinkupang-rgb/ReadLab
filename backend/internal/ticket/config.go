@@ -66,39 +66,87 @@ func (c *Config) Update(key string, value float64) error {
 
 func (c *Config) Spend(db *gorm.DB, userID uint, cost float64, refType string, refID uint, note string) error {
 	return db.Transaction(func(tx *gorm.DB) error {
-		var user model.User
-		if err := tx.First(&user, userID).Error; err != nil {
-			return err
-		}
-		if user.Tickets < cost {
+		var sum float64
+		tx.Model(&model.TicketUnit{}).
+			Where("user_id = ? AND status = 'active'", userID).
+			Select("COALESCE(SUM(amount), 0)").Scan(&sum)
+		if sum < cost {
 			return ErrInsufficientTickets
 		}
-		if err := tx.Model(&user).Update("tickets", gorm.Expr("tickets - ?", cost)).Error; err != nil {
-			return err
+
+		var units []model.TicketUnit
+		tx.Where("user_id = ? AND status = 'active'", userID).
+			Order("created_at ASC, id ASC").Find(&units)
+
+		remaining := cost
+		now := time.Now()
+		for _, unit := range units {
+			if remaining <= 0 {
+				break
+			}
+			if unit.Amount <= remaining {
+				tx.Model(&unit).Updates(map[string]interface{}{
+					"status":   "banked",
+					"spent_at": &now,
+				})
+				remaining -= unit.Amount
+			} else {
+				excess := unit.Amount - remaining
+				tx.Model(&unit).Updates(map[string]interface{}{
+					"status":   "banked",
+					"spent_at": &now,
+				})
+				tx.Create(&model.TicketUnit{
+					Serial: model.NewSerial(),
+					UserID: userID,
+					Amount: excess,
+					Status: "active",
+				})
+				remaining = 0
+			}
 		}
-		return tx.Create(&model.TicketTransaction{
+
+		tx.Create(&model.TicketTransaction{
 			UserID:  userID,
 			Amount:  -cost,
 			Type:    "spend",
 			RefType: refType,
 			RefID:   refID,
 			Note:    note,
-		}).Error
+			Date:    now,
+		})
+
+		var newSum float64
+		tx.Model(&model.TicketUnit{}).
+			Where("user_id = ? AND status = 'active'", userID).
+			Select("COALESCE(SUM(amount), 0)").Scan(&newSum)
+		tx.Model(&model.User{}).Where("id = ?", userID).Update("tickets", newSum)
+
+		return nil
 	})
 }
 
 func (c *Config) Award(db *gorm.DB, userID uint, amount float64, refType, note string) error {
 	return db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Model(&model.User{}).Where("id = ?", userID).
-			Update("tickets", gorm.Expr("tickets + ?", amount)).Error; err != nil {
-			return err
-		}
-		return tx.Create(&model.TicketTransaction{
+		tx.Create(&model.TicketUnit{
+			Serial: model.NewSerial(),
+			UserID: userID,
+			Amount: amount,
+			Status: "active",
+		})
+		tx.Create(&model.TicketTransaction{
 			UserID:  userID,
 			Amount:  amount,
 			Type:    "reward",
 			RefType: refType,
 			Note:    note,
-		}).Error
+			Date:    time.Now(),
+		})
+		var sum float64
+		tx.Model(&model.TicketUnit{}).
+			Where("user_id = ? AND status = 'active'", userID).
+			Select("COALESCE(SUM(amount), 0)").Scan(&sum)
+		tx.Model(&model.User{}).Where("id = ?", userID).Update("tickets", sum)
+		return nil
 	})
 }

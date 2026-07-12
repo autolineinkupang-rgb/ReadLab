@@ -7,14 +7,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"wtr-lab-clone/backend/internal/model"
+	"wtr-lab-clone/backend/internal/ticket"
 )
 
 type ShareHandler struct {
-	DB *gorm.DB
+	DB     *gorm.DB
+	Config *ticket.Config
 }
 
-func NewShareHandler(db *gorm.DB) *ShareHandler {
-	return &ShareHandler{DB: db}
+func NewShareHandler(db *gorm.DB, cfg *ticket.Config) *ShareHandler {
+	return &ShareHandler{DB: db, Config: cfg}
 }
 
 type ShareRequest struct {
@@ -70,7 +72,10 @@ func (h *ShareHandler) Create(c *gin.Context) {
 
 	var user model.User
 	h.DB.First(&user, userID)
-	xpAwarded := int64(3)
+	xpAwarded := int64(h.Config.Get("xp_share"))
+	if xpAwarded < 1 {
+		xpAwarded = 3
+	}
 	h.DB.Model(&user).Update("xp", gorm.Expr("xp + ?", xpAwarded))
 
 	c.JSON(http.StatusCreated, gin.H{"message": "shared", "xp_earned": xpAwarded})

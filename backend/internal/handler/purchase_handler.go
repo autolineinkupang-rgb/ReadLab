@@ -41,22 +41,28 @@ func (h *PurchaseHandler) Create(c *gin.Context) {
 
 	// Mock payment — in production, integrate with payment gateway here
 	err := h.DB.Transaction(func(tx *gorm.DB) error {
-		var user model.User
-		if err := tx.First(&user, uid).Error; err != nil {
-			return err
-		}
+		tx.Create(&model.TicketUnit{
+			Serial: model.NewSerial(),
+			UserID: uid,
+			Amount: req.Amount,
+			Status: "active",
+		})
 
-		if err := tx.Model(&user).Update("tickets", user.Tickets+req.Amount).Error; err != nil {
-			return err
-		}
-
-		return tx.Create(&model.TicketTransaction{
+		tx.Create(&model.TicketTransaction{
 			UserID: uid,
 			Amount: req.Amount,
 			Type:   "purchase",
 			Date:   time.Now(),
 			Note:   "Ticket purchase",
-		}).Error
+		})
+
+		var sum float64
+		tx.Model(&model.TicketUnit{}).
+			Where("user_id = ? AND status = 'active'", uid).
+			Select("COALESCE(SUM(amount), 0)").Scan(&sum)
+		tx.Model(&model.User{}).Where("id = ?", uid).Update("tickets", sum)
+
+		return nil
 	})
 
 	if err != nil {

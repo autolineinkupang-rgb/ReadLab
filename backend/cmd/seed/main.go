@@ -490,9 +490,9 @@ func main() {
 
 	seedGenres(db)
 	seedTags(db)
-	seedNovels(db)
 	seedUsers(db)
 	seedNews(db)
+	seedRatings(db)
 
 	log.Println("seed completed")
 }
@@ -610,6 +610,43 @@ func seedUsers(db *gorm.DB) {
 		db.Create(&user)
 		fmt.Printf("seeded user: %s\n", u.Username)
 	}
+}
+
+func seedRatings(db *gorm.DB) {
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	var novels []model.Novel
+	db.Where("rating = 0 OR rating_count = 0").Find(&novels)
+
+	for _, novel := range novels {
+		// realistic rating distribution: most between 3.5-4.5, some higher/lower
+		rating := 3.0 + rng.Float64()*2.0
+		if rating > 4.8 {
+			rating = 4.8
+		}
+		rating = float64(int(rating*10)) / 10 // round to 1 decimal
+
+		ratingCount := uint(rng.Intn(2000) + 10)
+		if novel.Views == 0 {
+			novel.Views = uint64(rng.Intn(500000) + 1000)
+		}
+		if novel.Readers == 0 {
+			novel.Readers = rng.Intn(5000) + 10
+		}
+		if novel.Votes == 0 {
+			novel.Votes = uint(rng.Intn(500) + 1)
+		}
+
+		db.Model(&novel).Updates(map[string]interface{}{
+			"rating":       rating,
+			"rating_count": ratingCount,
+			"views":        novel.Views,
+			"readers":      novel.Readers,
+			"votes":        novel.Votes,
+		})
+	}
+
+	fmt.Printf("seeded ratings for %d novels\n", len(novels))
 }
 
 func seedNews(db *gorm.DB) {

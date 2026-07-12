@@ -17,5 +17,10 @@ func DefaultTicketConfigs() []TicketConfig {
 		{Key: "edit_reset_cost", Value: 20, Label: "Edit Limit Reset Cost (tickets)"},
 		{Key: "gate_bypass_cost", Value: 50, Label: "Gate Bypass Cost (tickets)"},
 		{Key: "replace_review_cost", Value: 100, Label: "Replace Review Cost (tickets)"},
+		{Key: "xp_read", Value: 10, Label: "XP per Chapter Read"},
+		{Key: "xp_read_seconds", Value: 60, Label: "Minimum Reading Seconds for XP"},
+		{Key: "xp_vote", Value: 2, Label: "XP per Vote"},
+		{Key: "xp_share", Value: 3, Label: "XP per Share"},
+		{Key: "xp_review", Value: 5, Label: "XP per Review"},
 	}
 }

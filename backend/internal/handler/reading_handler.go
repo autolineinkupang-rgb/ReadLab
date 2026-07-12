@@ -7,14 +7,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"wtr-lab-clone/backend/internal/model"
+	"wtr-lab-clone/backend/internal/ticket"
 )
 
 type ReadingHandler struct {
-	DB *gorm.DB
+	DB     *gorm.DB
+	Config *ticket.Config
 }
 
-func NewReadingHandler(db *gorm.DB) *ReadingHandler {
-	return &ReadingHandler{DB: db}
+func NewReadingHandler(db *gorm.DB, cfg *ticket.Config) *ReadingHandler {
+	return &ReadingHandler{DB: db, Config: cfg}
 }
 
 func (h *ReadingHandler) TrackRead(c *gin.Context) {
@@ -109,7 +111,10 @@ func (h *ReadingHandler) ClaimXP(c *gin.Context) {
 		return
 	}
 
-	xpAwarded := int64(10)
+	xpAwarded := int64(h.Config.Get("xp_read"))
+	if xpAwarded < 1 {
+		xpAwarded = 10
+	}
 	tx := h.DB.Begin()
 	if err := tx.Model(&model.User{}).Where("id = ?", userID).UpdateColumn("xp", gorm.Expr("xp + ?", xpAwarded)).Error; err != nil {
 		tx.Rollback()
@@ -159,8 +164,9 @@ func (h *ReadingHandler) Progress(c *gin.Context) {
 	lastReadResult := h.DB.Where("user_id = ? AND novel_id = ?", userID, novelID).
 		Preload("Chapter").
 		Order("updated_at DESC").
-		First(&lastRead)
-	if lastReadResult.Error == nil {
+		Limit(1).
+		Find(&lastRead)
+	if lastReadResult.Error == nil && lastRead.ID != 0 {
 		n := lastRead.Chapter.Number
 		lastChapterNumber = &n
 		lastChapterTitle = lastRead.Chapter.Title

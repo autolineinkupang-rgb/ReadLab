@@ -23,11 +23,11 @@ func NewTicketService(db *gorm.DB, cfg *ticket.Config) *TicketService {
 }
 
 func (s *TicketService) GetBalance(userID uint) (float64, error) {
-	var user model.User
-	if err := s.DB.First(&user, userID).Error; err != nil {
-		return 0, err
-	}
-	return user.Tickets, nil
+	var sum float64
+	err := s.DB.Model(&model.TicketUnit{}).
+		Where("user_id = ? AND status = 'active'", userID).
+		Select("COALESCE(SUM(amount), 0)").Scan(&sum).Error
+	return sum, err
 }
 
 func (s *TicketService) Spend(userID uint, amount float64, refType, note string) error {
@@ -36,27 +36,64 @@ func (s *TicketService) Spend(userID uint, amount float64, refType, note string)
 	}
 
 	return s.DB.Transaction(func(tx *gorm.DB) error {
-		var user model.User
-		if err := tx.First(&user, userID).Error; err != nil {
-			return err
-		}
+		var sum float64
+		tx.Model(&model.TicketUnit{}).
+			Where("user_id = ? AND status = 'active'", userID).
+			Select("COALESCE(SUM(amount), 0)").Scan(&sum)
 
-		if user.Tickets < amount {
+		if sum < amount {
 			return ErrInsufficientTickets
 		}
 
-		if err := tx.Model(&user).Update("tickets", user.Tickets-amount).Error; err != nil {
-			return err
+		var units []model.TicketUnit
+		tx.Where("user_id = ? AND status = 'active'", userID).
+			Order("created_at ASC, id ASC").
+			Find(&units)
+
+		remaining := amount
+		now := time.Now()
+		for _, unit := range units {
+			if remaining <= 0 {
+				break
+			}
+			if unit.Amount <= remaining {
+				tx.Model(&unit).Updates(map[string]interface{}{
+					"status":   "banked",
+					"spent_at": &now,
+				})
+				remaining -= unit.Amount
+			} else {
+				excess := unit.Amount - remaining
+				tx.Model(&unit).Updates(map[string]interface{}{
+					"status":   "banked",
+					"spent_at": &now,
+				})
+				tx.Create(&model.TicketUnit{
+					Serial: model.NewSerial(),
+					UserID: userID,
+					Amount: excess,
+					Status: "active",
+				})
+				remaining = 0
+			}
 		}
 
-		return tx.Create(&model.TicketTransaction{
-			UserID: userID,
-			Amount: -amount,
-			Type:   "spend",
-			RefType:  refType,
-			Date:   time.Now(),
-			Note:   note,
-		}).Error
+		tx.Create(&model.TicketTransaction{
+			UserID:  userID,
+			Amount:  -amount,
+			Type:    "spend",
+			RefType: refType,
+			Date:    now,
+			Note:    note,
+		})
+
+		var newSum float64
+		tx.Model(&model.TicketUnit{}).
+			Where("user_id = ? AND status = 'active'", userID).
+			Select("COALESCE(SUM(amount), 0)").Scan(&newSum)
+		tx.Model(&model.User{}).Where("id = ?", userID).Update("tickets", newSum)
+
+		return nil
 	})
 }
 
@@ -66,23 +103,29 @@ func (s *TicketService) Award(userID uint, amount float64, refType, note string)
 	}
 
 	return s.DB.Transaction(func(tx *gorm.DB) error {
-		var user model.User
-		if err := tx.First(&user, userID).Error; err != nil {
-			return err
-		}
-
-		if err := tx.Model(&user).Update("tickets", user.Tickets+amount).Error; err != nil {
-			return err
-		}
-
-		return tx.Create(&model.TicketTransaction{
+		tx.Create(&model.TicketUnit{
+			Serial: model.NewSerial(),
 			UserID: userID,
 			Amount: amount,
-			Type:   "reward",
-			RefType:  refType,
-			Date:   time.Now(),
-			Note:   note,
-		}).Error
+			Status: "active",
+		})
+
+		tx.Create(&model.TicketTransaction{
+			UserID:  userID,
+			Amount:  amount,
+			Type:    "reward",
+			RefType: refType,
+			Date:    time.Now(),
+			Note:    note,
+		})
+
+		var sum float64
+		tx.Model(&model.TicketUnit{}).
+			Where("user_id = ? AND status = 'active'", userID).
+			Select("COALESCE(SUM(amount), 0)").Scan(&sum)
+		tx.Model(&model.User{}).Where("id = ?", userID).Update("tickets", sum)
+
+		return nil
 	})
 }
 
@@ -134,19 +177,30 @@ func (s *TicketService) ClaimDailyReward(userID uint) (float64, error) {
 
 	err := s.DB.Transaction(func(tx *gorm.DB) error {
 		now := time.Now()
+		tx.Create(&model.TicketUnit{
+			Serial: model.NewSerial(),
+			UserID: userID,
+			Amount: reward,
+			Status: "active",
+		})
 		if err := tx.Model(&user).Updates(map[string]interface{}{
-			"tickets":          user.Tickets + reward,
 			"last_daily_claim": &now,
 		}).Error; err != nil {
 			return err
 		}
-		return tx.Create(&model.TicketTransaction{
+		tx.Create(&model.TicketTransaction{
 			UserID: userID,
 			Amount: reward,
 			Type:   "reward",
 			RefType: "daily",
 			Date:   now,
-		}).Error
+		})
+		var sum float64
+		tx.Model(&model.TicketUnit{}).
+			Where("user_id = ? AND status = 'active'", userID).
+			Select("COALESCE(SUM(amount), 0)").Scan(&sum)
+		tx.Model(&model.User{}).Where("id = ?", userID).Update("tickets", sum)
+		return nil
 	})
 
 	return reward, err

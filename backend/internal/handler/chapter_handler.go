@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -57,30 +58,62 @@ func (h *ChapterHandler) Get(c *gin.Context) {
 		}
 
 		err = h.DB.Transaction(func(tx *gorm.DB) error {
-			var txUser model.User
-			if err := tx.First(&txUser, user.ID).Error; err != nil {
-				return err
-			}
-
-			if txUser.Tickets < float64(chapter.TicketCost) {
+			var sum float64
+			tx.Model(&model.TicketUnit{}).
+				Where("user_id = ? AND status = 'active'", user.ID).
+				Select("COALESCE(SUM(amount), 0)").Scan(&sum)
+			if sum < float64(chapter.TicketCost) {
 				return ticket.ErrInsufficientTickets
 			}
 
-			if err := tx.Model(&txUser).Update("tickets", gorm.Expr("tickets - ?", chapter.TicketCost)).Error; err != nil {
-				return err
+			cost := float64(chapter.TicketCost)
+			var units []model.TicketUnit
+			tx.Where("user_id = ? AND status = 'active'", user.ID).
+				Order("created_at ASC, id ASC").Find(&units)
+
+			remaining := cost
+			now := time.Now()
+			for _, unit := range units {
+				if remaining <= 0 {
+					break
+				}
+				if unit.Amount <= remaining {
+					tx.Model(&unit).Updates(map[string]interface{}{
+					"status":   "banked",
+					"spent_at": &now,
+				})
+				remaining -= unit.Amount
+			} else {
+				excess := unit.Amount - remaining
+				tx.Model(&unit).Updates(map[string]interface{}{
+					"status":   "banked",
+					"spent_at": &now,
+					})
+					tx.Create(&model.TicketUnit{
+						Serial: model.NewSerial(),
+						UserID: user.ID,
+						Amount: excess,
+						Status: "active",
+					})
+					remaining = 0
+				}
 			}
 
-			txRecord := model.TicketTransaction{
+			tx.Create(&model.TicketTransaction{
 				UserID:  user.ID,
-				Amount:  -float64(chapter.TicketCost),
+				Amount:  -cost,
 				Type:    "spend",
 				RefType: "chapter",
 				RefID:   chapter.ID,
+				Date:    now,
 				Note:    "Unlock chapter " + strconv.Itoa(chapter.Number) + " of " + chapter.Novel.Title,
-			}
-			if err := tx.Create(&txRecord).Error; err != nil {
-				return err
-			}
+			})
+
+			var newSum float64
+			tx.Model(&model.TicketUnit{}).
+				Where("user_id = ? AND status = 'active'", user.ID).
+				Select("COALESCE(SUM(amount), 0)").Scan(&newSum)
+			tx.Model(&model.User{}).Where("id = ?", user.ID).Update("tickets", newSum)
 
 			return nil
 		})

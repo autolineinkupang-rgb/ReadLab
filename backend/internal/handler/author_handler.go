@@ -21,7 +21,7 @@ func (h *AuthorHandler) Novels(c *gin.Context) {
 
 	var novels []model.Novel
 	if err := h.DB.Preload("Genres").Preload("Tags").
-		Where("author = ?", authorName).
+		Where("author = ? OR author_slug = ?", authorName, authorName).
 		Order("created_at DESC").
 		Find(&novels).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

@@ -6,14 +6,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"wtr-lab-clone/backend/internal/model"
+	"wtr-lab-clone/backend/internal/ticket"
 )
 
 type VoteHandler struct {
-	DB *gorm.DB
+	DB     *gorm.DB
+	Config *ticket.Config
 }
 
-func NewVoteHandler(db *gorm.DB) *VoteHandler {
-	return &VoteHandler{DB: db}
+func NewVoteHandler(db *gorm.DB, cfg *ticket.Config) *VoteHandler {
+	return &VoteHandler{DB: db, Config: cfg}
 }
 
 type VoteRequest struct {
@@ -53,7 +55,10 @@ func (h *VoteHandler) Create(c *gin.Context) {
 
 	var user model.User
 	h.DB.First(&user, userID)
-	xpAwarded := int64(2)
+	xpAwarded := int64(h.Config.Get("xp_vote"))
+	if xpAwarded < 1 {
+		xpAwarded = 2
+	}
 	h.DB.Model(&user).Update("xp", gorm.Expr("xp + ?", xpAwarded))
 
 	c.JSON(http.StatusCreated, gin.H{"message": "voted", "xp_earned": xpAwarded})

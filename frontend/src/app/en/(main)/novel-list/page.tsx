@@ -21,6 +21,7 @@ export default function NovelListPage() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
   const [sort, setSort] = useState("created_at");
   const [order, setOrder] = useState("desc");
   const [status, setStatus] = useState("");
@@ -193,7 +194,7 @@ export default function NovelListPage() {
 
       {/* Pagination */}
       <div className="flex items-center justify-center gap-2 mt-8">
-        <button
+        <button suppressHydrationWarning
           onClick={() => fetchData(Math.max(1, page - 1))}
           disabled={page <= 1}
           className="px-3 py-1.5 text-sm rounded-lg bg-card-hover text-gray-300 hover:bg-line-light disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
@@ -227,7 +228,7 @@ export default function NovelListPage() {
           </button>
         )}
 
-        <button
+        <button suppressHydrationWarning
           onClick={() => fetchData(Math.min(totalPages, page + 1))}
           disabled={page >= totalPages}
           className="px-3 py-1.5 text-sm rounded-lg bg-card-hover text-gray-300 hover:bg-line-light disabled:opacity-40 disabled:cursor-not-allowed transition-colors"

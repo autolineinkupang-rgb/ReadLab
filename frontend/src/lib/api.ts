@@ -109,6 +109,10 @@ export const rewards = {
   status: () => fetcher<{ daily_reward: { can_claim: boolean; reward: number; next_claim_at?: string } }>("/rewards/status"),
 };
 
+export const xpConfig = {
+  list: () => fetcher<Record<string, number>>("/config/xp"),
+};
+
 // Novels
 export const novels = {
   list: (params?: { page?: number; limit?: number; q?: string; status?: string; genre?: string; genres?: string; genre_mode?: string; sort?: string; order?: string; min_chapters?: number; min_rating?: number; min_reviews?: number; writer_id?: number }) =>
@@ -405,6 +409,15 @@ export const adminTicketConfig = {
     }),
 };
 
+export const adminXpConfig = {
+  list: () => fetcher<Record<string, number>>("/config/xp"),
+  update: (key: string, value: number) =>
+    fetcher<{ message: string }>("/admin/config/tickets", {
+      method: "PUT",
+      body: JSON.stringify({ key, value }),
+    }),
+};
+
 // Admin users (protected)
 export const adminUsers = {
 	list: (params?: { page?: number; limit?: number; role?: string; q?: string }) =>
@@ -419,6 +432,11 @@ export const adminUsers = {
 		fetcher<any>(`/admin/users/${id}`, {
 			method: "DELETE",
 		}),
+	sendTickets: (id: number | string, amount: number) =>
+		fetcher<any>(`/admin/users/${id}/tickets`, {
+			method: "POST",
+			body: JSON.stringify({ amount }),
+		}),
 	createAdmin: (data: { username: string; email: string; password: string }) =>
 		fetcher<any>("/admin/users/admin", {
 			method: "POST",
@@ -426,6 +444,15 @@ export const adminUsers = {
 		}),
 	stats: () =>
 		fetcher<{ total_users: number; total_novels: number; total_chapters: number; total_admins: number; max_admins: number }>("/admin/stats"),
+};
+
+export const adminBank = {
+	balance: () => fetcher<{ balance: number; units: number }>("/admin/bank"),
+	claim: (amount: number) =>
+		fetcher<{ message: string }>("/admin/bank/claim", {
+			method: "POST",
+			body: JSON.stringify({ amount }),
+		}),
 };
 
 export interface ApiError extends Error {

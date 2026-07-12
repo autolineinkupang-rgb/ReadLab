@@ -101,6 +101,8 @@ func (s *Scraper) ScrapeNovel(url string) (*ScrapedNovel, error) {
 		return s.scrapeFreeWebNovel(url)
 	case strings.Contains(url, "novelupdates"):
 		return s.scrapeNovelUpdates(url)
+	case strings.Contains(url, "novelfire"):
+		return s.scrapeNovelFire(url)
 	default:
 		return nil, fmt.Errorf("unsupported site: %s", url)
 	}

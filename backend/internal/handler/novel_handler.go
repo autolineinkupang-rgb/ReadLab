@@ -4,13 +4,16 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"wtr-lab-clone/backend/internal/model"
 	"wtr-lab-clone/backend/internal/service"
+	"wtr-lab-clone/backend/internal/scraper"
 	"wtr-lab-clone/backend/internal/ticket"
 )
 
@@ -18,10 +21,11 @@ type NovelHandler struct {
 	DB       *gorm.DB
 	Config   *ticket.Config
 	NovelSvc *service.NovelService
+	Scraper  *scraper.Scraper
 }
 
 func NewNovelHandler(db *gorm.DB, cfg *ticket.Config, novelSvc *service.NovelService) *NovelHandler {
-	return &NovelHandler{DB: db, Config: cfg, NovelSvc: novelSvc}
+	return &NovelHandler{DB: db, Config: cfg, NovelSvc: novelSvc, Scraper: scraper.New()}
 }
 
 func (h *NovelHandler) List(c *gin.Context) {
@@ -168,7 +172,7 @@ func (h *NovelHandler) Chapters(c *gin.Context) {
 	if page < 1 {
 		page = 1
 	}
-	if limit < 1 || limit > 1000 {
+	if limit < 1 || limit > 10000 {
 		limit = 50
 	}
 
@@ -217,6 +221,20 @@ func (h *NovelHandler) GetChapterByNum(c *gin.Context) {
 		return
 	}
 
+	if (chapter.Content == "" || chapter.ContentMD == "") &&
+		chapter.Novel.SourceURL != "" &&
+		strings.Contains(chapter.Novel.SourceURL, "novelfire.net") {
+		slug := filepath.Base(chapter.Novel.SourceURL)
+		content, err := h.Scraper.ScrapeNovelfireChapterContent(slug, chapter.Number)
+		if err == nil && content != "" {
+			h.DB.Model(&chapter).Updates(map[string]interface{}{
+				"content":    content,
+				"content_md": "",
+			})
+			chapter.Content = content
+		}
+	}
+
 	if chapter.IsLocked {
 		userID, exists := c.Get("user_id")
 		if !exists {
@@ -242,27 +260,63 @@ func (h *NovelHandler) GetChapterByNum(c *gin.Context) {
 		}
 
 		err = h.DB.Transaction(func(tx *gorm.DB) error {
-			var txUser model.User
-			if err := tx.First(&txUser, user.ID).Error; err != nil {
-				return err
-			}
-			if txUser.Tickets < float64(chapter.TicketCost) {
+			var sum float64
+			tx.Model(&model.TicketUnit{}).
+				Where("user_id = ? AND status = 'active'", user.ID).
+				Select("COALESCE(SUM(amount), 0)").Scan(&sum)
+			if sum < float64(chapter.TicketCost) {
 				return ticket.ErrInsufficientTickets
 			}
-			if err := tx.Model(&txUser).Update("tickets", gorm.Expr("tickets - ?", chapter.TicketCost)).Error; err != nil {
-				return err
+
+			cost := float64(chapter.TicketCost)
+			var units []model.TicketUnit
+			tx.Where("user_id = ? AND status = 'active'", user.ID).
+				Order("created_at ASC, id ASC").Find(&units)
+
+			remaining := cost
+			now := time.Now()
+			for _, unit := range units {
+				if remaining <= 0 {
+					break
+				}
+				if unit.Amount <= remaining {
+					tx.Model(&unit).Updates(map[string]interface{}{
+					"status":   "banked",
+					"spent_at": &now,
+				})
+				remaining -= unit.Amount
+			} else {
+				excess := unit.Amount - remaining
+				tx.Model(&unit).Updates(map[string]interface{}{
+					"status":   "banked",
+					"spent_at": &now,
+					})
+					tx.Create(&model.TicketUnit{
+						Serial: model.NewSerial(),
+						UserID: user.ID,
+						Amount: excess,
+						Status: "active",
+					})
+					remaining = 0
+				}
 			}
-			txRecord := model.TicketTransaction{
+
+			tx.Create(&model.TicketTransaction{
 				UserID:  user.ID,
-				Amount:  -float64(chapter.TicketCost),
+				Amount:  -cost,
 				Type:    "spend",
 				RefType: "chapter",
 				RefID:   chapter.ID,
+				Date:    now,
 				Note:    "Unlock chapter " + strconv.Itoa(chapter.Number) + " of " + chapter.Novel.Title,
-			}
-			if err := tx.Create(&txRecord).Error; err != nil {
-				return err
-			}
+			})
+
+			var newSum float64
+			tx.Model(&model.TicketUnit{}).
+				Where("user_id = ? AND status = 'active'", user.ID).
+				Select("COALESCE(SUM(amount), 0)").Scan(&newSum)
+			tx.Model(&model.User{}).Where("id = ?", user.ID).Update("tickets", newSum)
+
 			return nil
 		})
 		if err != nil {
@@ -438,17 +492,25 @@ func (h *NovelHandler) Create(c *gin.Context) {
 	uid := userID.(uint)
 	reward := h.Config.Get("novel_contribution")
 	if err := h.DB.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Model(&model.User{}).Where("id = ?", uid).
-			Update("tickets", gorm.Expr("tickets + ?", reward)).Error; err != nil {
-			return err
-		}
-		return tx.Create(&model.TicketTransaction{
+		tx.Create(&model.TicketUnit{
+			Serial: model.NewSerial(),
+			UserID: uid,
+			Amount: reward,
+			Status: "active",
+		})
+		tx.Create(&model.TicketTransaction{
 			UserID:  uid,
 			Amount:  reward,
 			Type:    "reward",
 			RefType: "novel_contribution",
 			Note:    "Novel contribution reward",
-		}).Error
+		})
+		var sum float64
+		tx.Model(&model.TicketUnit{}).
+			Where("user_id = ? AND status = 'active'", uid).
+			Select("COALESCE(SUM(amount), 0)").Scan(&sum)
+		tx.Model(&model.User{}).Where("id = ?", uid).Update("tickets", sum)
+		return nil
 	}); err != nil {
 		slog.Error("failed to award novel contribution tickets", "error", err)
 	}

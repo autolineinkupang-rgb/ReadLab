@@ -95,6 +95,10 @@ export default function NovelDetailPage() {
             setAuthorNovels((ar.data || []).filter((n: Novel) => n.ID !== parseInt(id)));
           }).catch(() => {});
         }
+        const limit = res.Chapters || 200;
+        novels.chapters(id, { page: 1, limit })
+          .then((chRes) => { setChapters(chRes.data); })
+          .catch(() => { setChapters([]); });
       } catch {
         setNovel(null);
       }
@@ -111,13 +115,6 @@ export default function NovelDetailPage() {
     if (!user || !id) return;
     followApi.check(parseInt(id)).then((res) => setIsFollowing(res.following)).catch(() => {});
   }, [user, id]);
-
-  useEffect(() => {
-    if (!id) return;
-    novels.chapters(id, { page: 1, limit: 200 })
-      .then((res) => { setChapters(res.data); })
-      .catch(() => { setChapters([]); });
-  }, [id]);
 
   useEffect(() => {
     if (!id) return;
@@ -448,7 +445,7 @@ export default function NovelDetailPage() {
 
               {/* Chapter Groups */}
               <div className="bg-card border border-line rounded-xl p-4">
-                <h3 className="text-sm font-semibold text-white mb-3">Chapters</h3>
+                <h3 className="text-sm font-semibold text-white mb-3">Chapters <span className="text-gray-500 font-normal">({chapters.length})</span></h3>
                 <div className="space-y-2">
                   {groupChapters(chapters).map((group) => (
                     <details key={group.label} className="group rounded-lg border border-line-light overflow-hidden">

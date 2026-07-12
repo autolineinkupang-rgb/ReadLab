@@ -61,6 +61,7 @@ func migrateDB(db *gorm.DB) {
 		&model.PasswordResetToken{},
 		&model.TokenBlacklist{},
 		&model.Notification{},
+		&model.TicketUnit{},
 	); err != nil {
 		slog.Error("failed to migrate", "error", err)
 	}
@@ -77,6 +78,9 @@ func migrateDB(db *gorm.DB) {
 	db.Exec("CREATE INDEX IF NOT EXISTS idx_novel_follows_user_novel ON novel_follows(user_id, novel_id)")
 
 	seedTicketConfigs(db)
+	seedTicketUnits(db)
+	migrateSpentToBanked(db)
+	migrateAllToBank(db)
 
 	slog.Info("database migration completed")
 }
@@ -111,6 +115,63 @@ func seedTicketConfigs(db *gorm.DB) {
 			slog.Info("seeded ticket config", "key", cfg.Key, "value", cfg.Value)
 		}
 	}
+}
+
+func seedTicketUnits(db *gorm.DB) {
+	var count int64
+	db.Model(&model.TicketUnit{}).Count(&count)
+	if count > 0 {
+		return
+	}
+
+	var users []model.User
+	db.Where("tickets > 0").Find(&users)
+	if len(users) == 0 {
+		return
+	}
+
+	slog.Info("seeding ticket units from existing balances", "count", len(users))
+	units := make([]model.TicketUnit, 0, len(users))
+	for _, u := range users {
+		units = append(units, model.TicketUnit{
+			Serial: model.NewSerial(),
+			UserID: u.ID,
+			Amount: u.Tickets,
+			Status: "active",
+		})
+	}
+	db.Create(&units)
+	slog.Info("ticket units seeded", "units", len(units))
+}
+
+func migrateSpentToBanked(db *gorm.DB) {
+	var count int64
+	db.Model(&model.TicketUnit{}).Where("status = 'spent'").Count(&count)
+	if count == 0 {
+		return
+	}
+	slog.Info("migrating spent ticket units to banked", "count", count)
+	db.Model(&model.TicketUnit{}).Where("status = 'spent'").Update("status", "banked")
+}
+
+func migrateAllToBank(db *gorm.DB) {
+	var flag int64
+	db.Model(&model.TicketConfig{}).Where("key = 'bank_seeded'").Count(&flag)
+	if flag > 0 {
+		return
+	}
+
+	var marked int64
+	db.Model(&model.TicketUnit{}).Where("status = 'active'").Count(&marked)
+	if marked == 0 {
+		db.Create(&model.TicketConfig{Key: "bank_seeded", Value: 1, Label: "Bank seed flag (1 = seeded)"})
+		return
+	}
+
+	slog.Info("moving all active ticket units to bank", "count", marked)
+	db.Model(&model.TicketUnit{}).Where("status = 'active'").Update("status", "banked")
+	db.Exec("UPDATE users SET tickets = (SELECT COALESCE(SUM(amount), 0) FROM ticket_units WHERE user_id = users.id AND status = 'active')")
+	db.Create(&model.TicketConfig{Key: "bank_seeded", Value: 1, Label: "Bank seed flag (1 = seeded)"})
 }
 
 func main() {

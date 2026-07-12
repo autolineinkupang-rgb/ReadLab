@@ -95,6 +95,16 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 			"replace_review": ticketCfg.Get("replace_review_cost"),
 		})
 	})
+	api.GET("/config/xp", func(c *gin.Context) {
+		configs := ticketCfg.List()
+		xpConfigs := make(map[string]float64)
+		for _, cfg := range configs {
+			if len(cfg.Key) >= 3 && cfg.Key[:3] == "xp_" {
+				xpConfigs[cfg.Key] = cfg.Value
+			}
+		}
+		c.JSON(200, xpConfigs)
+	})
 
 	authorHandler := handler.NewAuthorHandler(db)
 	api.GET("/author/:name/novels", authorHandler.Novels)
@@ -107,12 +117,12 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 
 	rewardHandler := handler.NewRewardHandler(db, ticketCfg, ticketSvc)
 
-	readingHandler := handler.NewReadingHandler(db)
+	readingHandler := handler.NewReadingHandler(db, ticketCfg)
 
 	protected := api.Group("")
 	protected.Use(middleware.AuthRequired(jwtSecret, db))
 	{
-		voteHandler := handler.NewVoteHandler(db)
+		voteHandler := handler.NewVoteHandler(db, ticketCfg)
 		protected.POST("/votes", voteHandler.Create)
 
 		requestHandler := handler.NewRequestHandler(db)
@@ -128,7 +138,7 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 		protected.POST("/novels/:id/chapters/:num/xp", readingHandler.ClaimXP)
 		protected.GET("/novels/:id/my-progress", readingHandler.Progress)
 
-		shareHandler := handler.NewShareHandler(db)
+		shareHandler := handler.NewShareHandler(db, ticketCfg)
 		protected.POST("/novels/:id/share", shareHandler.Create)
 
 		followHandler := handler.NewFollowHandler(db)
@@ -194,8 +204,10 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 		adminGroup.GET("/admin/users", adminHandler.ListUsers)
 		adminGroup.GET("/admin/users/:id", adminHandler.GetUser)
 		adminGroup.PUT("/admin/users/:id", adminHandler.UpdateUser)
+		adminGroup.POST("/admin/users/:id/tickets", adminHandler.SendTickets)
 		adminGroup.DELETE("/admin/users/:id", adminHandler.DeleteUser)
-		adminGroup.POST("/admin/users/admin", adminHandler.CreateAdmin)
+		adminGroup.GET("/admin/bank", adminHandler.BankBalance)
+		adminGroup.POST("/admin/bank/claim", adminHandler.BankClaim)
 		adminGroup.GET("/admin/stats", adminHandler.GetStats)
 		adminGroup.GET("/admin/reviews", adminHandler.ListReviews)
 		adminGroup.DELETE("/admin/reviews/:id", adminHandler.DeleteReview)
@@ -227,6 +239,13 @@ func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool)
 			r.Static("/api/covers", coversDir)
 			slog.Info("serving lncrawl cover images", "dir", coversDir)
 		}
+	}
+
+	cwd, _ := os.Getwd()
+	novelfireCovers := filepath.Join(cwd, "uploads", "covers")
+	if info, statErr := os.Stat(novelfireCovers); statErr == nil && info.IsDir() {
+		r.Static("/api/novel-covers", novelfireCovers)
+		slog.Info("serving novelfire cover images", "dir", novelfireCovers)
 	}
 
 	return r

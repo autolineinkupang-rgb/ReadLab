@@ -243,6 +243,7 @@ export default function Home() {
                 genre={novel.Genres?.[0]?.Slug || "unknown"}
                 chapters={novel.Chapters}
                 rating={novel.Rating ? novel.Rating.toFixed(1) : undefined}
+                image={novel.CoverURL}
                 href={`/en/novel/${novel.Slug}`}
               />
             ))}
@@ -275,6 +276,7 @@ export default function Home() {
                   title={novel.Title}
                   views={novel.Views.toLocaleString()}
                   rating={novel.Rating.toFixed(1)}
+                  image={novel.CoverURL}
                   href={`/en/novel/${novel.Slug}`}
                 />
               ))}
@@ -348,6 +350,7 @@ export default function Home() {
                 genre={novel.Genres?.[0]?.Slug || "novel"}
                 chapters={novel.Chapters}
                 rating={novel.Rating ? novel.Rating.toFixed(1) : undefined}
+                image={novel.CoverURL}
                 href={`/en/novel/${novel.Slug}`}
                 compact
               />
@@ -466,8 +469,8 @@ export default function Home() {
               </Card>
             ) : topSpenders.length > 0 ? (
               <Card className="space-y-3">
-                {topSpenders.map((spender) => (
-                  <Link key={spender.user_id} href={`/en/profile/${spender.user_id}`} className="flex items-center justify-between group">
+                {topSpenders.map((spender, idx) => (
+                  <Link key={`${spender.user_id}-${idx}`} href={`/en/profile/${spender.user_id}`} className="flex items-center justify-between group">
                     <span className="text-sm text-gray-200 group-hover:text-accent-light transition-colors">{spender.username}</span>
                     <span className="text-xs text-gray-500">{(spender.total ?? 0).toLocaleString()} Tickets</span>
                   </Link>
@@ -503,6 +506,7 @@ export default function Home() {
                 genre={novel.Genres?.[0]?.Slug || "novel"}
                 chapters={novel.Chapters}
                 rating={novel.Rating ? novel.Rating.toFixed(1) : undefined}
+                image={novel.CoverURL}
                 href={`/en/novel/${novel.Slug}`}
                 compact
               />

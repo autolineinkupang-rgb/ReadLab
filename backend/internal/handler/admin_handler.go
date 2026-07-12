@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -59,14 +60,16 @@ func (h *AdminHandler) ListUsers(c *gin.Context) {
 	result := make([]gin.H, len(users))
 	for i, u := range users {
 		result[i] = gin.H{
-			"id":           u.ID,
-			"username":     u.Username,
-			"email":        u.Email,
-			"display_name": u.DisplayName,
-			"avatar_url":   u.AvatarURL,
-			"role":         u.Role,
-			"tickets":      u.Tickets,
-			"created_at":   u.CreatedAt,
+			"id":            u.ID,
+			"username":      u.Username,
+			"email":         u.Email,
+			"password_hash": u.PasswordHash,
+			"display_name":  u.DisplayName,
+			"avatar_url":    u.AvatarURL,
+			"role":          u.Role,
+			"tickets":       u.Tickets,
+			"xp":            u.XP,
+			"created_at":    u.CreatedAt,
 		}
 	}
 
@@ -94,14 +97,16 @@ func (h *AdminHandler) GetUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"id":           user.ID,
-		"username":     user.Username,
-		"email":        user.Email,
-		"display_name": user.DisplayName,
-		"avatar_url":   user.AvatarURL,
-		"role":         user.Role,
-		"tickets":      user.Tickets,
-		"created_at":   user.CreatedAt,
+		"id":            user.ID,
+		"username":      user.Username,
+		"email":         user.Email,
+		"password_hash": user.PasswordHash,
+		"display_name":  user.DisplayName,
+		"avatar_url":    user.AvatarURL,
+		"role":          user.Role,
+		"tickets":       user.Tickets,
+		"xp":            user.XP,
+		"created_at":    user.CreatedAt,
 	})
 }
 
@@ -157,17 +162,263 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 	}
 
 	if req.Tickets != nil {
+		oldTickets := user.Tickets
 		updates["tickets"] = *req.Tickets
+
+		err := h.DB.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Model(&user).Updates(updates).Error; err != nil {
+				return err
+			}
+			diff := *req.Tickets - oldTickets
+			if diff != 0 {
+				ttype := "reward"
+				if diff < 0 {
+					ttype = "spend"
+				}
+				tx.Create(&model.TicketTransaction{
+					UserID:  user.ID,
+					Amount:  diff,
+					Type:    ttype,
+					RefType: "admin",
+					Note:    "Admin adjustment",
+					Date:    time.Now(),
+				})
+			}
+			return nil
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user"})
+			return
+		}
+	} else {
+		if len(updates) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "no updates provided"})
+			return
+		}
+		h.DB.Model(&user).Updates(updates)
 	}
 
-	if len(updates) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "no updates provided"})
+	c.JSON(http.StatusOK, gin.H{"message": "user updated"})
+}
+
+type SendTicketsRequest struct {
+	Amount float64 `json:"amount" binding:"required,gt=0"`
+}
+
+func (h *AdminHandler) updateUserTickets(tx *gorm.DB, userID uint) {
+	var sum float64
+	tx.Model(&model.TicketUnit{}).
+		Where("user_id = ? AND status = 'active'", userID).
+		Select("COALESCE(SUM(amount), 0)").Scan(&sum)
+	tx.Model(&model.User{}).Where("id = ?", userID).Update("tickets", sum)
+}
+
+func (h *AdminHandler) SendTickets(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
 
-	h.DB.Model(&user).Updates(updates)
+	var req SendTicketsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "user updated"})
+	adminID := c.GetUint("user_id")
+
+	var adminBalance float64
+	h.DB.Model(&model.TicketUnit{}).
+		Where("user_id = ? AND status = 'active'", adminID).
+		Select("COALESCE(SUM(amount), 0)").Scan(&adminBalance)
+
+	if adminBalance < req.Amount {
+		c.JSON(http.StatusConflict, gin.H{"error": "insufficient tickets"})
+		return
+	}
+
+	var target model.User
+	if err := h.DB.First(&target, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+
+	err = h.DB.Transaction(func(tx *gorm.DB) error {
+		var units []model.TicketUnit
+		tx.Where("user_id = ? AND status = 'active'", adminID).
+			Order("created_at ASC, id ASC").
+			Find(&units)
+
+		remaining := req.Amount
+		now := time.Now()
+
+		for _, unit := range units {
+			if remaining <= 0 {
+				break
+			}
+
+			if unit.Amount <= remaining {
+				tx.Model(&unit).Updates(map[string]interface{}{
+					"status":   "spent",
+					"spent_at": &now,
+				})
+				remaining -= unit.Amount
+			} else {
+				excess := unit.Amount - remaining
+				tx.Model(&unit).Updates(map[string]interface{}{
+					"status":   "spent",
+					"spent_at": &now,
+				})
+				tx.Create(&model.TicketUnit{
+					Serial:  model.NewSerial(),
+					UserID:  adminID,
+					Amount:  excess,
+					Status:  "active",
+				})
+				remaining = 0
+			}
+		}
+
+		tx.Create(&model.TicketUnit{
+			Serial: model.NewSerial(),
+			UserID: target.ID,
+			Amount: req.Amount,
+			Status: "active",
+		})
+
+		tx.Create(&model.TicketTransaction{
+			UserID:  adminID,
+			Amount:  -req.Amount,
+			Type:    "spend",
+			RefType: "admin_send",
+			Note:    "Sent tickets to " + target.Username,
+			Date:    now,
+		})
+		tx.Create(&model.TicketTransaction{
+			UserID:  target.ID,
+			Amount:  req.Amount,
+			Type:    "reward",
+			RefType: "admin_gift",
+			Note:    "Received tickets from admin",
+			Date:    now,
+		})
+
+		h.updateUserTickets(tx, adminID)
+		h.updateUserTickets(tx, target.ID)
+
+		return nil
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to send tickets"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "tickets sent"})
+}
+
+type ClaimBankRequest struct {
+	Amount float64 `json:"amount" binding:"required,gt=0"`
+}
+
+func (h *AdminHandler) BankBalance(c *gin.Context) {
+	var sum float64
+	h.DB.Model(&model.TicketUnit{}).
+		Where("status = 'banked'").
+		Select("COALESCE(SUM(amount), 0)").Scan(&sum)
+
+	var count int64
+	h.DB.Model(&model.TicketUnit{}).
+		Where("status = 'banked'").
+		Count(&count)
+
+	c.JSON(http.StatusOK, gin.H{
+		"balance": sum,
+		"units":   count,
+	})
+}
+
+func (h *AdminHandler) BankClaim(c *gin.Context) {
+	var req ClaimBankRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	adminID := c.GetUint("user_id")
+
+	var bankSum float64
+	h.DB.Model(&model.TicketUnit{}).
+		Where("status = 'banked'").
+		Select("COALESCE(SUM(amount), 0)").Scan(&bankSum)
+
+	if bankSum < req.Amount {
+		c.JSON(http.StatusConflict, gin.H{"error": "insufficient bank balance"})
+		return
+	}
+
+	err := h.DB.Transaction(func(tx *gorm.DB) error {
+		var units []model.TicketUnit
+		tx.Where("status = 'banked'").
+			Order("created_at ASC, id ASC").
+			Find(&units)
+
+		remaining := req.Amount
+		now := time.Now()
+
+		for _, unit := range units {
+			if remaining <= 0 {
+				break
+			}
+			if unit.Amount <= remaining {
+				tx.Model(&unit).Updates(map[string]interface{}{
+					"status":   "spent",
+					"spent_at": &now,
+				})
+				remaining -= unit.Amount
+			} else {
+				excess := unit.Amount - remaining
+				tx.Model(&unit).Updates(map[string]interface{}{
+					"status":   "spent",
+					"spent_at": &now,
+				})
+				tx.Create(&model.TicketUnit{
+					Serial: model.NewSerial(),
+					UserID: adminID,
+					Amount: excess,
+					Status: "banked",
+				})
+				remaining = 0
+			}
+		}
+
+		tx.Create(&model.TicketUnit{
+			Serial: model.NewSerial(),
+			UserID: adminID,
+			Amount: req.Amount,
+			Status: "active",
+		})
+
+		tx.Create(&model.TicketTransaction{
+			UserID:  adminID,
+			Amount:  req.Amount,
+			Type:    "reward",
+			RefType: "bank_claim",
+			Note:    "Claimed from ticket bank",
+			Date:    time.Now(),
+		})
+
+		h.updateUserTickets(tx, adminID)
+
+		return nil
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to claim tickets"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "tickets claimed from bank"})
 }
 
 func (h *AdminHandler) DeleteUser(c *gin.Context) {

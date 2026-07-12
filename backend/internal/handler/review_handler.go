@@ -277,7 +277,10 @@ func (h *ReviewHandler) Create(c *gin.Context) {
 
 	var user model.User
 	h.DB.First(&user, uid)
-	xpAwarded := int64(5)
+	xpAwarded := int64(h.Config.Get("xp_review"))
+	if xpAwarded < 1 {
+		xpAwarded = 5
+	}
 	h.DB.Model(&user).Update("xp", gorm.Expr("xp + ?", xpAwarded))
 
 	h.DB.Preload("User").First(&review, review.ID)

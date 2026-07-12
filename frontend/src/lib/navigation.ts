@@ -30,6 +30,8 @@ export const adminLinks = [
   { href: "/en/admin/reviews", label: "Reviews" },
   { href: "/en/admin/news", label: "News" },
   { href: "/en/admin/ticket-config", label: "Tickets" },
+  { href: "/en/admin/xp-config", label: "XP" },
+  { href: "/en/admin/bank", label: "Bank" },
 ];
 
 export const navSections = [

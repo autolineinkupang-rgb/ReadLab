@@ -96,7 +96,7 @@ function TicketConfigDashboard() {
               </tr>
             </thead>
             <tbody>
-              {configs.map((cfg) => (
+              {configs.filter((cfg) => !cfg.Key.startsWith("xp_")).map((cfg) => (
                 <tr key={cfg.ID} className="border-b border-line/50 hover:bg-card-hover/50">
                   <td className="px-4 py-3 text-gray-200">{labelMap[cfg.Key] || cfg.Label}</td>
                   <td className="px-4 py-3 text-gray-500 font-mono text-xs">{cfg.Key}</td>
