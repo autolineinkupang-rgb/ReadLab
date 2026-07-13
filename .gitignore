@@ -19,7 +19,7 @@ frontend/.next/
 frontend/tsconfig.tsbuildinfo
 
 # Go compiled binaries (in any directory)
-server
+/server
 backend/server
 backend/readlab-server
 backend/wtrlab-server
