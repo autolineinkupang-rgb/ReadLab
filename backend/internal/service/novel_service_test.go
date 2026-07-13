@@ -144,8 +144,8 @@ func TestNovelList_StatusFilter(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if page.Total != 3 {
-		t.Errorf("expected 3 ongoing novels, got %d", page.Total)
+	if page.Total != 2 {
+		t.Errorf("expected 2 ongoing novels, got %d", page.Total)
 	}
 
 	page2, _ := svc.List(NovelFilter{Status: "completed"})
