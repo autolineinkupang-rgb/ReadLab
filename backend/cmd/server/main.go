@@ -12,10 +12,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"wtr-lab-clone/backend/internal/config"
-	"wtr-lab-clone/backend/internal/middleware"
-	"wtr-lab-clone/backend/internal/model"
-	"wtr-lab-clone/backend/internal/router"
+	"readlab/backend/internal/config"
+	"readlab/backend/internal/middleware"
+	"readlab/backend/internal/model"
+	"readlab/backend/internal/router"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

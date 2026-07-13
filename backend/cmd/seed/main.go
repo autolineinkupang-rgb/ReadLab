@@ -6,8 +6,8 @@ import (
 	"math/rand"
 	"time"
 
-	"wtr-lab-clone/backend/internal/config"
-	"wtr-lab-clone/backend/internal/model"
+	"readlab/backend/internal/config"
+	"readlab/backend/internal/model"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"

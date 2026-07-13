@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"wtr-lab-clone/backend/internal/config"
-	"wtr-lab-clone/backend/internal/model"
-	"wtr-lab-clone/backend/internal/scraper"
+	"readlab/backend/internal/config"
+	"readlab/backend/internal/model"
+	"readlab/backend/internal/scraper"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
