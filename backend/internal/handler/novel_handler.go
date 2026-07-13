@@ -51,7 +51,7 @@ func (h *NovelHandler) List(c *gin.Context) {
 
         if q != "" {
                 like := "%" + q + "%"
-                query = query.Where("title ILIKE ? OR alt_title ILIKE ? OR description ILIKE ?", like, like, like)
+                query = query.Where("LOWER(title) LIKE LOWER(?) OR LOWER(alt_title) LIKE LOWER(?) OR LOWER(description) LIKE LOWER(?)", like, like, like)
         }
 
         if status != "" {

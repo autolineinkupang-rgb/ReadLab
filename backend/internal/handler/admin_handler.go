@@ -46,7 +46,7 @@ func (h *AdminHandler) ListUsers(c *gin.Context) {
 	}
 	if q != "" {
 		like := "%" + q + "%"
-		query = query.Where("username ILIKE ? OR email ILIKE ? OR display_name ILIKE ?", like, like, like)
+		query = query.Where("LOWER(username) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?) OR LOWER(display_name) LIKE LOWER(?)", like, like, like)
 	}
 
 	var total int64

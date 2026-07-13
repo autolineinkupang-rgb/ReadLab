@@ -64,7 +64,7 @@ func (s *NovelService) List(filter NovelFilter) (*NovelPage, error) {
 		query = query.Where("id IN (?)", sub)
 	}
 	if filter.Search != "" {
-		query = query.Where("title ILIKE ? OR author ILIKE ?", "%"+filter.Search+"%", "%"+filter.Search+"%")
+		query = query.Where("LOWER(title) LIKE LOWER(?) OR LOWER(author) LIKE LOWER(?)", "%"+filter.Search+"%", "%"+filter.Search+"%")
 	}
 
 	var total int64
@@ -166,13 +166,13 @@ func (s *NovelService) Search(q string, page, limit int) ([]model.Novel, int64, 
 
 	var total int64
 	s.DB.Model(&model.Novel{}).
-		Where("title ILIKE ? OR author ILIKE ?", "%"+q+"%", "%"+q+"%").
+		Where("LOWER(title) LIKE LOWER(?) OR LOWER(author) LIKE LOWER(?)", "%"+q+"%", "%"+q+"%").
 		Count(&total)
 
 	var novels []model.Novel
 	offset := (page - 1) * limit
 	err := s.DB.Preload("Genres").
-		Where("title ILIKE ? OR author ILIKE ?", "%"+q+"%", "%"+q+"%").
+		Where("LOWER(title) LIKE LOWER(?) OR LOWER(author) LIKE LOWER(?)", "%"+q+"%", "%"+q+"%").
 		Order("views DESC").
 		Offset(offset).Limit(limit).
 		Find(&novels).Error
@@ -193,7 +193,7 @@ func (s *NovelService) Autocomplete(q string, limit int) ([]AutocompleteResult, 
 	var results []AutocompleteResult
 	err := s.DB.Model(&model.Novel{}).
 		Select("id, slug, title").
-		Where("title ILIKE ?", "%"+q+"%").
+		Where("LOWER(title) LIKE LOWER(?)", "%"+q+"%").
 		Order("views DESC").
 		Limit(limit).
 		Find(&results).Error
