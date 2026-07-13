@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"readlab/backend/internal/model"
+	"readlab/backend/internal/ticket"
 )
 
 func setupVoteTest(t *testing.T) (*gin.Engine, string) {
@@ -23,7 +24,7 @@ func setupVoteTest(t *testing.T) (*gin.Engine, string) {
 	novel := model.Novel{Title: "Test Novel", Slug: "test-novel"}
 	db.Create(&novel)
 
-	h := NewVoteHandler(db)
+	h := NewVoteHandler(db, ticket.NewConfig(db))
 	r := gin.New()
 	r.Use(func(c *gin.Context) {
 		tokenStr := c.GetHeader("Authorization")
