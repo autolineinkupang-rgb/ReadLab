@@ -277,8 +277,12 @@ func TestAward_MultipleAwardsAccumulate(t *testing.T) {
 	svc, db := setupTicketService(t)
 	user := createTestTicketUser(t, db)
 
-	svc.Award(user.ID, 10, "daily", "day 1")
-	svc.Award(user.ID, 15, "contribution", "novel contribution")
+	if err := svc.Award(user.ID, 10, "daily", "day 1"); err != nil {
+		t.Fatalf("first award failed: %v", err)
+	}
+	if err := svc.Award(user.ID, 15, "contribution", "novel contribution"); err != nil {
+		t.Fatalf("second award failed: %v", err)
+	}
 
 	balance, _ := svc.GetBalance(user.ID)
 	if balance != 25 {

@@ -48,7 +48,7 @@ func ExtractMDsFromZip(data []byte) (map[string]string, error) {
 			continue
 		}
 		data, err := io.ReadAll(io.LimitReader(rc, maxZipEntrySize))
-		rc.Close()
+		_ = rc.Close()
 		if err != nil {
 			continue
 		}

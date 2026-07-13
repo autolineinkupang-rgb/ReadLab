@@ -27,7 +27,9 @@ func migrateDB(db *gorm.DB) {
 		db.Exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'member'")
 		db.Exec("UPDATE users SET role = 'admin' WHERE is_admin = TRUE")
 		db.Exec("UPDATE users SET role = 'member' WHERE is_admin = FALSE OR is_admin IS NULL")
-		db.Migrator().DropColumn(&model.User{}, "is_admin")
+		if err := db.Migrator().DropColumn(&model.User{}, "is_admin"); err != nil {
+			slog.Warn("failed to drop is_admin column", "error", err)
+		}
 		slog.Info("is_admin migration complete")
 	}
 
@@ -35,8 +37,12 @@ func migrateDB(db *gorm.DB) {
 		slog.Info("migrating reviews: adding edit_count, parent_id, new index")
 		db.Exec("ALTER TABLE reviews ADD COLUMN IF NOT EXISTS edit_count INTEGER DEFAULT 0")
 		db.Exec("ALTER TABLE reviews ADD COLUMN IF NOT EXISTS parent_id INTEGER REFERENCES reviews(id)")
-		db.Migrator().DropIndex(&model.Review{}, "idx_user_novel")
-		db.Migrator().CreateIndex(&model.Review{}, "idx_user_novel_parent")
+		if err := db.Migrator().DropIndex(&model.Review{}, "idx_user_novel"); err != nil {
+			slog.Warn("failed to drop idx_user_novel", "error", err)
+		}
+		if err := db.Migrator().CreateIndex(&model.Review{}, "idx_user_novel_parent"); err != nil {
+			slog.Warn("failed to create idx_user_novel_parent", "error", err)
+		}
 		db.Exec("ALTER TABLE reviews DROP CONSTRAINT IF EXISTS chk_reviews_rating")
 		db.Exec("ALTER TABLE reviews ADD CONSTRAINT chk_reviews_rating CHECK (rating >= 0 AND rating <= 5)")
 		slog.Info("review migration complete")

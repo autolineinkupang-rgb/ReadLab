@@ -17,7 +17,9 @@ import (
 func setupNovelTest(t *testing.T) (*gin.Engine, string, string) {
 	gin.SetMode(gin.TestMode)
 	db := setupTestDB(t)
-	db.AutoMigrate(&model.User{}, &model.Novel{}, &model.Genre{})
+	if err := db.AutoMigrate(&model.User{}, &model.Novel{}, &model.Genre{}); err != nil {
+		t.Fatalf("failed to migrate: %v", err)
+	}
 
 	admin := createTestAdmin(t, db)
 	user := createTestUser(t, db, false)

@@ -52,7 +52,7 @@ func RunCrawl(novelURL string, maxChapters int) (*Result, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot create temp dir: %w", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	args := []string{lncrawlPath, "crawl", novelURL, "--noin", "--format", "json"}
 	if maxChapters > 0 {
@@ -100,7 +100,7 @@ func parseOutput(stdout, homeDir string) (*Result, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot open zip: %w", err)
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	lncrawlDir := filepath.Join(homeDir, ".lncrawl")
 
@@ -119,10 +119,10 @@ func parseOutput(stdout, homeDir string) (*Result, error) {
 		}
 		var ch chapterJSON
 		if err := json.NewDecoder(rc).Decode(&ch); err != nil {
-			rc.Close()
+			_ = rc.Close()
 			continue
 		}
-		rc.Close()
+		_ = rc.Close()
 
 		if ch.NovelID != "" {
 			novelID = ch.NovelID

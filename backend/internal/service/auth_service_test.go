@@ -157,7 +157,7 @@ func TestGenerateJTI_IsHexString(t *testing.T) {
 
 	jti := svc.GenerateJTI()
 	for _, c := range jti {
-		if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')) {
+		if !(c >= '0' && c <= '9') && !(c >= 'a' && c <= 'f') {
 			t.Errorf("JTI contains non-hex character: %c in %q", c, jti)
 		}
 	}

@@ -20,17 +20,12 @@ func (s *Scraper) scrapeRoyalRoad(url string) (*ScrapedNovel, error) {
 	novel.Title = strings.TrimSpace(doc.Find("h1.font-white, h1[property='name'], h1").First().Text())
 
 	doc.Find("div.fic-header, .col-md-7, .fiction-info").First().Find("div.small, span, p").Each(func(i int, sel *goquery.Selection) {
-		text := strings.TrimSpace(sel.Text())
-		lower := strings.ToLower(text)
 		sel.Find("a").Each(func(j int, a *goquery.Selection) {
 			href, exists := a.Attr("href")
 			if exists && strings.Contains(href, "/profile/") {
 				novel.Author = strings.TrimSpace(a.Text())
 			}
 		})
-		if strings.Contains(lower, "rating") {
-			// skip
-		}
 	})
 
 	doc.Find("meta[property='books:author']").Each(func(i int, meta *goquery.Selection) {

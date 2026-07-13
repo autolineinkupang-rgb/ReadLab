@@ -58,7 +58,9 @@ func (s *AuthService) CheckPassword(hash, password string) error {
 
 func (s *AuthService) GenerateJTI() string {
 	b := make([]byte, 16)
-	rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		panic("crypto/rand unavailable: " + err.Error())
+	}
 	return hex.EncodeToString(b)
 }
 

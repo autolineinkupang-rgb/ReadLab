@@ -24,12 +24,16 @@ type Config struct {
 
 func generateSecret() string {
 	b := make([]byte, 32)
-	rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		log.Fatalf("failed to generate random secret: %v", err)
+	}
 	return hex.EncodeToString(b)
 }
 
 func Load() *Config {
-	godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		log.Println("no .env file found, using environment variables as-is")
+	}
 
 	isProduction := os.Getenv("APP_ENV") == "production"
 

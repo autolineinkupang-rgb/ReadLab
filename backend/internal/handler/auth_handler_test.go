@@ -16,7 +16,9 @@ import (
 func setupAuthTest(t *testing.T) (*gorm.DB, *AuthHandler, *gin.Engine) {
 	gin.SetMode(gin.TestMode)
 	db := setupTestDB(t)
-	db.AutoMigrate(&model.User{})
+	if err := db.AutoMigrate(&model.User{}); err != nil {
+		t.Fatalf("failed to migrate: %v", err)
+	}
 
 	authSvc := service.NewAuthService(db, "test-secret", false)
 	h := NewAuthHandler(db, "test-secret", false, nil, authSvc)

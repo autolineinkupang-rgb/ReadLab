@@ -56,8 +56,8 @@ func MetricsHandler(c *gin.Context) {
 			method := parts[0]
 			path := parts[1]
 			status := parts[2]
-			sb.WriteString(fmt.Sprintf("readlab_requests_total{method=\"%s\",path=\"%s\",status=\"%s\"} %d\n",
-				method, path, status, count))
+			_, _ = fmt.Fprintf(&sb, "readlab_requests_total{method=\"%s\",path=\"%s\",status=\"%s\"} %d\n",
+				method, path, status, count)
 		}
 	}
 
@@ -70,8 +70,8 @@ func MetricsHandler(c *gin.Context) {
 			method := parts[0]
 			path := parts[1]
 			status := parts[2]
-			sb.WriteString(fmt.Sprintf("readlab_request_duration_seconds{method=\"%s\",path=\"%s\",status=\"%s\"} %s\n",
-				method, path, status, strconv.FormatFloat(dur, 'f', 6, 64)))
+			_, _ = fmt.Fprintf(&sb, "readlab_request_duration_seconds{method=\"%s\",path=\"%s\",status=\"%s\"} %s\n",
+				method, path, status, strconv.FormatFloat(dur, 'f', 6, 64))
 		}
 	}
 

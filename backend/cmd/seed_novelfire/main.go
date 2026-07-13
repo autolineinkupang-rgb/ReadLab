@@ -33,7 +33,9 @@ func main() {
 
 	cwd, _ := os.Getwd()
 	coversDir = filepath.Join(cwd, "uploads", "covers")
-	os.MkdirAll(coversDir, 0755)
+	if err := os.MkdirAll(coversDir, 0755); err != nil {
+		log.Fatalf("failed to create covers directory: %v", err)
+	}
 
 	log.Println("connected to database")
 	log.Println("covers directory:", coversDir)
@@ -151,7 +153,7 @@ func scrapeChapterCount(url string) int {
 	if err != nil {
 		return 0
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
@@ -186,7 +188,7 @@ func downloadImage(url, path string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("HTTP %d", resp.StatusCode)
@@ -196,7 +198,7 @@ func downloadImage(url, path string) error {
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() { _ = out.Close() }()
 
 	_, err = io.Copy(out, resp.Body)
 	return err

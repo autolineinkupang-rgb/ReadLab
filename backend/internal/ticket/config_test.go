@@ -13,7 +13,9 @@ func setupTicketTestDB(t *testing.T) *gorm.DB {
 	if err != nil {
 		t.Fatalf("failed to open test db: %v", err)
 	}
-	db.AutoMigrate(&model.TicketConfig{})
+	if err := db.AutoMigrate(&model.TicketConfig{}); err != nil {
+		t.Fatalf("failed to migrate: %v", err)
+	}
 	return db
 }
 

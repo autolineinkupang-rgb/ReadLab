@@ -64,7 +64,7 @@ func (imp *Importer) Search(query string) ([]SearchResult, error) {
 	if err != nil {
 		return nil, fmt.Errorf("consumet search request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -88,7 +88,7 @@ func (imp *Importer) FetchNovelInfo(sourceID string) (*NovelInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("consumet info request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
