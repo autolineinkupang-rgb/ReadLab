@@ -6,7 +6,7 @@ import (
 )
 
 func TestMakassarNow_ReturnsTimeInMakassar(t *testing.T) {
-	loc, err := time.LoadLocation(MakassarTimezone)
+	_, err := time.LoadLocation(MakassarTimezone)
 	if err != nil {
 		t.Skipf("timezone %s not available: %v", MakassarTimezone, err)
 	}
