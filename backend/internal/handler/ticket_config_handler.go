@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"wtr-lab-clone/backend/internal/ticket"
+	"readlab/backend/internal/ticket"
 )
 
 type TicketConfigHandler struct {

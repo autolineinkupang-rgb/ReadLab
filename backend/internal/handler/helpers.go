@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"wtr-lab-clone/backend/internal/ticket"
+	"readlab/backend/internal/ticket"
 )
 
 func mustUserID(c *gin.Context) (uint, bool) {

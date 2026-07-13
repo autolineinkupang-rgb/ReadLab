@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"wtr-lab-clone/backend/internal/model"
+	"readlab/backend/internal/model"
 )
 
 func setupAdminTestDB(t *testing.T) *gorm.DB {

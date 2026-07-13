@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
-	"wtr-lab-clone/backend/internal/model"
+	"readlab/backend/internal/model"
 )
 
 const consumetBase = "https://api.consumet.org/light-novels/novelupdates"

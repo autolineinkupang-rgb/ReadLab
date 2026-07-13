@@ -1,18 +1,50 @@
+# Environment
 .env
-frontend/node_modules/
-frontend/.next/
-.next/
-frontend/tsconfig.tsbuildinfo
-backend/bin/
-backend/tmp/
 .env.*
-*.env
 !.env.example
 !backend/.env.example
 credentials.json
 *.pem
 *.key
 .credentials
+
+# Dependencies
+frontend/node_modules/
+backend/bin/
+backend/tmp/
+
+# Build artifacts
+.next/
+frontend/.next/
+frontend/tsconfig.tsbuildinfo
+
+# Go compiled binaries (in any directory)
+server
+backend/server
+backend/readlab-server
+backend/wtrlab-server
+backend/fetch_content
+backend/seed
+backend/seed_chapters
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Uploaded covers (managed at runtime, not in repo)
+backend/uploads/covers/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
 
 # Playwright MCP debug artifacts (auto-generated during agent testing)
 .playwright-mcp/

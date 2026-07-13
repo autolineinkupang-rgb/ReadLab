@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
-	"wtr-lab-clone/backend/internal/model"
+	"readlab/backend/internal/model"
 )
 
 func AuthRequired(jwtSecret string, db *gorm.DB) gin.HandlerFunc {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"wtr-lab-clone/backend/internal/service"
+	"readlab/backend/internal/service"
 )
 
 type SearchHandler struct {

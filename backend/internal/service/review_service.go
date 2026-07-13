@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"gorm.io/gorm"
-	"wtr-lab-clone/backend/internal/model"
+	"readlab/backend/internal/model"
 )
 
 type ReviewService struct {

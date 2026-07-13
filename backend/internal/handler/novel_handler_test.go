@@ -9,9 +9,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"wtr-lab-clone/backend/internal/model"
-	"wtr-lab-clone/backend/internal/service"
-	"wtr-lab-clone/backend/internal/ticket"
+	"readlab/backend/internal/model"
+	"readlab/backend/internal/service"
+	"readlab/backend/internal/ticket"
 )
 
 func setupNovelTest(t *testing.T) (*gin.Engine, string, string) {

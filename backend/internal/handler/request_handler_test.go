@@ -9,7 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"wtr-lab-clone/backend/internal/model"
+	"readlab/backend/internal/model"
 )
 
 func setupRequestTest(t *testing.T) (*gin.Engine, string, string) {

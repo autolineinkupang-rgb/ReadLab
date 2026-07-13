@@ -8,9 +8,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"wtr-lab-clone/backend/internal/model"
-	"wtr-lab-clone/backend/internal/service"
-	"wtr-lab-clone/backend/internal/ticket"
+	"readlab/backend/internal/model"
+	"readlab/backend/internal/service"
+	"readlab/backend/internal/ticket"
 )
 
 type ReviewHandler struct {

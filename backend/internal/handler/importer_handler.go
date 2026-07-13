@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"wtr-lab-clone/backend/internal/importer"
+	"readlab/backend/internal/importer"
 )
 
 type ImporterHandler struct {

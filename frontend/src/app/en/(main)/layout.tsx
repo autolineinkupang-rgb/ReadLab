@@ -6,6 +6,8 @@ import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import { ToastProvider } from "@/components/ui/Toast";
 
 function SidebarLayout({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar();
@@ -20,12 +22,16 @@ function SidebarLayout({ children }: { children: React.ReactNode }) {
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      <SidebarProvider>
-        <Navbar />
-        <Sidebar />
-        <SidebarLayout>{children}</SidebarLayout>
-      </SidebarProvider>
-      <BackToTop />
+      <ToastProvider>
+        <ErrorBoundary>
+          <SidebarProvider>
+            <Navbar />
+            <Sidebar />
+            <SidebarLayout>{children}</SidebarLayout>
+          </SidebarProvider>
+          <BackToTop />
+        </ErrorBoundary>
+      </ToastProvider>
     </AuthProvider>
   );
 }

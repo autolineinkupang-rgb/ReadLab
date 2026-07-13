@@ -8,10 +8,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"wtr-lab-clone/backend/internal/handler"
-	"wtr-lab-clone/backend/internal/middleware"
-	"wtr-lab-clone/backend/internal/service"
-	"wtr-lab-clone/backend/internal/ticket"
+	"readlab/backend/internal/handler"
+	"readlab/backend/internal/middleware"
+	"readlab/backend/internal/service"
+	"readlab/backend/internal/ticket"
 )
 
 func Setup(db *gorm.DB, jwtSecret string, frontendURL string, cookieSecure bool) *gin.Engine {

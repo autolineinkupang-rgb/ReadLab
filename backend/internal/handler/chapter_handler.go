@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"wtr-lab-clone/backend/internal/model"
-	"wtr-lab-clone/backend/internal/ticket"
+	"readlab/backend/internal/model"
+	"readlab/backend/internal/ticket"
 )
 
 type ChapterHandler struct {

@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"wtr-lab-clone/backend/internal/mdimport"
-	"wtr-lab-clone/backend/internal/model"
+	"readlab/backend/internal/mdimport"
+	"readlab/backend/internal/model"
 )
 
 const maxUploadSize = 10 << 20 // 10 MB

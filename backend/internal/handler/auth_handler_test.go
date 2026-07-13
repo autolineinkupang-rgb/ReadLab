@@ -9,8 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"wtr-lab-clone/backend/internal/model"
-	"wtr-lab-clone/backend/internal/service"
+	"readlab/backend/internal/model"
+	"readlab/backend/internal/service"
 )
 
 func setupAuthTest(t *testing.T) (*gorm.DB, *AuthHandler, *gin.Engine) {

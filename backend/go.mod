@@ -1,4 +1,4 @@
-module wtr-lab-clone/backend
+module readlab/backend
 
 go 1.25.0
 

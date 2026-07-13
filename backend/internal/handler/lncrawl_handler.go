@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"wtr-lab-clone/backend/internal/lncrawl"
-	"wtr-lab-clone/backend/internal/model"
+	"readlab/backend/internal/lncrawl"
+	"readlab/backend/internal/model"
 )
 
 type LncrawlHandler struct {
