@@ -45,6 +45,15 @@ func (s *ReviewService) GetUserReview(userID, novelID uint) (*model.Review, erro
 }
 
 func (s *ReviewService) CreateReview(userID, novelID uint, rating int, content string) (*model.Review, error) {
+	// Unique index on (user_id, novel_id, parent_id) can't catch duplicates here:
+	// NULL != NULL in SQL, so it never blocks two top-level (parent_id IS NULL)
+	// reviews from the same user. Check explicitly instead.
+	if _, err := s.GetUserReview(userID, novelID); err == nil {
+		return nil, fmt.Errorf("you have already reviewed this novel")
+	} else if err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+
 	review := model.Review{
 		UserID:  userID,
 		NovelID: novelID,
