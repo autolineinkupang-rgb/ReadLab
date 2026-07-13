@@ -26,8 +26,8 @@ func newReviewService(t *testing.T) (*ReviewService, *gorm.DB) {
 func createReviewUser(t *testing.T, db *gorm.DB) model.User {
         t.Helper()
         user := model.User{
-                Username:     fmt.Sprintf("revuser%d", len(db.Tables)),
-                Email:        fmt.Sprintf("revuser%d@test.com", len(db.Tables)),
+                Username:     "revuser",
+                Email:        "revuser@test.com",
                 PasswordHash: "$2a$10$abcdefghijklmnopqrstuvwxABCDEFGHIJ",
                 DisplayName:  "Review User",
         }
@@ -234,7 +234,7 @@ func TestCheckEditLimit_Edges(t *testing.T) {
 
 func TestGetNovelReviews_Pagination(t *testing.T) {
         svc, db := newReviewService(t)
-        user := createReviewUser(t, db)
+        _ = createReviewUser(t, db)
         novel := createReviewNovel(t, db, 10)
 
         // Create 5 reviews (different users for each to avoid unique constraint)
