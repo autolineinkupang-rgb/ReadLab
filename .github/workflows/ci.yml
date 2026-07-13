@@ -102,3 +102,7 @@ jobs:
 
       - name: Smoke test compose
         run: docker compose up -d --wait 2>/dev/null || docker compose down
+        env:
+          JWT_SECRET: ci-smoke-test-secret
+          DB_PASSWORD: wtrlab_secret
+          FRONTEND_URL: http://localhost:3000

@@ -20,7 +20,8 @@ services:
     ports:
       - "8080:8080"  # For development only; production traffic goes through Caddy
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
       DB_HOST: db
       DB_PORT: "5432"
