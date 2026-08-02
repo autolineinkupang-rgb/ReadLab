@@ -32,18 +32,18 @@ type CreateReviewRequest struct {
 }
 
 type UpdateReviewRequest struct {
-	Rating   uint   `json:"rating" binding:"min=1,max=5"`
-	Content  string `json:"content" binding:"required,min=1,max=2000"`
-	Upgrade  bool   `json:"upgrade"`
+	Rating  uint   `json:"rating" binding:"min=1,max=5"`
+	Content string `json:"content" binding:"required,min=1,max=2000"`
+	Upgrade bool   `json:"upgrade"`
 }
 
 type reviewResponse struct {
-	ID        uint             `json:"id"`
-	Rating    uint             `json:"rating"`
-	Content   string           `json:"content"`
-	EditCount uint             `json:"edit_count"`
-	ParentID  *uint            `json:"parent_id"`
-	CreatedAt string           `json:"created_at"`
+	ID        uint   `json:"id"`
+	Rating    uint   `json:"rating"`
+	Content   string `json:"content"`
+	EditCount uint   `json:"edit_count"`
+	ParentID  *uint  `json:"parent_id"`
+	CreatedAt string `json:"created_at"`
 	User      struct {
 		ID          uint   `json:"id"`
 		Username    string `json:"username"`
@@ -191,16 +191,16 @@ func (h *ReviewHandler) Create(c *gin.Context) {
 
 		if hasExisting {
 			if !req.Upgrade {
-					cost := h.Config.Get("replace_review_cost")
-					c.JSON(http.StatusConflict, gin.H{
-						"error":            "you have already reviewed this novel",
-						"upgrade_available": true,
-						"upgrade_cost":     cost,
-						"upgrade_type":     "duplicate",
-					})
-					return
-				}
-				if err := h.spendTickets(uid, h.Config.Get("replace_review_cost"), "upgrade_duplicate", uint(novelID),
+				cost := h.Config.Get("replace_review_cost")
+				c.JSON(http.StatusConflict, gin.H{
+					"error":             "you have already reviewed this novel",
+					"upgrade_available": true,
+					"upgrade_cost":      cost,
+					"upgrade_type":      "duplicate",
+				})
+				return
+			}
+			if err := h.spendTickets(uid, h.Config.Get("replace_review_cost"), "upgrade_duplicate", uint(novelID),
 				"Replace existing review on novel #"+strconv.Itoa(int(novelID))); err != nil {
 				if errors.Is(err, ticket.ErrInsufficientTickets) {
 					c.JSON(http.StatusPaymentRequired, gin.H{"error": "insufficient tickets"})
@@ -334,10 +334,10 @@ func (h *ReviewHandler) Update(c *gin.Context) {
 		if !req.Upgrade {
 			cost := h.Config.Get("edit_reset_cost")
 			c.JSON(http.StatusForbidden, gin.H{
-				"error":            "maximum edit limit (5) reached",
+				"error":             "maximum edit limit (5) reached",
 				"upgrade_available": true,
-				"upgrade_cost":     cost,
-				"upgrade_type":     "edit",
+				"upgrade_cost":      cost,
+				"upgrade_type":      "edit",
 			})
 			return
 		}

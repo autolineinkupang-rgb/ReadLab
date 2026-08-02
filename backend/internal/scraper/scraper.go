@@ -42,8 +42,8 @@ type ScrapedChapter struct {
 }
 
 type Result struct {
-	Novel  *ScrapedNovel
-	Error  error
+	Novel *ScrapedNovel
+	Error error
 }
 
 type Scraper struct {
@@ -77,7 +77,7 @@ func (s *Scraper) fetchDoc(url string) (*goquery.Document, error) {
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)

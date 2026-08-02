@@ -16,7 +16,7 @@ func setupAuthServiceTestDB(t *testing.T) *gorm.DB {
 	if err != nil {
 		t.Fatalf("failed to open test db: %v", err)
 	}
-	db.AutoMigrate(&model.User{}, &model.TokenBlacklist{})
+	_ = db.AutoMigrate(&model.User{}, &model.TokenBlacklist{})
 	return db
 }
 
@@ -157,7 +157,7 @@ func TestGenerateJTI_IsHexString(t *testing.T) {
 
 	jti := svc.GenerateJTI()
 	for _, c := range jti {
-		if !(c >= '0' && c <= '9') && !(c >= 'a' && c <= 'f') {
+		if (c < '0' || c > '9') && (c < 'a' || c > 'f') {
 			t.Errorf("JTI contains non-hex character: %c in %q", c, jti)
 		}
 	}

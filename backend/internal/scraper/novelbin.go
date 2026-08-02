@@ -108,7 +108,7 @@ func (s *Scraper) scrapeNovelBinChapter(url string) (*ScrapedChapter, error) {
 	}
 
 	content := ""
-	doc.Find("#chapter-content, .chapter-content, #content, .content, .reading-content, .chapter-c") .Each(func(i int, sel *goquery.Selection) {
+	doc.Find("#chapter-content, .chapter-content, #content, .content, .reading-content, .chapter-c").Each(func(i int, sel *goquery.Selection) {
 		html, err := sel.Html()
 		if err == nil {
 			content = strings.TrimSpace(html)

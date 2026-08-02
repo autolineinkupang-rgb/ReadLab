@@ -82,10 +82,10 @@ func (h *AdminHandler) SendTickets(c *gin.Context) {
 					"spent_at": &now,
 				})
 				tx.Create(&model.TicketUnit{
-					Serial:  model.NewSerial(),
-					UserID:  adminID,
-					Amount:  excess,
-					Status:  "active",
+					Serial: model.NewSerial(),
+					UserID: adminID,
+					Amount: excess,
+					Status: "active",
 				})
 				remaining = 0
 			}

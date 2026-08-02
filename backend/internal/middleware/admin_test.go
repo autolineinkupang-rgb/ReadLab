@@ -16,7 +16,7 @@ func setupAdminTestDB(t *testing.T) *gorm.DB {
 	if err != nil {
 		t.Fatal(err)
 	}
-	db.AutoMigrate(&model.User{})
+	_ = db.AutoMigrate(&model.User{})
 	return db
 }
 

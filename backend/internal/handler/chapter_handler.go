@@ -79,15 +79,15 @@ func (h *ChapterHandler) Get(c *gin.Context) {
 				}
 				if unit.Amount <= remaining {
 					tx.Model(&unit).Updates(map[string]interface{}{
-					"status":   "banked",
-					"spent_at": &now,
-				})
-				remaining -= unit.Amount
-			} else {
-				excess := unit.Amount - remaining
-				tx.Model(&unit).Updates(map[string]interface{}{
-					"status":   "banked",
-					"spent_at": &now,
+						"status":   "banked",
+						"spent_at": &now,
+					})
+					remaining -= unit.Amount
+				} else {
+					excess := unit.Amount - remaining
+					tx.Model(&unit).Updates(map[string]interface{}{
+						"status":   "banked",
+						"spent_at": &now,
 					})
 					tx.Create(&model.TicketUnit{
 						Serial: model.NewSerial(),

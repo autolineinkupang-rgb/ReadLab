@@ -15,7 +15,7 @@ import (
 func setupRequestTest(t *testing.T) (*gin.Engine, string, string) {
 	gin.SetMode(gin.TestMode)
 	db := setupTestDB(t)
-	db.AutoMigrate(&model.User{}, &model.Request{})
+	_ = db.AutoMigrate(&model.User{}, &model.Request{})
 
 	admin := createTestAdmin(t, db)
 	user := createTestUser(t, db, false)

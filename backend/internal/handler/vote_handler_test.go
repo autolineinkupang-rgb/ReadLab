@@ -16,7 +16,7 @@ import (
 func setupVoteTest(t *testing.T) (*gin.Engine, string) {
 	gin.SetMode(gin.TestMode)
 	db := setupTestDB(t)
-	db.AutoMigrate(&model.User{}, &model.Novel{}, &model.Vote{})
+	_ = db.AutoMigrate(&model.User{}, &model.Novel{}, &model.Vote{})
 
 	user := createTestUser(t, db, false)
 	token, _ := generateTestToken(user.ID, "test-secret")

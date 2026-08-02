@@ -52,12 +52,12 @@ func main() {
 		toInsert := make([]model.Chapter, 0, len(chapters))
 		for _, ch := range chapters {
 			toInsert = append(toInsert, model.Chapter{
-				NovelID:   novel.ID,
-				Number:    ch.Number,
-				Title:     ch.Title,
-				Content:   "",
-				ContentMD: "",
-				IsLocked:  false,
+				NovelID:    novel.ID,
+				Number:     ch.Number,
+				Title:      ch.Title,
+				Content:    "",
+				ContentMD:  "",
+				IsLocked:   false,
 				TicketCost: 0,
 			})
 		}

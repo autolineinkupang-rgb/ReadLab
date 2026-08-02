@@ -199,19 +199,19 @@ func seedNews(db *gorm.DB) {
 		Slug    string
 	}{
 		{
-			Title: "🎉 16th Giveaway Winners 🎉",
+			Title:   "🎉 16th Giveaway Winners 🎉",
 			Content: "Congratulations to all the winners of our 16th Giveaway!",
-			Type: "news", Slug: "16th-giveaway-winners",
+			Type:    "news", Slug: "16th-giveaway-winners",
 		},
 		{
-			Title: "🎉 Our 16th Giveaway is LIVE! 🎉",
+			Title:   "🎉 Our 16th Giveaway is LIVE! 🎉",
 			Content: "Our 16th Giveaway is now live! Participate now for a chance to win amazing prizes.",
-			Type: "news", Slug: "16th-giveaway-live",
+			Type:    "news", Slug: "16th-giveaway-live",
 		},
 		{
-			Title: "Version 1.13.3 - New Source Management & Bug Fixes!",
+			Title:   "Version 1.13.3 - New Source Management & Bug Fixes!",
 			Content: "We have released version 1.13.3 with new source management features and various bug fixes.",
-			Type: "changelog", Slug: "v1-13-3",
+			Type:    "changelog", Slug: "v1-13-3",
 		},
 	}
 
@@ -229,4 +229,53 @@ func seedNews(db *gorm.DB) {
 		})
 		fmt.Printf("seeded news: %s\n", n.Title)
 	}
+}
+
+func main() {
+	cfg := config.Load()
+
+	db, err := gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+
+	if err := db.AutoMigrate(
+		&model.Genre{},
+		&model.Tag{},
+		&model.Novel{},
+		&model.NovelGenre{},
+		&model.Chapter{},
+		&model.User{},
+		&model.Vote{},
+		&model.Request{},
+		&model.TicketTransaction{},
+		&model.News{},
+		&model.ReadingHistory{},
+		&model.NovelFollow{},
+		&model.Share{},
+	); err != nil {
+		log.Fatalf("failed to migrate: %v", err)
+	}
+
+	seedGenres(db)
+	seedTags(db)
+	seedUsers(db)
+	seedNews(db)
+	seedRatings(db)
+
+	log.Println("seed completed")
+}
+
+func seedGenres(db *gorm.DB) {
+	for _, g := range genres {
+		db.FirstOrCreate(&model.Genre{}, model.Genre{Slug: g.Slug, Name: g.Name})
+	}
+	fmt.Printf("seeded %d genres\n", len(genres))
+}
+
+func seedTags(db *gorm.DB) {
+	for _, t := range tags {
+		db.FirstOrCreate(&model.Tag{}, model.Tag{Slug: t.Slug, Name: t.Name})
+	}
+	fmt.Printf("seeded %d tags\n", len(tags))
 }

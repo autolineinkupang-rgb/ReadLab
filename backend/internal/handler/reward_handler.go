@@ -165,8 +165,8 @@ func (h *RewardHandler) Status(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"daily_reward": gin.H{
-			"can_claim":    canClaim,
-			"reward":       h.Config.Get("daily_reward"),
+			"can_claim":     canClaim,
+			"reward":        h.Config.Get("daily_reward"),
 			"next_claim_at": nextClaimAt,
 		},
 	})

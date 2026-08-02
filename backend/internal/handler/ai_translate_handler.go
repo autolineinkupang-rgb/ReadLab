@@ -15,8 +15,8 @@ import (
 )
 
 type AITranslateHandler struct {
-	DB      *gorm.DB
-	client  *http.Client
+	DB     *gorm.DB
+	client *http.Client
 }
 
 func NewAITranslateHandler(db *gorm.DB) *AITranslateHandler {
@@ -27,12 +27,12 @@ func NewAITranslateHandler(db *gorm.DB) *AITranslateHandler {
 }
 
 type aiTranslateSettings struct {
-	Provider          string `json:"provider"`
-	Model             string `json:"model"`
-	Endpoint          string `json:"endpoint"`
-	Key               string `json:"key,omitempty"`
-	TargetLanguage    string `json:"target_language"`
-	Instruction       string `json:"instruction"`
+	Provider       string `json:"provider"`
+	Model          string `json:"model"`
+	Endpoint       string `json:"endpoint"`
+	Key            string `json:"key,omitempty"`
+	TargetLanguage string `json:"target_language"`
+	Instruction    string `json:"instruction"`
 }
 
 func maskKey(key string) string {
@@ -52,13 +52,13 @@ func (h *AITranslateHandler) GetSettings(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"provider":         user.AITranslateProvider,
-		"model":            user.AITranslateModel,
-		"endpoint":         user.AITranslateEndpoint,
-		"key":              maskKey(user.AITranslateKey),
-		"has_key":          user.AITranslateKey != "",
-		"target_language":  user.TranslateTargetLang,
-		"instruction":      user.AITranslateInstruction,
+		"provider":        user.AITranslateProvider,
+		"model":           user.AITranslateModel,
+		"endpoint":        user.AITranslateEndpoint,
+		"key":             maskKey(user.AITranslateKey),
+		"has_key":         user.AITranslateKey != "",
+		"target_language": user.TranslateTargetLang,
+		"instruction":     user.AITranslateInstruction,
 	})
 }
 
@@ -72,10 +72,10 @@ func (h *AITranslateHandler) UpdateSettings(c *gin.Context) {
 	}
 
 	updates := map[string]interface{}{
-		"ai_translate_provider":   req.Provider,
-		"ai_translate_model":      req.Model,
-		"ai_translate_endpoint":   req.Endpoint,
-		"translate_target_lang":   req.TargetLanguage,
+		"ai_translate_provider":    req.Provider,
+		"ai_translate_model":       req.Model,
+		"ai_translate_endpoint":    req.Endpoint,
+		"translate_target_lang":    req.TargetLanguage,
 		"ai_translate_instruction": req.Instruction,
 	}
 	if req.Key != "" {
@@ -176,7 +176,7 @@ func (h *AITranslateHandler) Translate(c *gin.Context) {
 		c.JSON(http.StatusBadGateway, gin.H{"error": fmt.Sprintf("AI translate service unavailable: %v", err)})
 		return
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	respBody, _ := io.ReadAll(resp.Body)
 

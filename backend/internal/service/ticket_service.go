@@ -189,11 +189,11 @@ func (s *TicketService) ClaimDailyReward(userID uint) (float64, error) {
 			return err
 		}
 		tx.Create(&model.TicketTransaction{
-			UserID: userID,
-			Amount: reward,
-			Type:   "reward",
+			UserID:  userID,
+			Amount:  reward,
+			Type:    "reward",
 			RefType: "daily",
-			Date:   now,
+			Date:    now,
 		})
 		var sum float64
 		tx.Model(&model.TicketUnit{}).

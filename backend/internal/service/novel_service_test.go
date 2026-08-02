@@ -14,7 +14,7 @@ func setupNovelServiceTestDB(t *testing.T) *gorm.DB {
 	if err != nil {
 		t.Fatalf("failed to open test db: %v", err)
 	}
-	db.AutoMigrate(
+	_ = db.AutoMigrate(
 		&model.Novel{}, &model.Genre{}, &model.NovelGenre{},
 		&model.Chapter{},
 	)

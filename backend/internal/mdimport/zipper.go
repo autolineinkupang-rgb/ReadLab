@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	maxZipEntrySize  = 5 << 20 // 5 MB per entry
+	maxZipEntrySize      = 5 << 20  // 5 MB per entry
 	maxTotalDecompressed = 50 << 20 // 50 MB total
 )
 

@@ -47,13 +47,13 @@ type NovelInfo struct {
 }
 
 type Importer struct {
-	DB        *gorm.DB
+	DB         *gorm.DB
 	HTTPClient *http.Client
 }
 
 func New(db *gorm.DB) *Importer {
 	return &Importer{
-		DB: db,
+		DB:         db,
 		HTTPClient: &http.Client{Timeout: 30 * time.Second},
 	}
 }

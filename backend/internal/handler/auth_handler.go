@@ -13,11 +13,11 @@ import (
 )
 
 type AuthHandler struct {
-	DB        *gorm.DB
-	JWTSecret string
+	DB           *gorm.DB
+	JWTSecret    string
 	CookieSecure bool
-	Config    *ticket.Config
-	AuthSvc   *service.AuthService
+	Config       *ticket.Config
+	AuthSvc      *service.AuthService
 }
 
 func NewAuthHandler(db *gorm.DB, jwtSecret string, cookieSecure bool, cfg *ticket.Config, authSvc *service.AuthService) *AuthHandler {
